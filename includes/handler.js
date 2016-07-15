@@ -10,7 +10,7 @@ var LogUpdate = require( "./zenci-log-update.js" );
 var LogGet = require( "./zenci-log-get.js" );
 
 module.exports = {
-  post: function( jsonData, callback ) {
+  post: function( jsonData, requestDetails, callback ) {
     var errors = validateJson( jsonData );
     if ( true !== errors ) {
       throw new Error( errors );
@@ -19,18 +19,18 @@ module.exports = {
     Task.status(callback);
     return Task;
   },
-  get: function( jsonData, callback ) {
-    var Task = new LogGet( jsonData );
+  get: function( jsonData, requestDetails, callback ) {
+    var Task = new LogGet( jsonData, requestDetails );
     Task.status(callback);
     return Task;
 
   },
-  put: function( jsonData, callback ) {
+  put: function( jsonData, requestDetails, callback ) {
     var errors = validateJson( jsonData );
     if ( true !== errors ) {
       throw new Error( errors );
     }
-    var Task = new LogUpdate( jsonData );
+    var Task = new LogUpdate( jsonData, requestDetails );
     Task.status(callback);
     return Task;
   },

@@ -3,120 +3,89 @@
  */
 "use strict";
 
-const gcloud = require('gcloud');
+const MongoClient = require('mongodb').MongoClient;
+const ObjectID = require('mongodb').ObjectID;
+const debugF = require( "debug" );
+
 require('dotenv').config();
 const bind = function( fn, me ) { return function() { return fn.apply( me, arguments ); }; };
-
-// Debug module.
-const debugF = require( "debug" );
 
 /**
  * Constructor.
  *   Prepare data for test.
  */
-function Log( data ) {
+function LogUpdate( data, requestDetails ) {
   // Use a closure to preserve `this`
   var self = this;
-  self.namespace = process.env.NAMESPACE;
-  self.datastore = gcloud.datastore({
-    projectId: process.env.PROJECTID,
-    keyFilename: './settings/keyfile.json'
-  });
-
+  self.mongo_url = process.env.MONGO_URL
   this.status = bind( this.status, this );
   // Save original data
   this.data = data;
+  this.requestDetails = requestDetails;
 }
 
-Log.prototype.data = {};
-Log.prototype.datastore = false;
-Log.prototype.record = "";
-Log.prototype.namespace = "";
+LogUpdate.prototype.data = {};
+LogUpdate.prototype.requestDetails = {};
+LogUpdate.prototype.mongo_url = "";
 
-
-Log.prototype.debug = {
+LogUpdate.prototype.debug = {
   main: debugF( "status:main" ),
 };
 
-Log.prototype.status = function(callback) {
+LogUpdate.prototype.status = function(callback) {
   console.log(this.data);
+  console.log(this.requestDetails);
   var self = this;
-  var recordID = this.data.id;
-  var TaskLogKey = self.datastore.key({
-    namespace: self.namespace,
-    path: ['TaskLog', recordID ]
-  });
-  self.datastore.get(TaskLogKey, function(err, entity) {
-    var record  =  [
-      {
-        name: 'owner',
-        value: self.data.owner
-      },
-      {
-        name: 'repository',
-        value: self.data.repository
-      },
-      {
-        name: 'status',
-        value: self.data.status
-      },
-      {
-        name: 'description',
-        value: self.data.description
-      },
-      {
-        name: 'summary',
-        value: self.data.summary
-      },
-      {
-        name: 'sha',
-        value: self.data.sha
-      },
-      {
-        name: 'branch',
-        value: self.data.branch
-      },
-      {
-        name: 'context',
-        value: self.data.context
-      },
-      {
-        name: 'created',
-        value: entity.data.created
-      },
-      {
-        name: 'changed',
-        value: new Date()
-      },
-      {
-        name: 'interrupt',
-        value: self.data.interrupt
-      },
-      {
-        name: 'command_log',
-        value: '',
-        excludeFromIndexes: true
+
+  if(self.requestDetails.url.length != 24) {
+    callback(null, {
+      code: 403,
+      answer: {
+        message: 'Wrong request',
       }
-    ];
-    self.datastore.save({
-      method: 'update',
-      key: TaskLogKey,
-      data: record
-    }, function (err) {
-      if (!err) {
-        self.record = recordID;
-        callback(null, {
-          code: 200,
-          answer: {
-            message: 'Task accepted',
-            id: recordID
+    });
+    return;
+  }
+
+  MongoClient.connect(self.mongo_url, function(err, db) {
+    if(! err) {
+      var collection = db.collection('tasks');
+      var query = {
+        _id: new ObjectID(self.requestDetails.url)
+      };
+      collection.findOneAndUpdate(query, self.data , {}, function(err, result) {
+        db.close();
+        if(!err) {
+          if(!result) {
+            callback(null, {
+              code: 404,
+              answer: {
+                message: 'Not found',
+              }
+            });
+          } else {
+            if(!result.value) {
+              callback(null, {
+                code: 503,
+                message: 'Error to save data',
+              });
+            } else {
+              callback(null, {
+                code: 200,
+                answer: result
+              });
+            }
           }
-        });
-      } else {
-        callback(err, null);
-      }
-    })
-  })
+        } else {
+          callback(err, null);
+        }
+      });
+
+    } else {
+      callback(err, null);
+    }
+  });
+  return;
 }
 
-module.exports = Log;
+module.exports = LogUpdate;

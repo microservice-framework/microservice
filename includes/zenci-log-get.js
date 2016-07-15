@@ -3,35 +3,31 @@
  */
 "use strict";
 
-const gcloud = require('gcloud');
+const MongoClient = require('mongodb').MongoClient;
+const ObjectID = require('mongodb').ObjectID;
+const debugF = require( "debug" );
+
 require('dotenv').config();
 const bind = function( fn, me ) { return function() { return fn.apply( me, arguments ); }; };
-
-// Debug module.
-const debugF = require( "debug" );
 
 /**
  * Constructor.
  *   Prepare data for test.
  */
-function LogGet( data ) {
+function LogGet( data, requestDetails ) {
   // Use a closure to preserve `this`
   var self = this;
-  self.namespace = process.env.NAMESPACE;
-  self.datastore = gcloud.datastore({
-    projectId: process.env.PROJECTID,
-    keyFilename: './settings/keyfile.json'
-  });
-
+  self.mongo_url = process.env.MONGO_URL
   this.status = bind( this.status, this );
   // Save original data
   this.data = data;
+  this.requestDetails = requestDetails;
 }
 
 LogGet.prototype.data = {};
-LogGet.prototype.datastore = false;
+LogGet.prototype.requestDetails = {};
 LogGet.prototype.record = "";
-LogGet.prototype.namespace = "";
+LogGet.prototype.mongo_url = "";
 
 
 LogGet.prototype.debug = {
@@ -39,25 +35,50 @@ LogGet.prototype.debug = {
 };
 
 LogGet.prototype.status = function(callback) {
-  console.log(this.data);
   var self = this;
-  var recordID = new Date().getTime();
-  var TaskLogKey = self.datastore.key({
-    namespace: self.namespace,
-    path: ['TaskLog', parseInt(this.data._url) ]
-  });
 
-  self.datastore.get(TaskLogKey, function(err, entity) {
-    if (!err) {
-        callback(null, {
-          code: 200,
-          answer: entity
-        });
-      } else {
-        callback(err, null);
+  if(self.requestDetails.url.length != 24) {
+    callback(null, {
+      code: 403,
+      answer: {
+        message: 'Wrong request',
       }
-    console.log(err || entity);
+    });
+    return;
+  }
+
+  MongoClient.connect(self.mongo_url, function(err, db) {
+    if(! err) {
+      var collection = db.collection('tasks');
+      var query = {
+        _id: new ObjectID(self.requestDetails.url)
+      };
+      collection.findOne(query, function(err, result) {
+        db.close();
+        if(!err) {
+          if(!result) {
+            callback(null, {
+              code: 404,
+              answer: {
+                message: 'Not found',
+              }
+            });
+          } else {
+            callback(null, {
+              code: 200,
+              answer: result
+            });
+          }
+        } else {
+          callback(err, null);
+        }
+      });
+
+    } else {
+      callback(err, null);
+    }
   });
+  return;
 }
 
 module.exports = LogGet;

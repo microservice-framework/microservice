@@ -3,12 +3,11 @@
  */
 "use strict";
 
-const gcloud = require('gcloud');
 require('dotenv').config();
-const bind = function( fn, me ) { return function() { return fn.apply( me, arguments ); }; };
-
-// Debug module.
+const MongoClient = require('mongodb').MongoClient;
 const debugF = require( "debug" );
+
+const bind = function( fn, me ) { return function() { return fn.apply( me, arguments ); }; };
 
 /**
  * Constructor.
@@ -17,21 +16,15 @@ const debugF = require( "debug" );
 function Log( data ) {
   // Use a closure to preserve `this`
   var self = this;
-  self.namespace = process.env.NAMESPACE;
-  self.datastore = gcloud.datastore({
-    projectId: process.env.PROJECTID,
-    keyFilename: './settings/keyfile.json'
-  });
-
+  self.mongo_url = process.env.MONGO_URL
   this.status = bind( this.status, this );
   // Save original data
   this.data = data;
 }
 
 Log.prototype.data = {};
-Log.prototype.datastore = false;
 Log.prototype.record = "";
-Log.prototype.namespace = "";
+Log.prototype.mongo_url = "";
 
 
 Log.prototype.debug = {
@@ -41,81 +34,33 @@ Log.prototype.debug = {
 Log.prototype.status = function(callback) {
   console.log(this.data);
   var self = this;
-  var recordID = new Date().getTime();
-  var TaskLogKey = self.datastore.key({
-    namespace: self.namespace,
-    path: ['TaskLog', recordID ]
-  });
 
-  var record  =  [
-    {
-      name: 'owner',
-      value: self.data.owner
-    },
-    {
-      name: 'repository',
-      value: self.data.repository
-    },
-    {
-      name: 'status',
-      value: self.data.status
-    },
-    {
-      name: 'description',
-      value: self.data.description
-    },
-    {
-      name: 'summary',
-      value: self.data.summary
-    },
-    {
-      name: 'sha',
-      value: self.data.sha
-    },
-    {
-      name: 'branch',
-      value: self.data.branch
-    },
-    {
-      name: 'context',
-      value: self.data.context
-    },
-    {
-      name: 'created',
-      value: new Date()
-    },
-    {
-      name: 'changed',
-      value: new Date()
-    },
-    {
-      name: 'interrupt',
-      value: self.data.interrupt
-    },
-    {
-      name: 'command_log',
-      value: '',
-      excludeFromIndexes: true
-    }
-  ];
-  self.datastore.save({
-    method: 'insert',
-    key: TaskLogKey,
-    data: record
-  }, function (err) {
-    if (!err) {
-      self.record = recordID;
-      callback(null, {
-        code: 200,
-        answer: {
-          message: 'Task accepted',
-          id: recordID
+  MongoClient.connect(self.mongo_url, function(err, db) {
+    if(! err) {
+      console.log("Connected correctly to server");
+      var collection = db.collection('tasks');
+      collection.insertOne(self.data, function(err, result) {
+        if(!err) {
+          console.log("Inserted data into the document collection");
+          console.log(result);
+          db.close();
+          callback(null, {
+            code: 200,
+            answer: {
+              message: 'Task accepted',
+              id: result.insertedId,
+            }
+          });
+        } else {
+          db.close();
+          callback(err, null);
         }
       });
     } else {
       callback(err, null);
     }
-  })
+  });
+  return;
 }
 
 module.exports = Log;

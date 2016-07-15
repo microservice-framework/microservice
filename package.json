@@ -18,8 +18,8 @@
   "homepage": "https://github.com/itpatrol/zenci-status#readme",
   "dependencies": {
     "dotenv": "^2.0.0",
-    "gcloud": "^0.36.0",
     "jsonschema": "^1.1.0",
+    "mongodb": "^2.2.1",
     "zenci-manager": "github:itpatrol/zenci-manager"
   }
 }
