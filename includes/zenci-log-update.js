@@ -6,6 +6,7 @@
 const MongoClient = require('mongodb').MongoClient;
 const ObjectID = require('mongodb').ObjectID;
 const debugF = require( "debug" );
+const fs = require('fs');
 
 require('dotenv').config();
 const bind = function( fn, me ) { return function() { return fn.apply( me, arguments ); }; };
@@ -22,10 +23,12 @@ function LogUpdate( data, requestDetails ) {
   // Save original data
   this.data = data;
   this.requestDetails = requestDetails;
+  self.fileDir = process.env.FILE_DIR + '/' + data.owner + '/' + data.repository;
 }
 
 LogUpdate.prototype.data = {};
 LogUpdate.prototype.requestDetails = {};
+LogUpdate.prototype.fileDir = "";
 LogUpdate.prototype.mongo_url = "";
 
 LogUpdate.prototype.debug = {
@@ -33,8 +36,6 @@ LogUpdate.prototype.debug = {
 };
 
 LogUpdate.prototype.status = function(callback) {
-  console.log(this.data);
-  console.log(this.requestDetails);
   var self = this;
 
   if(self.requestDetails.url.length != 24) {
@@ -46,6 +47,10 @@ LogUpdate.prototype.status = function(callback) {
     });
     return;
   }
+
+  var log = JSON.stringify(self.data.log);
+  delete(self.data.log);
+
 
   MongoClient.connect(self.mongo_url, function(err, db) {
     if(! err) {
@@ -70,6 +75,9 @@ LogUpdate.prototype.status = function(callback) {
                 message: 'Error to save data',
               });
             } else {
+              if(log) {
+                fs.writeFile(self.fileDir + '/' + self.requestDetails.url, log );
+              }
               callback(null, {
                 code: 200,
                 answer: result

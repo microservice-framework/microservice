@@ -6,6 +6,7 @@
 require('dotenv').config();
 const MongoClient = require('mongodb').MongoClient;
 const debugF = require( "debug" );
+const fs = require('fs');
 
 const bind = function( fn, me ) { return function() { return fn.apply( me, arguments ); }; };
 
@@ -20,10 +21,19 @@ function Log( data ) {
   this.status = bind( this.status, this );
   // Save original data
   this.data = data;
+
+  if (!fs.existsSync( process.env.FILE_DIR + '/' + data.owner )){
+    fs.mkdirSync( process.env.FILE_DIR + '/' + data.owner );
+  }
+
+  if (!fs.existsSync( process.env.FILE_DIR + '/' + data.owner + '/' + data.repository )){
+    fs.mkdirSync( process.env.FILE_DIR + '/' + data.owner + '/' + data.repository );
+  }
+  self.fileDir = process.env.FILE_DIR + '/' + data.owner + '/' + data.repository;
 }
 
 Log.prototype.data = {};
-Log.prototype.record = "";
+Log.prototype.fileDir = "";
 Log.prototype.mongo_url = "";
 
 
@@ -32,18 +42,20 @@ Log.prototype.debug = {
 };
 
 Log.prototype.status = function(callback) {
-  console.log(this.data);
   var self = this;
+
+  var log = JSON.stringify(self.data.log);
+  delete(self.data.log);
 
   MongoClient.connect(self.mongo_url, function(err, db) {
     if(! err) {
-      console.log("Connected correctly to server");
       var collection = db.collection('tasks');
       collection.insertOne(self.data, function(err, result) {
+        db.close();
         if(!err) {
-          console.log("Inserted data into the document collection");
-          console.log(result);
-          db.close();
+          if(log) {
+            fs.writeFile(self.fileDir + '/' + result.insertedId, log );
+          }
           callback(null, {
             code: 200,
             answer: {
@@ -52,7 +64,6 @@ Log.prototype.status = function(callback) {
             }
           });
         } else {
-          db.close();
           callback(err, null);
         }
       });

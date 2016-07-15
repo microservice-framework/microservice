@@ -6,6 +6,7 @@
 const MongoClient = require('mongodb').MongoClient;
 const ObjectID = require('mongodb').ObjectID;
 const debugF = require( "debug" );
+const fs = require('fs');
 
 require('dotenv').config();
 const bind = function( fn, me ) { return function() { return fn.apply( me, arguments ); }; };
@@ -26,7 +27,7 @@ function LogGet( data, requestDetails ) {
 
 LogGet.prototype.data = {};
 LogGet.prototype.requestDetails = {};
-LogGet.prototype.record = "";
+LogGet.prototype.fileDir = "";
 LogGet.prototype.mongo_url = "";
 
 
@@ -64,6 +65,8 @@ LogGet.prototype.status = function(callback) {
               }
             });
           } else {
+            self.fileDir = process.env.FILE_DIR + '/' + result.owner + '/' + result.repository;
+            result.log = JSON.parse(fs.readFileSync( self.fileDir + '/' + self.requestDetails.url ));
             callback(null, {
               code: 200,
               answer: result
