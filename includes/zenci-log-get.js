@@ -20,6 +20,7 @@ function LogGet( data, requestDetails ) {
   // Use a closure to preserve `this`
   var self = this;
   self.mongoUrl = process.env.MONGO_URL;
+  self.mongoTable = process.env.MONGO_TABLE;
   this.status = bind( this.status, this );
   this.data = data;
   this.requestDetails = requestDetails;
@@ -29,6 +30,7 @@ LogGet.prototype.data = {};
 LogGet.prototype.requestDetails = {};
 LogGet.prototype.fileDir = "";
 LogGet.prototype.mongoUrl = "";
+LogGet.prototype.mongoTable = "";
 
 LogGet.prototype.debug = {
   main: debugF( "status:main" )
@@ -49,7 +51,7 @@ LogGet.prototype.status = function( callback ) {
 
   MongoClient.connect( self.mongoUrl, function( err, db ) {
     if ( !err ) {
-      var collection = db.collection( "tasks" );
+      var collection = db.collection( self.mongoTable );
       var query = {
         _id: new ObjectID( self.requestDetails.url )
       };
