@@ -1,0 +1,25 @@
+{
+  "name": "zenci-status",
+  "version": "0.1.0",
+  "description": "NodeJS based status worker. Store and update statuses. — Edit",
+  "main": "zenci-status.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/itpatrol/zenci-status.git"
+  },
+  "author": "Gormartsen",
+  "license": "SEE LICENSE IN <LICENSE.txt>",
+  "bugs": {
+    "url": "https://github.com/itpatrol/zenci-status/issues"
+  },
+  "homepage": "https://github.com/itpatrol/zenci-status#readme",
+  "dependencies": {
+    "dotenv": "^2.0.0",
+    "gcloud": "^0.36.0",
+    "jsonschema": "^1.1.0",
+    "zenci-manager": "github:itpatrol/zenci-manager"
+  }
+}

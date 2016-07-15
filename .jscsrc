@@ -1,0 +1,7 @@
+{
+	"preset": "jquery",
+        "maxErrors" : 900,
+	"requireCamelCaseOrUpperCaseIdentifiers" : {
+  	"allExcept": ['env_vars', 'pr_number', 'api_token', 'status_url', 'repo_owner', 'repo_name', 'deploy_dir', 'keep_alive', 'webhook_token', 'webhook_type', 'pull_request' ]
+	}
+}

@@ -1,0 +1,9 @@
+{
+  "id": "/StatusRequest",
+  "type": "object",
+  "properties": {
+    "task": { "enum": [ "deploy", "test" ] },
+    "data": { "$ref": "/TaskData" }
+  },
+  "required": [ "task", "data" ]
+}
