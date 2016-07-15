@@ -16,12 +16,12 @@ module.exports = {
       throw new Error( errors );
     }
     var Task = new LogStore( jsonData );
-    Task.status(callback);
+    Task.status( callback );
     return Task;
   },
   get: function( jsonData, requestDetails, callback ) {
     var Task = new LogGet( jsonData, requestDetails );
-    Task.status(callback);
+    Task.status( callback );
     return Task;
 
   },
@@ -31,9 +31,9 @@ module.exports = {
       throw new Error( errors );
     }
     var Task = new LogUpdate( jsonData, requestDetails );
-    Task.status(callback);
+    Task.status( callback );
     return Task;
-  },
+  }
 };
 
 function validateJson( jsonData ) {

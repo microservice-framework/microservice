@@ -11,6 +11,16 @@ $data = array(
   "sha" => "fb42836c8a8a851c5e13a4632c0a1801e7794ab2",
   "context" => "zenci/deploy/master",
   "interrupt" => TRUE,
+  "log" => array(
+    "test",
+    "test2",
+    "test2",
+    "test2",
+    "test2",
+    "test2",
+    "test2",
+    "test3"
+  ),
 );
 
 
