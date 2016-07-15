@@ -8,9 +8,10 @@
 
 var Cluster = require( "../zenci-manager/index.js" );
 var handler = require( "./includes/handler.js" );
+require( "dotenv" ).config();
 
 var mcluster = new Cluster( {
-  port: 4000,
+  port: process.env.PORT,
   callbacks: {
     post: handler.post,
     get: handler.get,

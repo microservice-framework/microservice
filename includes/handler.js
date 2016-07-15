@@ -8,6 +8,7 @@ var Validator = require( "jsonschema" ).Validator;
 var LogStore = require( "./zenci-log-store.js" );
 var LogUpdate = require( "./zenci-log-update.js" );
 var LogGet = require( "./zenci-log-get.js" );
+require( "dotenv" ).config();
 
 module.exports = {
   post: function( jsonData, requestDetails, callback ) {
@@ -39,7 +40,7 @@ module.exports = {
 function validateJson( jsonData ) {
   var v = new Validator();
   try {
-    var schemaTask = require( "../schema/status.json" );
+    var schemaTask = require( "../schema/" + process.env.SCHEMA );
   } catch ( e ) {
     console.log( e );
     throw new Error( "Internal error: schema syntax error." );
