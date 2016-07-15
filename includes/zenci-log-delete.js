@@ -58,7 +58,7 @@ LogDelete.prototype.status = function( callback ) {
       collection.findOneAndDelete( query, function( err, result ) {
         db.close();
         if ( !err ) {
-          if ( !result ) {
+          if ( !result.value ) {
             callback( null, {
               code: 404,
               answer: {
@@ -68,7 +68,9 @@ LogDelete.prototype.status = function( callback ) {
           } else {
             self.fileDir = process.env.FILE_DIR + "/" + result.value.owner +
               "/" + result.value.repository;
-            fs.unlink( self.fileDir + "/" + self.requestDetails.url );
+            if ( fs.existsSync( self.fileDir + "/" + self.requestDetails.url )) {
+              fs.unlink( self.fileDir + "/" + self.requestDetails.url );
+            }
             callback( null, {
               code: 200,
               answer: result.value
