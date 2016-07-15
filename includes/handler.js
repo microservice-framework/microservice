@@ -5,7 +5,7 @@
 "use strict";
 
 var Validator = require( "jsonschema" ).Validator;
-var Log = require( "./zenci-log.js" );
+var LogStore = require( "./zenci-log-store.js" );
 
 module.exports = {
   post: function( jsonData, callback ) {
@@ -13,7 +13,7 @@ module.exports = {
     if ( true !== errors ) {
       throw new Error( errors );
     }
-    var Task = new Log( jsonData.data );
+    var Task = new LogStore( jsonData );
     Task.status(callback);
     return Task;
   },

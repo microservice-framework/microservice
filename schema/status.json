@@ -2,8 +2,15 @@
   "id": "/StatusRequest",
   "type": "object",
   "properties": {
-    "task": { "enum": [ "deploy", "test" ] },
-    "data": { "$ref": "/TaskData" }
+    "owner": { "type": "string" },
+    "repository": { "type": "string" },
+    "status": { "type": "number" },
+    "description": { "type": "string" },
+    "summary": { "type": "string" },
+    "sha": { "type": "string" },
+    "branch": { "type": "string" },
+    "context": { "type": "string" },
+    "interrupt": { "type": "boolean" }
   },
-  "required": [ "task", "data" ]
+  "required": [ "owner", "repository", "status", "description", "summary", "sha", "branch", "context", "interrupt" ]
 }

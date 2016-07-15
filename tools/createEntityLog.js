@@ -18,9 +18,10 @@ var datastore = gcloud.datastore({
 
 var TaskLogKey = datastore.key({
   namespace: namespace,
-  path: ['TaskLog']
+  path: ['TaskLog', 1468548198487]
 });
-  var task  =  [
+console.log(TaskLogKey);
+/*  var task  =  [
       {
         name: 'type',
         value: 'Personal'
@@ -48,15 +49,18 @@ var TaskLogKey = datastore.key({
       }
     ];
 
-datastore.insert({
+datastore.save({
+    method: 'insert',
     key: TaskLogKey,
     data: task
-  }, function (err) {
-    if (!err) {
-      console.log(err || entity);
+  }, function (err, entity) {
+    if (err) {
+      console.log(err);
     }
+    console.log(task);
+    console.log(entity);
   });
-  
+*/
 datastore.get(TaskLogKey, function(err, entity) {
   console.log(err || entity);
 });
