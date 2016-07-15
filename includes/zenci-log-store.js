@@ -26,7 +26,6 @@ function Log( data ) {
   this.status = bind( this.status, this );
   // Save original data
   this.data = data;
-  this.save();
 }
 
 Log.prototype.data = {};
@@ -38,10 +37,6 @@ Log.prototype.namespace = "";
 Log.prototype.debug = {
   main: debugF( "status:main" ),
 };
-
-Log.prototype.save = function() {
-
-}
 
 Log.prototype.status = function(callback) {
   console.log(this.data);

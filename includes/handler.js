@@ -6,6 +6,8 @@
 
 var Validator = require( "jsonschema" ).Validator;
 var LogStore = require( "./zenci-log-store.js" );
+var LogUpdate = require( "./zenci-log-update.js" );
+var LogGet = require( "./zenci-log-get.js" );
 
 module.exports = {
   post: function( jsonData, callback ) {
@@ -18,6 +20,18 @@ module.exports = {
     return Task;
   },
   get: function( jsonData, callback ) {
+    var Task = new LogGet( jsonData );
+    Task.status(callback);
+    return Task;
+
+  },
+  put: function( jsonData, callback ) {
+    var errors = validateJson( jsonData );
+    if ( true !== errors ) {
+      throw new Error( errors );
+    }
+    var Task = new LogUpdate( jsonData );
+    Task.status(callback);
     return Task;
   },
 };

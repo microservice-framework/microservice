@@ -6,13 +6,14 @@
  */
 "use strict";
 
-var Cluster = require( "zenci-manager" );
+var Cluster = require( "../zenci-manager/index.js" );
 var handler = require( "./includes/handler.js" );
 
 var mcluster = new Cluster( {
   port: 4000,
   callbacks: {
     post: handler.post,
-    get: handler.get
+    get: handler.get,
+    put: handler.put,
   }
 } );
