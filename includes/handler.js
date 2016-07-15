@@ -8,6 +8,8 @@ var Validator = require( "jsonschema" ).Validator;
 var LogStore = require( "./zenci-log-store.js" );
 var LogUpdate = require( "./zenci-log-update.js" );
 var LogGet = require( "./zenci-log-get.js" );
+var LogDelete = require( "./zenci-log-delete.js" );
+
 require( "dotenv" ).config();
 
 module.exports = {
@@ -32,6 +34,11 @@ module.exports = {
       throw new Error( errors );
     }
     var Task = new LogUpdate( jsonData, requestDetails );
+    Task.status( callback );
+    return Task;
+  },
+  delete: function( jsonData, requestDetails, callback ) {
+    var Task = new LogDelete( jsonData, requestDetails );
     Task.status( callback );
     return Task;
   }

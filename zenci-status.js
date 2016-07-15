@@ -16,5 +16,6 @@ var mcluster = new Cluster( {
     post: handler.post,
     get: handler.get,
     put: handler.put,
+    delete: handler.delete
   }
 } );
