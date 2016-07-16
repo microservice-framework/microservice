@@ -9,6 +9,7 @@ var LogStore = require( "./includes/zenci-log-store.js" );
 var LogUpdate = require( "./includes/zenci-log-update.js" );
 var LogGet = require( "./includes/zenci-log-get.js" );
 var LogDelete = require( "./includes/zenci-log-delete.js" );
+const fs = require( "fs" );
 
 require( "dotenv" ).config();
 
