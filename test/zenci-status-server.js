@@ -6,8 +6,8 @@
  */
 "use strict";
 
-var Cluster = require( "../zenci-manager/index.js" );
-var handler = require( "./includes/handler.js" );
+var Cluster = require( "zenci-manager" );
+var handler = require( "../zenci-status.js" );
 require( "dotenv" ).config();
 
 var mcluster = new Cluster( {
