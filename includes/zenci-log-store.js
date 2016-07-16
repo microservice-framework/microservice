@@ -23,6 +23,9 @@ function Log( data ) {
   this.status = bind( this.status, this );
   this.data = data;
 
+  this.data.created = Date.now();
+  this.data.changed = Date.now();
+
   if ( !fs.existsSync( process.env.FILE_DIR + "/" + data.owner ) ) {
     fs.mkdirSync( process.env.FILE_DIR + "/" + data.owner );
   }

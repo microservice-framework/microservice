@@ -4,7 +4,7 @@
   "properties": {
     "owner": { "type": "string" },
     "repository": { "type": "string" },
-    "status": { "type": "number" },
+    "status": { "type": "string" },
     "description": { "type": "string" },
     "summary": { "type": "string" },
     "sha": { "type": "string" },
@@ -12,5 +12,5 @@
     "context": { "type": "string" },
     "interrupt": { "type": "boolean" }
   },
-  "required": [ "owner", "repository", "status", "description", "summary", "sha", "branch", "context", "interrupt" ]
+  "required": [ "owner", "repository", "status", "description", "summary", "sha", "branch", "context" ]
 }

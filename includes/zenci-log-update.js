@@ -59,10 +59,9 @@ LogUpdate.prototype.status = function( callback ) {
       var query = {
         _id: new ObjectID( self.requestDetails.url )
       };
-      collection.findOneAndUpdate( query, self.data, {}, function( err, result ) {
-        db.close();
+      collection.findOne( query, function( err, resultFind ) {
         if ( !err ) {
-          if ( !result ) {
+          if ( !resultFind ) {
             callback( null, {
               code: 404,
               answer: {
@@ -70,26 +69,64 @@ LogUpdate.prototype.status = function( callback ) {
               }
             } );
           } else {
-            if ( !result.value ) {
-              callback( null, {
-                code: 503,
-                message: "Error to save data"
-              } );
-            } else {
+            var record = resultFind;
+            // If status already not pending, just save a log file.
+            if(record.status != "pending" ) {
+              db.close();
               if ( log ) {
                 fs.writeFile( self.fileDir + "/" + self.requestDetails.url, log );
               }
+              record.log = log;
               callback( null, {
                 code: 200,
-                answer: result.value
+                answer: record
               } );
+              return;
             }
+
+            // Get all new data to keep all fields. Like created.
+            for ( var key in self.data ) {
+              record[key] = self.data[key];
+            }
+
+            // update changed field.
+            record.changed = Date.now();
+            collection.findOneAndUpdate( query, record, { returnOriginal: false}, function( err, resultUpdate ) {
+              db.close();
+              if ( !err ) {
+                if ( !resultUpdate ) {
+                  callback( null, {
+                    code: 404,
+                    answer: {
+                      message: "Not found"
+                    }
+                  } );
+                } else {
+                  if ( !resultUpdate.value ) {
+                    callback( null, {
+                      code: 503,
+                      message: "Error to save data"
+                    } );
+                  } else {
+                    if ( log ) {
+                      fs.writeFile( self.fileDir + "/" + self.requestDetails.url, log );
+                    }
+                    callback( null, {
+                      code: 200,
+                      answer: resultUpdate.value
+                    } );
+                  }
+                }
+              } else {
+                callback( err, null );
+              }
+            } );
           }
         } else {
+          db.close();
           callback( err, null );
         }
       } );
-
     } else {
       callback( err, null );
     }
