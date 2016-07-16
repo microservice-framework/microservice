@@ -4,7 +4,7 @@
 $data = array(
   "owner" => "Gormartsen",
   "repository" => "php.of.by",
-  "status" => 1,
+  "status" => "success",
   "description" => "starting up",
   "summary" => "HAHA",
   "branch" => "master",
