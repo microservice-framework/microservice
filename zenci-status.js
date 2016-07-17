@@ -22,7 +22,7 @@ module.exports = {
   },
   get: function( jsonData, requestDetails, callback ) {
     var Task = new LogGet( jsonData, requestDetails );
-    Task.status( callback );
+    Task.process( callback );
     return Task;
 
   },
@@ -32,7 +32,7 @@ module.exports = {
       throw new Error( errors );
     }
     var Task = new LogStore( jsonData );
-    Task.status( callback );
+    Task.process( callback );
     return Task;
   },
   put: function( jsonData, requestDetails, callback ) {
@@ -41,12 +41,12 @@ module.exports = {
       throw new Error( errors );
     }
     var Task = new LogUpdate( jsonData, requestDetails );
-    Task.status( callback );
+    Task.process( callback );
     return Task;
   },
   delete: function( jsonData, requestDetails, callback ) {
     var Task = new LogDelete( jsonData, requestDetails );
-    Task.status( callback );
+    Task.process( callback );
     return Task;
   }
 };

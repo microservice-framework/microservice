@@ -21,7 +21,7 @@ function LogDelete( data, requestDetails ) {
   var self = this;
   self.mongoUrl = process.env.MONGO_URL;
   self.mongoTable = process.env.MONGO_TABLE;
-  this.status = bind( this.status, this );
+  this.process = bind( this.process, this );
   this.data = data;
   this.requestDetails = requestDetails;
 }
@@ -36,7 +36,7 @@ LogDelete.prototype.debug = {
   main: debugF( "status:main" )
 };
 
-LogDelete.prototype.status = function( callback ) {
+LogDelete.prototype.process = function( callback ) {
   var self = this;
 
   if ( self.requestDetails.url.length != 24 ) {

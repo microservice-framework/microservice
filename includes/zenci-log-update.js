@@ -21,7 +21,7 @@ function LogUpdate( data, requestDetails ) {
   var self = this;
   self.mongoUrl = process.env.MONGO_URL;
   self.mongoTable = process.env.MONGO_TABLE;
-  this.status = bind( this.status, this );
+  this.process = bind( this.process, this );
   this.data = data;
   this.requestDetails = requestDetails;
   self.fileDir = process.env.FILE_DIR + "/" + data.owner + "/" + data.repository;
@@ -37,7 +37,7 @@ LogUpdate.prototype.debug = {
   main: debugF( "status:main" )
 };
 
-LogUpdate.prototype.status = function( callback ) {
+LogUpdate.prototype.process = function( callback ) {
   var self = this;
 
   if ( self.requestDetails.url.length != 24 ) {
