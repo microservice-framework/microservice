@@ -36,8 +36,20 @@ zenci_put_request($data);
 function zenci_put_request($data) {
   $token = getenv('ZENCI_TOKEN');
   $status_url = getenv('ZENCI_WORKER_URL');
+  $secret  = getenv('ZENCI_SECRET');
 
   $data = json_encode($data);
+  
+  $headers = array(
+      'Content-Type: application/json',
+      'Token: ' . $token,
+      'Content-Length: ' . strlen($data)
+  );
+  
+  if($secret) {
+    $hash = hash_hmac('sha256', $data, $secret);
+    $headers[] = 'Signature: sha256=' . $hash;
+  }
 
   $ch = curl_init();
 
@@ -49,11 +61,7 @@ function zenci_put_request($data) {
   curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
   curl_setopt($ch, CURLOPT_HEADER, true);
 
-  curl_setopt($ch, CURLOPT_HTTPHEADER, array(
-      'Content-Type: application/json',
-      'Token: ' . $token,
-      'Content-Length: ' . strlen($data)
-  ));
+  curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
   $result = curl_exec($ch);
   print_r($result);
   curl_close($ch);

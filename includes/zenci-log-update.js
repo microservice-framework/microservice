@@ -86,6 +86,14 @@ LogUpdate.prototype.status = function( callback ) {
 
             // Get all new data to keep all fields. Like created.
             for ( var key in self.data ) {
+              if( key == "token" ) {
+                return callback( null, {
+                    code: 403,
+                    answer: {
+                      message: "Malformed request"
+                    }
+                  } );
+              }
               record[key] = self.data[key];
             }
 

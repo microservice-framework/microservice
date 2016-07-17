@@ -9,11 +9,23 @@ var LogStore = require( "./includes/zenci-log-store.js" );
 var LogUpdate = require( "./includes/zenci-log-update.js" );
 var LogGet = require( "./includes/zenci-log-get.js" );
 var LogDelete = require( "./includes/zenci-log-delete.js" );
+var LogValidate = require( "./includes/zenci-log-validate.js" );
 const fs = require( "fs" );
 
 require( "dotenv" ).config();
 
 module.exports = {
+  validate: function( method, jsonData, requestDetails, callback ) {
+    var Validate = new LogValidate( jsonData, requestDetails );
+    Validate.validate( method, callback );
+    return Validate;
+  },
+  get: function( jsonData, requestDetails, callback ) {
+    var Task = new LogGet( jsonData, requestDetails );
+    Task.status( callback );
+    return Task;
+
+  },
   post: function( jsonData, requestDetails, callback ) {
     var errors = validateJson( jsonData );
     if ( true !== errors ) {
@@ -22,12 +34,6 @@ module.exports = {
     var Task = new LogStore( jsonData );
     Task.status( callback );
     return Task;
-  },
-  get: function( jsonData, requestDetails, callback ) {
-    var Task = new LogGet( jsonData, requestDetails );
-    Task.status( callback );
-    return Task;
-
   },
   put: function( jsonData, requestDetails, callback ) {
     var errors = validateJson( jsonData );

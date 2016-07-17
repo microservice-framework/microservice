@@ -13,6 +13,7 @@ require( "dotenv" ).config();
 var mcluster = new Cluster( {
   port: process.env.PORT,
   callbacks: {
+    validate: handler.validate,
     post: handler.post,
     get: handler.get,
     put: handler.put,

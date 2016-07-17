@@ -4,6 +4,7 @@
 "use strict";
 
 require( "dotenv" ).config();
+const tokenGenerate = require( "./token-generate.js" );
 const MongoClient = require( "mongodb" ).MongoClient;
 const debugF = require( "debug" );
 const fs = require( "fs" );
@@ -25,6 +26,7 @@ function Log( data ) {
 
   this.data.created = Date.now();
   this.data.changed = Date.now();
+  this.data.token = tokenGenerate(24);
 
   if ( !fs.existsSync( process.env.FILE_DIR ) ) {
     fs.mkdirSync( process.env.FILE_DIR );
@@ -68,7 +70,8 @@ Log.prototype.status = function( callback ) {
             code: 200,
             answer: {
               message: "Task accepted",
-              id: result.insertedId
+              id: result.insertedId,
+              token: self.data.token
             }
           } );
         } else {
