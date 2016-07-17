@@ -62,7 +62,7 @@ LogUpdate.prototype.process = function( callback ) {
       collection.findOne( query, function( err, resultFind ) {
         if ( !err ) {
           if ( !resultFind ) {
-            callback( null, {
+            return callback( null, {
               code: 404,
               answer: {
                 message: "Not found"
@@ -70,23 +70,23 @@ LogUpdate.prototype.process = function( callback ) {
             } );
           } else {
             var record = resultFind;
+
             // If status already not pending, just save a log file.
-            if(record.status != "pending" ) {
+            if ( record.status != "pending" ) {
               db.close();
               if ( log ) {
                 fs.writeFile( self.fileDir + "/" + self.requestDetails.url, log );
               }
               record.log = log;
-              callback( null, {
+              return callback( null, {
                 code: 200,
                 answer: record
               } );
-              return;
             }
 
             // Get all new data to keep all fields. Like created.
             for ( var key in self.data ) {
-              if( key == "token" ) {
+              if ( key == "token" ) {
                 return callback( null, {
                     code: 403,
                     answer: {
@@ -94,16 +94,17 @@ LogUpdate.prototype.process = function( callback ) {
                     }
                   } );
               }
-              record[key] = self.data[key];
+              record[ key ] = self.data[ key ];
             }
 
-            // update changed field.
+            // Update changed field.
             record.changed = Date.now();
-            collection.findOneAndUpdate( query, record, { returnOriginal: false}, function( err, resultUpdate ) {
+            collection.findOneAndUpdate( query, record, { returnOriginal: false },
+              function( err, resultUpdate ) {
               db.close();
               if ( !err ) {
                 if ( !resultUpdate ) {
-                  callback( null, {
+                  return callback( null, {
                     code: 404,
                     answer: {
                       message: "Not found"
@@ -111,7 +112,7 @@ LogUpdate.prototype.process = function( callback ) {
                   } );
                 } else {
                   if ( !resultUpdate.value ) {
-                    callback( null, {
+                    return callback( null, {
                       code: 503,
                       message: "Error to save data"
                     } );
@@ -119,24 +120,24 @@ LogUpdate.prototype.process = function( callback ) {
                     if ( log ) {
                       fs.writeFile( self.fileDir + "/" + self.requestDetails.url, log );
                     }
-                    callback( null, {
+                    return callback( null, {
                       code: 200,
                       answer: resultUpdate.value
                     } );
                   }
                 }
               } else {
-                callback( err, null );
+                return callback( err, null );
               }
             } );
           }
         } else {
           db.close();
-          callback( err, null );
+          return callback( err, null );
         }
       } );
     } else {
-      callback( err, null );
+      return callback( err, null );
     }
   } );
   return;

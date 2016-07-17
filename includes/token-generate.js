@@ -8,5 +8,5 @@
 const crypto = require( "crypto" );
 
 module.exports = function tokenGenerate( length ) {
-  return crypto.randomBytes(length).toString('hex');
+  return crypto.randomBytes( length ).toString( "hex" );
 };

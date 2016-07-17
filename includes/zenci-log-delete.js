@@ -68,7 +68,7 @@ LogDelete.prototype.process = function( callback ) {
           } else {
             self.fileDir = process.env.FILE_DIR + "/" + result.value.owner +
               "/" + result.value.repository;
-            if ( fs.existsSync( self.fileDir + "/" + self.requestDetails.url )) {
+            if ( fs.existsSync( self.fileDir + "/" + self.requestDetails.url ) ) {
               fs.unlink( self.fileDir + "/" + self.requestDetails.url );
             }
             callback( null, {

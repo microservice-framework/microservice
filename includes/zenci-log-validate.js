@@ -40,28 +40,28 @@ LogValidate.prototype.debug = {
 
 LogValidate.prototype.validate = function( method, callback ) {
   var self = this;
-  switch( method ) {
-    case 'POST':
-        console.log(self.requestDetails.headers);
-        if(!self.requestDetails.headers.signature) {
-          return callback(new Error("Signature required"));
+  switch ( method ) {
+    case "POST":
+        console.log( self.requestDetails.headers );
+        if ( !self.requestDetails.headers.signature ) {
+          return callback( new Error( "Signature required" ) );
         }
-        var sign = self.requestDetails.headers.signature.split("=");
-        if(sign.length != 2) {
-          return callback(new Error("Malformed signature"));
+        var sign = self.requestDetails.headers.signature.split( "=" );
+        if ( sign.length != 2 ) {
+          return callback( new Error( "Malformed signature" ) );
         }
-        if(sign[1] != signature(sign[0], this.data, self.secureKey )) {
-          return callback(new Error("Signature mismatch"));
+        if ( sign[ 1 ] != signature( sign[ 0 ], this.data, self.secureKey ) ) {
+          return callback( new Error( "Signature mismatch" ) );
         }
-        return callback(null);
+        return callback( null );
       break;
     default:
-        console.log(self.requestDetails.headers);
-        if(!self.requestDetails.headers.token) {
-          return callback(new Error("Token required"));
+        console.log( self.requestDetails.headers );
+        if ( !self.requestDetails.headers.token ) {
+          return callback( new Error( "Token required" ) );
         }
         if ( self.requestDetails.url.length != 24 ) {
-          return callback(new Error("Wrong request"));
+          return callback( new Error( "Wrong request" ) );
         }
 
         MongoClient.connect( self.mongoUrl, function( err, db ) {
@@ -75,9 +75,9 @@ LogValidate.prototype.validate = function( method, callback ) {
               db.close();
               if ( !err ) {
                 if ( !result ) {
-                  return callback( new Error( "Not found") );
+                  return callback( new Error( "Not found" ) );
                 } else {
-                  return callback(null);
+                  return callback( null );
                 }
               } else {
                 return callback( err );

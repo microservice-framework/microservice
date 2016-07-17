@@ -54,7 +54,7 @@ module.exports = {
 function validateJson( jsonData ) {
   var v = new Validator();
   try {
-    var schemaTask = JSON.parse(fs.readFileSync( "schema/" + process.env.SCHEMA ));
+    var schemaTask = JSON.parse( fs.readFileSync( "schema/" + process.env.SCHEMA ) );
   } catch ( e ) {
     console.log( e );
     throw new Error( "Internal error: schema syntax error." );

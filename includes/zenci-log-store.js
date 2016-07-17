@@ -26,7 +26,7 @@ function Log( data ) {
 
   this.data.created = Date.now();
   this.data.changed = Date.now();
-  this.data.token = tokenGenerate(24);
+  this.data.token = tokenGenerate( 24 );
 
   if ( !fs.existsSync( process.env.FILE_DIR ) ) {
     fs.mkdirSync( process.env.FILE_DIR );
