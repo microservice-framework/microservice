@@ -24,7 +24,9 @@ function LogUpdate( data, requestDetails ) {
   this.process = bind( this.process, this );
   this.data = data;
   this.requestDetails = requestDetails;
-  self.fileDir = process.env.FILE_DIR + "/" + data.owner + "/" + data.repository;
+  if(process.env.FILE_DIR) {
+    self.fileDir = process.env.FILE_DIR + "/" + data.owner + "/" + data.repository;
+  }
 }
 
 LogUpdate.prototype.data = {};
@@ -74,7 +76,7 @@ LogUpdate.prototype.process = function( callback ) {
             // If status already not pending, just save a log file.
             if ( record.status != "pending" ) {
               db.close();
-              if ( log ) {
+              if ( log && self.fileDir ) {
                 fs.writeFile( self.fileDir + "/" + self.requestDetails.url, log );
               }
               record.log = log;

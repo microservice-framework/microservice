@@ -48,6 +48,22 @@ module.exports = {
     var Task = new LogDelete( jsonData, requestDetails );
     Task.process( callback );
     return Task;
+  },
+  validateJson:  function( jsonData ) {
+    var errors = validateJson( jsonData );
+    if ( true !== errors ) {
+      throw new Error( errors );
+    }
+  },
+  store: function( jsonData, callback ) {
+    var Task = new LogStore( jsonData );
+    Task.process( callback );
+    return Task;
+  },
+  update: function( jsonData, requestDetails, callback ) {
+    var Task = new LogUpdate( jsonData, requestDetails );
+    Task.process( callback );
+    return Task;
   }
 };
 

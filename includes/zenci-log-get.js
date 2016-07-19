@@ -66,9 +66,11 @@ LogGet.prototype.process = function( callback ) {
               }
             } );
           } else {
-            self.fileDir = process.env.FILE_DIR + "/" + result.owner + "/" + result.repository;
-            result.log = JSON.parse( fs.readFileSync( self.fileDir +
-              "/" + self.requestDetails.url ) );
+            if(process.env.FILE_DIR) {
+              self.fileDir = process.env.FILE_DIR + "/" + result.owner + "/" + result.repository;
+              result.log = JSON.parse( fs.readFileSync( self.fileDir +
+                "/" + self.requestDetails.url ) );
+            }
             callback( null, {
               code: 200,
               answer: result

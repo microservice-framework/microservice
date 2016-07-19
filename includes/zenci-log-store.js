@@ -28,18 +28,22 @@ function Log( data ) {
   this.data.changed = Date.now();
   this.data.token = tokenGenerate( 24 );
 
-  if ( !fs.existsSync( process.env.FILE_DIR ) ) {
-    fs.mkdirSync( process.env.FILE_DIR );
-  }
+  if(process.env.FILE_DIR) {
+    if ( !fs.existsSync( process.env.FILE_DIR ) ) {
+      fs.mkdirSync( process.env.FILE_DIR );
+    }
 
-  if ( !fs.existsSync( process.env.FILE_DIR + "/" + data.owner ) ) {
-    fs.mkdirSync( process.env.FILE_DIR + "/" + data.owner );
-  }
+    if ( !fs.existsSync( process.env.FILE_DIR + "/" + data.owner ) ) {
+      fs.mkdirSync( process.env.FILE_DIR + "/" + data.owner );
+    }
 
-  if ( !fs.existsSync( process.env.FILE_DIR + "/" + data.owner + "/" + data.repository ) ) {
-    fs.mkdirSync( process.env.FILE_DIR + "/" + data.owner + "/" + data.repository );
+    if ( !fs.existsSync( process.env.FILE_DIR + "/" + data.owner + "/" + data.repository ) ) {
+      fs.mkdirSync( process.env.FILE_DIR + "/" + data.owner + "/" + data.repository );
+    }
+    self.fileDir = process.env.FILE_DIR + "/" + data.owner + "/" + data.repository;
+  } else {
+    self.fileDir = false;
   }
-  self.fileDir = process.env.FILE_DIR + "/" + data.owner + "/" + data.repository;
 }
 
 Log.prototype.data = {};
@@ -63,7 +67,7 @@ Log.prototype.process = function( callback ) {
       collection.insertOne( self.data, function( err, result ) {
         db.close();
         if ( !err ) {
-          if ( log ) {
+          if ( log && self.fileDir ) {
             fs.writeFile( self.fileDir + "/" + result.insertedId, log );
           }
           callback( null, {
