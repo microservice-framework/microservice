@@ -68,8 +68,10 @@ LogGet.prototype.process = function( callback ) {
           } else {
             if(process.env.FILE_DIR) {
               self.fileDir = process.env.FILE_DIR + "/" + result.owner + "/" + result.repository;
-              result.log = JSON.parse( fs.readFileSync( self.fileDir +
-                "/" + self.requestDetails.url ) );
+              if ( fs.existsSync( self.fileDir + "/" + self.requestDetails.url ) ) {
+                result.log = JSON.parse( fs.readFileSync( self.fileDir +
+                  "/" + self.requestDetails.url ) );
+              }
             }
             callback( null, {
               code: 200,
