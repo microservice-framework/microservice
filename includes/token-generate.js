@@ -1,5 +1,3 @@
-
-
 /**
  * Generate hash Signature for request
  */
