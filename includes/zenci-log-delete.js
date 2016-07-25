@@ -1,18 +1,18 @@
 /**
  * Process Test task.
  */
-"use strict";
+'use strict';
 
-const MongoClient = require( "mongodb" ).MongoClient;
-const ObjectID = require( "mongodb" ).ObjectID;
-const debugF = require( "debug" );
-const fs = require( "fs" );
+const MongoClient = require('mongodb').MongoClient;
+const ObjectID = require('mongodb').ObjectID;
+const debugF = require('debug');
+const fs = require('fs');
 
 /**
  * Constructor.
  *   Prepare data for test.
  */
-function LogDelete( options, data, requestDetails ) {
+function LogDelete(options, data, requestDetails) {
 
   // Use a closure to preserve `this`
   var self = this;
@@ -26,56 +26,56 @@ function LogDelete( options, data, requestDetails ) {
 
 LogDelete.prototype.data = {};
 LogDelete.prototype.requestDetails = {};
-LogDelete.prototype.fileDir = "";
-LogDelete.prototype.mongoUrl = "";
-LogDelete.prototype.mongoTable = "";
+LogDelete.prototype.fileDir = '';
+LogDelete.prototype.mongoUrl = '';
+LogDelete.prototype.mongoTable = '';
 
 LogDelete.prototype.debug = {
-  main: debugF( "status:main" )
+  main: debugF('status:main')
 };
 
-LogDelete.prototype.process = function( callback ) {
+LogDelete.prototype.process = function(callback) {
   var self = this;
 
-  MongoClient.connect( self.mongoUrl, function( err, db ) {
-    if ( !err ) {
-      var collection = db.collection( self.mongoTable );
+  MongoClient.connect(self.mongoUrl, function(err, db) {
+    if (!err) {
+      var collection = db.collection(self.mongoTable);
       var query = {
-        _id: new ObjectID( self.requestDetails.url )
+        _id: new ObjectID(self.requestDetails.url)
       };
-      collection.findOneAndDelete( query, function( err, result ) {
+      collection.findOneAndDelete(query, function(err, result) {
         db.close();
-        if ( !err ) {
-          if ( !result.value ) {
-            callback( null, {
+        if (!err) {
+          if (!result.value) {
+            callback(null, {
               code: 404,
               answer: {
-                message: "Not found"
+                message: 'Not found'
               }
-            } );
+            });
           } else {
-            if(process.env.FILE_DIR) {
-              let filePath = self.fileDir + "/" + result.value.owner +
-                "/" + result.value.repository + "/" + self.requestDetails.url;
+            if (process.env.FILE_DIR) {
+              let filePath = self.fileDir + '/' + result.value.owner +
+                '/' + result.value.repository + '/' + self.requestDetails.url;
 
-              if ( fs.existsSync( filePath ) ) {
-                fs.unlink( filePath );
+              if (fs.existsSync(filePath)) {
+                fs.unlink(filePath);
               }
             }
-            callback( null, {
+            callback(null, {
               code: 200,
               answer: result.value
-            } );
+            });
           }
         } else {
-          callback( err, null );
+          callback(err, null);
         }
-      } );
+      });
 
     } else {
-      callback( err, null );
+      callback(err, null);
     }
-  } );
+  });
   return;
 };
 

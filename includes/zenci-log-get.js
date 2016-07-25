@@ -1,18 +1,18 @@
 /**
  * Process Test task.
  */
-"use strict";
+'use strict';
 
-const MongoClient = require( "mongodb" ).MongoClient;
-const ObjectID = require( "mongodb" ).ObjectID;
-const debugF = require( "debug" );
-const fs = require( "fs" );
+const MongoClient = require('mongodb').MongoClient;
+const ObjectID = require('mongodb').ObjectID;
+const debugF = require('debug');
+const fs = require('fs');
 
 /**
  * Constructor.
  *   Prepare data for test.
  */
-function LogGet( options, data, requestDetails ) {
+function LogGet(options, data, requestDetails) {
 
   // Use a closure to preserve `this`
   var self = this;
@@ -26,65 +26,65 @@ function LogGet( options, data, requestDetails ) {
 
 LogGet.prototype.data = {};
 LogGet.prototype.requestDetails = {};
-LogGet.prototype.fileDir = "";
-LogGet.prototype.mongoUrl = "";
-LogGet.prototype.mongoTable = "";
+LogGet.prototype.fileDir = '';
+LogGet.prototype.mongoUrl = '';
+LogGet.prototype.mongoTable = '';
 
 LogGet.prototype.debug = {
-  main: debugF( "status:main" )
+  main: debugF('status:main')
 };
 
-LogGet.prototype.process = function( callback ) {
+LogGet.prototype.process = function(callback) {
   var self = this;
 
-  if ( self.requestDetails.url.length != 24 ) {
-    callback( null, {
+  if (self.requestDetails.url.length != 24) {
+    callback(null, {
       code: 403,
       answer: {
-        message: "Wrong request"
+        message: 'Wrong request'
       }
-    } );
+    });
     return;
   }
 
-  MongoClient.connect( self.mongoUrl, function( err, db ) {
-    if ( !err ) {
-      var collection = db.collection( self.mongoTable );
+  MongoClient.connect(self.mongoUrl, function(err, db) {
+    if (!err) {
+      var collection = db.collection(self.mongoTable);
       var query = {
-        _id: new ObjectID( self.requestDetails.url )
+        _id: new ObjectID(self.requestDetails.url)
       };
-      collection.findOne( query, function( err, result ) {
+      collection.findOne(query, function(err, result) {
         db.close();
-        if ( !err ) {
-          if ( !result ) {
-            callback( null, {
+        if (!err) {
+          if (!result) {
+            callback(null, {
               code: 404,
               answer: {
-                message: "Not found"
+                message: 'Not found'
               }
-            } );
+            });
           } else {
-            if(self.fileDir != "") {
-              let filePath = self.fileDir + "/" + result.owner + "/" +
-                result.repository + "/" + self.requestDetails.url;
-              if ( fs.existsSync( filePath ) ) {
-                result.log = JSON.parse( fs.readFileSync( filePath ) );
+            if (self.fileDir != '') {
+              let filePath = self.fileDir + '/' + result.owner + '/' +
+                result.repository + '/' + self.requestDetails.url;
+              if (fs.existsSync(filePath)) {
+                result.log = JSON.parse(fs.readFileSync(filePath));
               }
             }
-            callback( null, {
+            callback(null, {
               code: 200,
               answer: result
-            } );
+            });
           }
         } else {
-          callback( err, null );
+          callback(err, null);
         }
-      } );
+      });
 
     } else {
-      callback( err, null );
+      callback(err, null);
     }
-  } );
+  });
   return;
 };
 

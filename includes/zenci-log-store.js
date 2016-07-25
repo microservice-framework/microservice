@@ -1,19 +1,19 @@
 /**
  * Process Test task.
  */
-"use strict";
+'use strict';
 
-require( "dotenv" ).config();
-const tokenGenerate = require( "./token-generate.js" );
-const MongoClient = require( "mongodb" ).MongoClient;
-const debugF = require( "debug" );
-const fs = require( "fs" );
+require('dotenv').config();
+const tokenGenerate = require('./token-generate.js');
+const MongoClient = require('mongodb').MongoClient;
+const debugF = require('debug');
+const fs = require('fs');
 
 /**
  * Constructor.
  *   Prepare data for test.
  */
-function Log( options, data ) {
+function Log(options, data) {
 
   // Use a closure to preserve `this`
   var self = this;
@@ -25,67 +25,67 @@ function Log( options, data ) {
 
   this.data.created = Date.now();
   this.data.changed = Date.now();
-  this.data.token = tokenGenerate( 24 );
+  this.data.token = tokenGenerate(24);
 
-  if(self.fileDir && self.fileDir != '') {
-    if ( !fs.existsSync( self.fileDir ) ) {
-      fs.mkdirSync( self.fileDir );
+  if (self.fileDir && self.fileDir != '') {
+    if (!fs.existsSync(self.fileDir)) {
+      fs.mkdirSync(self.fileDir);
     }
 
-    if ( !fs.existsSync( self.fileDir + "/" + data.owner ) ) {
-      fs.mkdirSync( self.fileDir + "/" + data.owner );
+    if (!fs.existsSync(self.fileDir + '/' + data.owner)) {
+      fs.mkdirSync(self.fileDir + '/' + data.owner);
     }
 
-    if ( !fs.existsSync( self.fileDir + "/" + data.owner + "/" + data.repository ) ) {
-      fs.mkdirSync( self.fileDir + "/" + data.owner + "/" + data.repository );
+    if (!fs.existsSync(self.fileDir + '/' + data.owner + '/' + data.repository)) {
+      fs.mkdirSync(self.fileDir + '/' + data.owner + '/' + data.repository);
     }
-    self.fileDir = self.fileDir + "/" + data.owner + "/" + data.repository;
+    self.fileDir = self.fileDir + '/' + data.owner + '/' + data.repository;
   } else {
     self.fileDir = false;
   }
 }
 
 Log.prototype.data = {};
-Log.prototype.fileDir = "";
-Log.prototype.mongoUrl = "";
-Log.prototype.mongoTable = "";
+Log.prototype.fileDir = '';
+Log.prototype.mongoUrl = '';
+Log.prototype.mongoTable = '';
 
 Log.prototype.debug = {
-  main: debugF( "status:main" )
+  main: debugF('status:main')
 };
 
-Log.prototype.process = function( callback ) {
+Log.prototype.process = function(callback) {
   var self = this;
 
-  var log = JSON.stringify( self.data.log );
-  delete( self.data.log );
+  var log = JSON.stringify(self.data.log);
+  delete(self.data.log);
 
-  MongoClient.connect( self.mongoUrl, function( err, db ) {
-    if ( !err ) {
-      var collection = db.collection( self.mongoTable );
-      collection.insertOne( self.data, function( err, result ) {
+  MongoClient.connect(self.mongoUrl, function(err, db) {
+    if (!err) {
+      var collection = db.collection(self.mongoTable);
+      collection.insertOne(self.data, function(err, result) {
         db.close();
-        if ( !err ) {
-          if ( log && self.fileDir ) {
-            fs.writeFile( self.fileDir + "/" + result.insertedId, log );
+        if (!err) {
+          if (log && self.fileDir) {
+            fs.writeFile(self.fileDir + '/' + result.insertedId, log);
           }
           self.data.log = JSON.parse(log);
-          callback( null, {
+          callback(null, {
             code: 200,
             answer: {
-              message: "Task accepted",
+              message: 'Task accepted',
               id: result.insertedId,
               token: self.data.token
             }
-          } );
+          });
         } else {
-          callback( err, null );
+          callback(err, null);
         }
-      } );
+      });
     } else {
-      callback( err, null );
+      callback(err, null);
     }
-  } );
+  });
   return;
 };
 

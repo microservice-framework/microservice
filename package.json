@@ -4,7 +4,8 @@
   "description": "NodeJS based status worker. Store and update statuses. — Edit",
   "main": "zenci-status.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "jscs": "jscs --fix zenci-status.js includes/*.js"
   },
   "repository": {
     "type": "git",
