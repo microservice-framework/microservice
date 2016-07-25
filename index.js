@@ -31,6 +31,11 @@ function ZenciStatus(options) {
 }
 
 /**
+ * Settings for microservice.
+ */
+ZenciStatus.prototype.options = {};
+
+/**
  * Validate data by method.
  */
 ZenciStatus.prototype.validate = function(method, jsonData, requestDetails, callback) {
