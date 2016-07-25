@@ -37,16 +37,6 @@ LogGet.prototype.debug = {
 LogGet.prototype.process = function(callback) {
   var self = this;
 
-  if (self.requestDetails.url.length != 24) {
-    callback(null, {
-      code: 403,
-      answer: {
-        message: 'Wrong request'
-      }
-    });
-    return;
-  }
-
   MongoClient.connect(self.mongoUrl, function(err, db) {
     if (!err) {
       var collection = db.collection(self.mongoTable);

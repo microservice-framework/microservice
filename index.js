@@ -10,6 +10,7 @@ var LogUpdate = require('./includes/zenci-log-update.js');
 var LogGet = require('./includes/zenci-log-get.js');
 var LogDelete = require('./includes/zenci-log-delete.js');
 var LogValidate = require('./includes/zenci-log-validate.js');
+var LogSearch = require('./includes/zenci-log-search.js');
 const fs = require('fs');
 
 const bind = function( fn, me ) { return function() { return fn.apply( me, arguments ); }; };
@@ -36,7 +37,7 @@ function ZenciMicroservice(settings) {
   self.put = bind( self.put, self );
   self.delete = bind( self.delete, self );
   self.validateJson = bind( self.validateJson, self );
-
+  self.search = bind( self.search, self );
   //  self.settings.mongoUrl = process.env.MONGO_URL;
   //  self.settings.mongoTable = process.env.MONGO_TABLE;
   //  self.settings.secureKey = process.env.SECURE_KEY;
@@ -115,6 +116,19 @@ ZenciMicroservice.prototype.delete = function(jsonData, requestDetails, callback
   return Task;
 
 };
+
+/**
+ * Process SEARCH request.
+ */
+ZenciMicroservice.prototype.search = function(jsonData, requestDetails, callback) {
+  var self = this;
+
+  var Task = new LogSearch(self.settings, jsonData, requestDetails);
+  Task.process(callback);
+  return Task;
+
+};
+
 
 /**
  * Process Get request.
