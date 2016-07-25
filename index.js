@@ -13,7 +13,7 @@ var LogValidate = require('./includes/zenci-log-validate.js');
 var LogSearch = require('./includes/zenci-log-search.js');
 const fs = require('fs');
 
-const bind = function( fn, me ) { return function() { return fn.apply( me, arguments ); }; };
+const bind = function(fn, me) { return function() { return fn.apply(me, arguments); }; };
 
 /**
  * Constructor of ZenciMicroservice object.
@@ -31,13 +31,13 @@ function ZenciMicroservice(settings) {
 
   self.settings = settings;
 
-  self.validate = bind( self.validate, self );
-  self.get = bind( self.get, self );
-  self.post = bind( self.post, self );
-  self.put = bind( self.put, self );
-  self.delete = bind( self.delete, self );
-  self.validateJson = bind( self.validateJson, self );
-  self.search = bind( self.search, self );
+  self.validate = bind(self.validate, self);
+  self.get = bind(self.get, self);
+  self.post = bind(self.post, self);
+  self.put = bind(self.put, self);
+  self.delete = bind(self.delete, self);
+  self.validateJson = bind(self.validateJson, self);
+  self.search = bind(self.search, self);
   //  self.settings.mongoUrl = process.env.MONGO_URL;
   //  self.settings.mongoTable = process.env.MONGO_TABLE;
   //  self.settings.secureKey = process.env.SECURE_KEY;

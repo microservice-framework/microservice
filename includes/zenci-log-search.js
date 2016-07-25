@@ -43,11 +43,11 @@ LogSearch.prototype.process = function(callback) {
 
     var collection = db.collection(self.mongoTable);
     var query = self.data;
-    collection.find(query).toArray(function(err, results){
-      if(err) {
+    collection.find(query).toArray(function(err, results) {
+      if (err) {
         callback(err, results);
       }
-      if(!results || results.length == 0) {
+      if (!results || results.length == 0) {
         callback(null, {
           code: 404,
           answer: {
