@@ -52,7 +52,7 @@ module.exports = {
   validateJson:  function( jsonData ) {
     var errors = validateJson( jsonData );
     if ( true !== errors ) {
-      callback( new Error( errors ));
+      throw new Error( errors );
     }
   },
   store: function( jsonData, callback ) {
