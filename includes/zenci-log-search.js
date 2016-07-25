@@ -45,17 +45,17 @@ LogSearch.prototype.process = function(callback) {
     var query = self.data;
     collection.find(query).toArray(function(err, results) {
       if (err) {
-        callback(err, results);
+        return callback(err, results);
       }
       if (!results || results.length == 0) {
-        callback(null, {
+        return callback(null, {
           code: 404,
           answer: {
             message: 'Not found'
           }
         });
       }
-      callback(null, {
+      return callback(null, {
         code: 200,
         answer: results
       });
