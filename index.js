@@ -16,32 +16,32 @@ const fs = require('fs');
  * Constructor.
  *   Prepare data for test.
  */
-function ZenciStatus(options) {
+function ZenciMicroservice(settings) {
 
   // Use a closure to preserve `this`
   var self = this;
 
-  self.options = options;
+  self.settings = settings;
 
-  //  Self.options.mongoUrl = process.env.MONGO_URL;
-  //  self.options.mongoTable = process.env.MONGO_TABLE;
-  //  self.options.secureKey = process.env.SECURE_KEY;
-  //  self.options.fileDir = process.env.FILE_DIR
-  //  self.options.schema = process.env.SCHEMA
+  //  self.settings.mongoUrl = process.env.MONGO_URL;
+  //  self.settings.mongoTable = process.env.MONGO_TABLE;
+  //  self.settings.secureKey = process.env.SECURE_KEY;
+  //  self.settings.fileDir = process.env.FILE_DIR
+  //  self.settings.schema = process.env.SCHEMA
 }
 
 /**
  * Settings for microservice.
  */
-ZenciStatus.prototype.options = {};
+ZenciMicroservice.prototype.options = {};
 
 /**
  * Validate data by method.
  */
-ZenciStatus.prototype.validate = function(method, jsonData, requestDetails, callback) {
+ZenciMicroservice.prototype.validate = function(method, jsonData, requestDetails, callback) {
   var self = this;
 
-  var Validate = new LogValidate(self.options, jsonData, requestDetails);
+  var Validate = new LogValidate(self.settings, jsonData, requestDetails);
   Validate.validate(method, callback);
   return Validate;
 };
@@ -49,10 +49,10 @@ ZenciStatus.prototype.validate = function(method, jsonData, requestDetails, call
 /**
  * Process Get request.
  */
-ZenciStatus.prototype.get = function(jsonData, requestDetails, callback) {
+ZenciMicroservice.prototype.get = function(jsonData, requestDetails, callback) {
   var self = this;
 
-  var Task = new LogGet(self.options, jsonData, requestDetails);
+  var Task = new LogGet(self.settings, jsonData, requestDetails);
   Task.process(callback);
   return Task;
 
@@ -61,14 +61,14 @@ ZenciStatus.prototype.get = function(jsonData, requestDetails, callback) {
 /**
  * Process Get request.
  */
-ZenciStatus.prototype.post = function(jsonData, requestDetails, callback) {
+ZenciMicroservice.prototype.post = function(jsonData, requestDetails, callback) {
   var self = this;
 
   var errors = self.validateJson(jsonData);
   if (true !== errors) {
     callback(new Error(errors));
   }
-  var Task = new LogStore(self.options, jsonData);
+  var Task = new LogStore(self.settings, jsonData);
   Task.process(callback);
   return Task;
 
@@ -77,14 +77,14 @@ ZenciStatus.prototype.post = function(jsonData, requestDetails, callback) {
 /**
  * Process PUT request.
  */
-ZenciStatus.prototype.put = function(jsonData, requestDetails, callback) {
+ZenciMicroservice.prototype.put = function(jsonData, requestDetails, callback) {
   var self = this;
 
   var errors = self.validateJson(jsonData);
   if (true !== errors) {
     callback(new Error(errors));
   }
-  var Task = new LogUpdate(self.options, jsonData, requestDetails);
+  var Task = new LogUpdate(self.settings, jsonData, requestDetails);
   Task.process(callback);
   return Task;
 
@@ -93,10 +93,10 @@ ZenciStatus.prototype.put = function(jsonData, requestDetails, callback) {
 /**
  * Process Get request.
  */
-ZenciStatus.prototype.delete = function(jsonData, requestDetails, callback) {
+ZenciMicroservice.prototype.delete = function(jsonData, requestDetails, callback) {
   var self = this;
 
-  var Task = new LogDelete(self.options, jsonData, requestDetails);
+  var Task = new LogDelete(self.settings, jsonData, requestDetails);
   Task.process(callback);
   return Task;
 
@@ -105,10 +105,10 @@ ZenciStatus.prototype.delete = function(jsonData, requestDetails, callback) {
 /**
  * Process Get request.
  */
-ZenciStatus.prototype.validateJson = function(jsonData) {
+ZenciMicroservice.prototype.validateJson = function(jsonData) {
   var v = new Validator();
   try {
-    var schemaTask = JSON.parse(fs.readFileSync('schema/' + self.options.schema));
+    var schemaTask = JSON.parse(fs.readFileSync('schema/' + self.settings.schema));
   } catch (e) {
     console.log(e);
     throw new Error('Internal error: schema syntax error.');
@@ -125,4 +125,4 @@ ZenciStatus.prototype.validateJson = function(jsonData) {
 
 };
 
-module.exports = ZenciStatus;
+module.exports = ZenciMicroservice;
