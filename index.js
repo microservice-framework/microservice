@@ -120,6 +120,8 @@ ZenciMicroservice.prototype.delete = function(jsonData, requestDetails, callback
  * Process Get request.
  */
 ZenciMicroservice.prototype.validateJson = function(jsonData) {
+  var self = this;
+
   var v = new Validator();
   try {
     var schemaTask = JSON.parse(fs.readFileSync('schema/' + self.settings.schema));
