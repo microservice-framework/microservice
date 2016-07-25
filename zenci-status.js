@@ -29,7 +29,7 @@ module.exports = {
   post: function( jsonData, requestDetails, callback ) {
     var errors = validateJson( jsonData );
     if ( true !== errors ) {
-      throw new Error( errors );
+      callback(new Error( errors ));
     }
     var Task = new LogStore( jsonData );
     Task.process( callback );
@@ -38,7 +38,7 @@ module.exports = {
   put: function( jsonData, requestDetails, callback ) {
     var errors = validateJson( jsonData );
     if ( true !== errors ) {
-      throw new Error( errors );
+      callback( new Error( errors ));
     }
     var Task = new LogUpdate( jsonData, requestDetails );
     Task.process( callback );
@@ -52,7 +52,7 @@ module.exports = {
   validateJson:  function( jsonData ) {
     var errors = validateJson( jsonData );
     if ( true !== errors ) {
-      throw new Error( errors );
+      callback( new Error( errors ));
     }
   },
   store: function( jsonData, callback ) {
