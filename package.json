@@ -1,6 +1,6 @@
 {
   "name": "zenci-microservice",
-  "version": "0.2.2",
+  "version": "0.2.3",
   "description": "NodeJS based status worker. Store and update statuses. — Edit",
   "main": "index.js",
   "scripts": {
