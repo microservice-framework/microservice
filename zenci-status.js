@@ -12,65 +12,98 @@ var LogDelete = require( "./includes/zenci-log-delete.js" );
 var LogValidate = require( "./includes/zenci-log-validate.js" );
 const fs = require( "fs" );
 
-require( "dotenv" ).config();
+/**
+ * Constructor.
+ *   Prepare data for test.
+ */
+function ZenciStatus( options ) {
+  // Use a closure to preserve `this`
+  var self = this;
 
-module.exports = {
-  validate: function( method, jsonData, requestDetails, callback ) {
-    var Validate = new LogValidate( jsonData, requestDetails );
-    Validate.validate( method, callback );
-    return Validate;
-  },
-  get: function( jsonData, requestDetails, callback ) {
-    var Task = new LogGet( jsonData, requestDetails );
-    Task.process( callback );
-    return Task;
+  self.options = options;
 
-  },
-  post: function( jsonData, requestDetails, callback ) {
-    var errors = validateJson( jsonData );
-    if ( true !== errors ) {
-      callback(new Error( errors ));
-    }
-    var Task = new LogStore( jsonData );
-    Task.process( callback );
-    return Task;
-  },
-  put: function( jsonData, requestDetails, callback ) {
-    var errors = validateJson( jsonData );
-    if ( true !== errors ) {
-      callback( new Error( errors ));
-    }
-    var Task = new LogUpdate( jsonData, requestDetails );
-    Task.process( callback );
-    return Task;
-  },
-  delete: function( jsonData, requestDetails, callback ) {
-    var Task = new LogDelete( jsonData, requestDetails );
-    Task.process( callback );
-    return Task;
-  },
-  validateJson:  function( jsonData ) {
-    var errors = validateJson( jsonData );
-    if ( true !== errors ) {
-      throw new Error( errors );
-    }
-  },
-  store: function( jsonData, callback ) {
-    var Task = new LogStore( jsonData );
-    Task.process( callback );
-    return Task;
-  },
-  update: function( jsonData, requestDetails, callback ) {
-    var Task = new LogUpdate( jsonData, requestDetails );
-    Task.process( callback );
-    return Task;
+//  self.options.mongoUrl = process.env.MONGO_URL;
+//  self.options.mongoTable = process.env.MONGO_TABLE;
+//  self.options.secureKey = process.env.SECURE_KEY;
+//  self.options.fileDir = process.env.FILE_DIR
+//  self.options.schema = process.env.SCHEMA
+}
+
+
+/**
+ * Validate data by method.
+ */
+ZenciStatus.prototype.validate = function( method, jsonData, requestDetails, callback ) {
+  var self = this;
+
+  var Validate = new LogValidate( self.options, jsonData, requestDetails );
+  Validate.validate( method, callback );
+  return Validate;
+}
+
+/**
+ * Process Get request.
+ */
+ZenciStatus.prototype.get = function( jsonData, requestDetails, callback  ) {
+  var self = this;
+
+  var Task = new LogGet(self.options, jsonData, requestDetails );
+  Task.process( callback );
+  return Task;
+
+}
+
+/**
+ * Process Get request.
+ */
+ZenciStatus.prototype.post = function( jsonData, requestDetails, callback  ) {
+  var self = this;
+
+  var errors = self.validateJson( jsonData );
+  if ( true !== errors ) {
+    callback(new Error( errors ));
   }
-};
+  var Task = new LogStore(self.options, jsonData );
+  Task.process( callback );
+  return Task;
 
-function validateJson( jsonData ) {
+}
+
+/**
+ * Process PUT request.
+ */
+ZenciStatus.prototype.put = function( jsonData, requestDetails, callback  ) {
+  var self = this;
+
+  var errors = self.validateJson( jsonData );
+  if ( true !== errors ) {
+    callback(new Error( errors ));
+  }
+  var Task = new LogUpdate(self.options, jsonData, requestDetails );
+  Task.process( callback );
+  return Task;
+
+}
+
+/**
+ * Process Get request.
+ */
+ZenciStatus.prototype.delete = function( jsonData, requestDetails, callback  ) {
+  var self = this;
+
+  var Task = new LogDelete(self.options, jsonData, requestDetails );
+  Task.process( callback );
+  return Task;
+
+}
+
+/**
+ * Process Get request.
+ */
+ZenciStatus.prototype.validateJson = function(jsonData) {
   var v = new Validator();
   try {
-    var schemaTask = JSON.parse( fs.readFileSync( "schema/" + process.env.SCHEMA ) );
+    var schemaTask = JSON.parse( fs.readFileSync( "schema/" + self.options.schema ) );
   } catch ( e ) {
     console.log( e );
     throw new Error( "Internal error: schema syntax error." );
@@ -84,4 +117,7 @@ function validateJson( jsonData ) {
     return errors;
   }
   return true;
+
 }
+
+module.exports = ZenciStatus;

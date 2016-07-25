@@ -8,24 +8,22 @@ const ObjectID = require( "mongodb" ).ObjectID;
 const debugF = require( "debug" );
 const fs = require( "fs" );
 
-require( "dotenv" ).config();
-const bind = function( fn, me ) { return function() { return fn.apply( me, arguments ); }; };
-
 /**
  * Constructor.
  *   Prepare data for test.
  */
-function LogUpdate( data, requestDetails ) {
+function LogUpdate( options, data, requestDetails ) {
 
   // Use a closure to preserve `this`
   var self = this;
-  self.mongoUrl = process.env.MONGO_URL;
-  self.mongoTable = process.env.MONGO_TABLE;
-  this.process = bind( this.process, this );
+  self.mongoUrl = options.mongoUrl;
+  self.mongoTable = options.mongoTable;
+  self.fileDir = options.fileDir;
+
   this.data = data;
   this.requestDetails = requestDetails;
-  if(process.env.FILE_DIR) {
-    self.fileDir = process.env.FILE_DIR + "/" + data.owner + "/" + data.repository;
+  if(self.fileDir && self.fileDir != '') {
+    self.fileDir = self.fileDir + "/" + data.owner + "/" + data.repository;
   }
 }
 
@@ -41,16 +39,6 @@ LogUpdate.prototype.debug = {
 
 LogUpdate.prototype.process = function( callback ) {
   var self = this;
-
-  if ( self.requestDetails.url.length != 24 ) {
-    callback( null, {
-      code: 403,
-      answer: {
-        message: "Wrong request"
-      }
-    } );
-    return;
-  }
 
   var log = JSON.stringify( self.data.log );
   delete( self.data.log );
@@ -87,16 +75,11 @@ LogUpdate.prototype.process = function( callback ) {
             }
 
             // Get all new data to keep all fields. Like created.
+            // Update should ignore token
             for ( var key in self.data ) {
-              if ( key == "token" ) {
-                return callback( null, {
-                    code: 403,
-                    answer: {
-                      message: "Malformed request"
-                    }
-                  } );
+              if ( key != "token" ) {
+                record[ key ] = self.data[ key ];
               }
-              record[ key ] = self.data[ key ];
             }
 
             // Update changed field.

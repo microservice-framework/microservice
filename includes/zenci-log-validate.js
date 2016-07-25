@@ -9,21 +9,17 @@ const ObjectID = require( "mongodb" ).ObjectID;
 const debugF = require( "debug" );
 const fs = require( "fs" );
 
-require( "dotenv" ).config();
-const bind = function( fn, me ) { return function() { return fn.apply( me, arguments ); }; };
-
 /**
  * Constructor.
  *   Prepare data for test.
  */
-function LogValidate( data, requestDetails ) {
+function LogValidate( options, data, requestDetails ) {
 
   // Use a closure to preserve `this`
   var self = this;
-  self.mongoUrl = process.env.MONGO_URL;
-  self.mongoTable = process.env.MONGO_TABLE;
-  self.secureKey = process.env.SECURE_KEY;
-  this.validate = bind( this.validate, this );
+  self.mongoUrl = options.mongoUrl;
+  self.mongoTable = options.mongoTable;
+  self.secureKey = options.secureKey;
   this.data = data;
   this.requestDetails = requestDetails;
 }
@@ -42,6 +38,7 @@ LogValidate.prototype.validate = function( method, callback ) {
   var self = this;
   switch ( method ) {
     case "POST":
+    case "SEARCH":
         console.log( self.requestDetails.headers );
         if ( !self.requestDetails.headers.signature ) {
           return callback( new Error( "Signature required" ) );

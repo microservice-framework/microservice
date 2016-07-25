@@ -8,20 +8,18 @@ const ObjectID = require( "mongodb" ).ObjectID;
 const debugF = require( "debug" );
 const fs = require( "fs" );
 
-require( "dotenv" ).config();
-const bind = function( fn, me ) { return function() { return fn.apply( me, arguments ); }; };
-
 /**
  * Constructor.
  *   Prepare data for test.
  */
-function LogDelete( data, requestDetails ) {
+function LogDelete( options, data, requestDetails ) {
 
   // Use a closure to preserve `this`
   var self = this;
-  self.mongoUrl = process.env.MONGO_URL;
-  self.mongoTable = process.env.MONGO_TABLE;
-  this.process = bind( this.process, this );
+  self.mongoUrl = options.mongoUrl;
+  self.mongoTable = options.mongoTable;
+  self.fileDir = options.fileDir;
+
   this.data = data;
   this.requestDetails = requestDetails;
 }
@@ -38,16 +36,6 @@ LogDelete.prototype.debug = {
 
 LogDelete.prototype.process = function( callback ) {
   var self = this;
-
-  if ( self.requestDetails.url.length != 24 ) {
-    callback( null, {
-      code: 403,
-      answer: {
-        message: "Wrong request"
-      }
-    } );
-    return;
-  }
 
   MongoClient.connect( self.mongoUrl, function( err, db ) {
     if ( !err ) {
@@ -67,10 +55,11 @@ LogDelete.prototype.process = function( callback ) {
             } );
           } else {
             if(process.env.FILE_DIR) {
-              self.fileDir = process.env.FILE_DIR + "/" + result.value.owner +
-                "/" + result.value.repository;
-              if ( fs.existsSync( self.fileDir + "/" + self.requestDetails.url ) ) {
-                fs.unlink( self.fileDir + "/" + self.requestDetails.url );
+              let filePath = self.fileDir + "/" + result.value.owner +
+                "/" + result.value.repository + "/" + self.requestDetails.url;
+
+              if ( fs.existsSync( filePath ) ) {
+                fs.unlink( filePath );
               }
             }
             callback( null, {

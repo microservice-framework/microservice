@@ -9,38 +9,37 @@ const MongoClient = require( "mongodb" ).MongoClient;
 const debugF = require( "debug" );
 const fs = require( "fs" );
 
-const bind = function( fn, me ) { return function() { return fn.apply( me, arguments ); }; };
-
 /**
  * Constructor.
  *   Prepare data for test.
  */
-function Log( data ) {
+function Log( options, data ) {
 
   // Use a closure to preserve `this`
   var self = this;
-  self.mongoUrl = process.env.MONGO_URL;
-  self.mongoTable = process.env.MONGO_TABLE;
-  this.process = bind( this.process, this );
+  self.mongoUrl = options.mongoUrl;
+  self.mongoTable = options.mongoTable;
+  self.fileDir = options.fileDir;
+
   this.data = data;
 
   this.data.created = Date.now();
   this.data.changed = Date.now();
   this.data.token = tokenGenerate( 24 );
 
-  if(process.env.FILE_DIR) {
-    if ( !fs.existsSync( process.env.FILE_DIR ) ) {
-      fs.mkdirSync( process.env.FILE_DIR );
+  if(self.fileDir && self.fileDir != '') {
+    if ( !fs.existsSync( self.fileDir ) ) {
+      fs.mkdirSync( self.fileDir );
     }
 
-    if ( !fs.existsSync( process.env.FILE_DIR + "/" + data.owner ) ) {
-      fs.mkdirSync( process.env.FILE_DIR + "/" + data.owner );
+    if ( !fs.existsSync( self.fileDir + "/" + data.owner ) ) {
+      fs.mkdirSync( self.fileDir + "/" + data.owner );
     }
 
-    if ( !fs.existsSync( process.env.FILE_DIR + "/" + data.owner + "/" + data.repository ) ) {
-      fs.mkdirSync( process.env.FILE_DIR + "/" + data.owner + "/" + data.repository );
+    if ( !fs.existsSync( self.fileDir + "/" + data.owner + "/" + data.repository ) ) {
+      fs.mkdirSync( self.fileDir + "/" + data.owner + "/" + data.repository );
     }
-    self.fileDir = process.env.FILE_DIR + "/" + data.owner + "/" + data.repository;
+    self.fileDir = self.fileDir + "/" + data.owner + "/" + data.repository;
   } else {
     self.fileDir = false;
   }

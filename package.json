@@ -1,6 +1,6 @@
 {
   "name": "zenci-status",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "NodeJS based status worker. Store and update statuses. — Edit",
   "main": "zenci-status.js",
   "scripts": {
@@ -17,9 +17,7 @@
   },
   "homepage": "https://github.com/itpatrol/zenci-status#readme",
   "dependencies": {
-    "dotenv": "^2.0.0",
     "jsonschema": "^1.1.0",
-    "mongodb": "^2.2.1",
-    "zenci-manager": "github:itpatrol/zenci-manager"
+    "mongodb": "^2.2.1"
   }
 }

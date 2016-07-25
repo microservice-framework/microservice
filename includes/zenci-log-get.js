@@ -8,20 +8,18 @@ const ObjectID = require( "mongodb" ).ObjectID;
 const debugF = require( "debug" );
 const fs = require( "fs" );
 
-require( "dotenv" ).config();
-const bind = function( fn, me ) { return function() { return fn.apply( me, arguments ); }; };
-
 /**
  * Constructor.
  *   Prepare data for test.
  */
-function LogGet( data, requestDetails ) {
+function LogGet( options, data, requestDetails ) {
 
   // Use a closure to preserve `this`
   var self = this;
-  self.mongoUrl = process.env.MONGO_URL;
-  self.mongoTable = process.env.MONGO_TABLE;
-  this.process = bind( this.process, this );
+  self.mongoUrl = options.mongoUrl;
+  self.mongoTable = options.mongoTable;
+  self.fileDir = options.fileDir;
+
   this.data = data;
   this.requestDetails = requestDetails;
 }
@@ -66,11 +64,11 @@ LogGet.prototype.process = function( callback ) {
               }
             } );
           } else {
-            if(process.env.FILE_DIR) {
-              self.fileDir = process.env.FILE_DIR + "/" + result.owner + "/" + result.repository;
-              if ( fs.existsSync( self.fileDir + "/" + self.requestDetails.url ) ) {
-                result.log = JSON.parse( fs.readFileSync( self.fileDir +
-                  "/" + self.requestDetails.url ) );
+            if(self.fileDir != "") {
+              let filePath = self.fileDir + "/" + result.owner + "/" +
+                result.repository + "/" + self.requestDetails.url;
+              if ( fs.existsSync( filePath ) ) {
+                result.log = JSON.parse( fs.readFileSync( filePath ) );
               }
             }
             callback( null, {
