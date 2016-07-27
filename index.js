@@ -48,7 +48,7 @@ function ZenciMicroservice(settings) {
 /**
  * Settings for microservice.
  */
-ZenciMicroservice.prototype.options = {};
+ZenciMicroservice.prototype.settings = {};
 
 /**
  * Validate data by method.

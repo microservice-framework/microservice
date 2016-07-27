@@ -68,8 +68,8 @@ Log.prototype.process = function(callback) {
         if (!err) {
           if (log && self.fileDir) {
             fs.writeFile(self.fileDir + '/' + result.insertedId, log);
+            self.data.log = JSON.parse(log);
           }
-          self.data.log = JSON.parse(log);
           callback(null, {
             code: 200,
             answer: {
