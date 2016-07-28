@@ -37,6 +37,7 @@ LogValidate.prototype.debug = {
 LogValidate.prototype.validate = function(method, callback) {
   var self = this;
   switch (method) {
+    case 'PUT':
     case 'POST':
     case 'SEARCH': {
       console.log(self.requestDetails.headers);
