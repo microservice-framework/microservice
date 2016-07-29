@@ -23,21 +23,6 @@ function LogUpdate(options, data, requestDetails) {
   this.data = data;
   this.requestDetails = requestDetails;
 
-  var owner = '';
-  var repository = '';
-
-  if (!data.owner) {
-    owner = data.repository.owner;
-    repository = data.repository.repository;
-  } else {
-    owner = data.owner;
-    repository = data.repository;
-  }
-
-
-  if (self.fileDir && self.fileDir != '') {
-    self.fileDir = self.fileDir + '/' + owner + '/' + repository;
-  }
 }
 
 LogUpdate.prototype.data = {};
@@ -106,6 +91,21 @@ LogUpdate.prototype.process = function(callback) {
                 });
               }
               if (log) {
+                var owner = '';
+                var repository = '';
+
+                if (!data.owner) {
+                  owner = resultUpdate.value.repository.owner;
+                  repository = resultUpdate.value.repository.repository;
+                } else {
+                  owner = resultUpdate.value.owner;
+                  repository = resultUpdate.value.repository;
+                }
+
+                if (self.fileDir && self.fileDir != '') {
+                  self.fileDir = self.fileDir + '/' + owner + '/' + repository;
+                }
+
                 fs.writeFile(self.fileDir + '/' + self.requestDetails.url, log);
               }
               return callback(null, {
