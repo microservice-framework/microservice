@@ -32,10 +32,10 @@ function Log(options, data) {
       fs.mkdirSync(self.fileDir);
     }
 
-    var owner = "";
-    var repository = "";
+    var owner = '';
+    var repository = '';
 
-    if(!data.owner){
+    if (!data.owner) {
       owner = data.repository.owner;
       repository = data.repository.repository;
     } else {

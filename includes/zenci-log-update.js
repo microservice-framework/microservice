@@ -23,10 +23,10 @@ function LogUpdate(options, data, requestDetails) {
   this.data = data;
   this.requestDetails = requestDetails;
 
-  var owner = "";
-  var repository = "";
+  var owner = '';
+  var repository = '';
 
-  if(!data.owner){
+  if (!data.owner) {
     owner = data.repository.owner;
     repository = data.repository.repository;
   } else {

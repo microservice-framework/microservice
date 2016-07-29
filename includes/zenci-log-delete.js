@@ -55,9 +55,9 @@ LogDelete.prototype.process = function(callback) {
             });
           } else {
             if (self.fileDir != '') {
-              var owner = "";
-              var repository = "";
-              if(!result.value.owner){
+              var owner = '';
+              var repository = '';
+              if (!result.value.owner) {
                 owner = result.value.repository.owner;
                 repository = result.value.repository.repository;
               } else {

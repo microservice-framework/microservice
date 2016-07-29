@@ -55,9 +55,9 @@ LogGet.prototype.process = function(callback) {
             });
           } else {
             if (self.fileDir != '') {
-              var owner = "";
-              var repository = "";
-              if(!result.owner){
+              var owner = '';
+              var repository = '';
+              if (!result.owner) {
                 owner = result.repository.owner;
                 repository = result.repository.repository;
               } else {
