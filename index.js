@@ -95,10 +95,6 @@ ZenciMicroservice.prototype.post = function(jsonData, requestDetails, callback) 
 ZenciMicroservice.prototype.put = function(jsonData, requestDetails, callback) {
   var self = this;
 
-  var errors = self.validateJson(jsonData);
-  if (true !== errors) {
-    callback(new Error(errors));
-  }
   var Task = new LogUpdate(self.settings, jsonData, requestDetails);
   Task.process(callback);
   return Task;

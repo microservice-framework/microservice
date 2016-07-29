@@ -61,24 +61,13 @@ LogUpdate.prototype.process = function(callback) {
           }
           var record = resultFind;
 
-          // If status already not pending, just save a log file.
-/*          if (record.status != 'pending') {
-            db.close();
-            if (log && self.fileDir) {
-              fs.writeFile(self.fileDir + '/' + self.requestDetails.url, log);
-            }
-            record.log = log;
-            return callback(null, {
-              code: 200,
-              answer: record
-            });
-          }*/
-
           // Get all new data to keep all fields. Like created.
           // Update should ignore token
           for (var key in self.data) {
-            if (key != 'token') {
-              record[ key ] = self.data[ key ];
+            if (key != 'token' && key != '_id') {
+              if (record[key]) {
+                record[key] = self.data[key];
+              }
             }
           }
 
