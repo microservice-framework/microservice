@@ -32,14 +32,25 @@ function Log(options, data) {
       fs.mkdirSync(self.fileDir);
     }
 
-    if (!fs.existsSync(self.fileDir + '/' + data.owner)) {
-      fs.mkdirSync(self.fileDir + '/' + data.owner);
+    var owner = "";
+    var repository = "";
+
+    if(!data.owner){
+      owner = data.repository.owner;
+      repository = data.repository.repository;
+    } else {
+      owner = data.owner;
+      repository = data.repository;
     }
 
-    if (!fs.existsSync(self.fileDir + '/' + data.owner + '/' + data.repository)) {
-      fs.mkdirSync(self.fileDir + '/' + data.owner + '/' + data.repository);
+    if (!fs.existsSync(self.fileDir + '/' + owner)) {
+      fs.mkdirSync(self.fileDir + '/' + owner);
     }
-    self.fileDir = self.fileDir + '/' + data.owner + '/' + data.repository;
+
+    if (!fs.existsSync(self.fileDir + '/' + owner + '/' + repository)) {
+      fs.mkdirSync(self.fileDir + '/' + owner + '/' + repository);
+    }
+    self.fileDir = self.fileDir + '/' + owner + '/' + repository;
   } else {
     self.fileDir = false;
   }

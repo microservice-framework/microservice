@@ -54,9 +54,19 @@ LogDelete.prototype.process = function(callback) {
               }
             });
           } else {
-            if (process.env.FILE_DIR) {
-              let filePath = self.fileDir + '/' + result.value.owner +
-                '/' + result.value.repository + '/' + self.requestDetails.url;
+            if (self.fileDir != '') {
+              var owner = "";
+              var repository = "";
+              if(!result.value.owner){
+                owner = result.value.repository.owner;
+                repository = result.value.repository.repository;
+              } else {
+                owner = result.value.owner;
+                repository = result.value.repository;
+              }
+
+              let filePath = self.fileDir + '/' + owner +
+                '/' + repository + '/' + self.requestDetails.url;
 
               if (fs.existsSync(filePath)) {
                 fs.unlink(filePath);

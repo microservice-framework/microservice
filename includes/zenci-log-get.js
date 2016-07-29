@@ -55,8 +55,19 @@ LogGet.prototype.process = function(callback) {
             });
           } else {
             if (self.fileDir != '') {
-              let filePath = self.fileDir + '/' + result.owner + '/' +
-                result.repository + '/' + self.requestDetails.url;
+              var owner = "";
+              var repository = "";
+              if(!result.owner){
+                owner = result.repository.owner;
+                repository = result.repository.repository;
+              } else {
+                owner = result.owner;
+                repository = result.repository;
+              }
+
+              let filePath = self.fileDir + '/' + owner + '/' + repository +
+                '/' + self.requestDetails.url;
+
               if (fs.existsSync(filePath)) {
                 result.log = JSON.parse(fs.readFileSync(filePath));
               }

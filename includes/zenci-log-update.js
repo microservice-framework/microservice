@@ -22,8 +22,21 @@ function LogUpdate(options, data, requestDetails) {
 
   this.data = data;
   this.requestDetails = requestDetails;
+
+  var owner = "";
+  var repository = "";
+
+  if(!data.owner){
+    owner = data.repository.owner;
+    repository = data.repository.repository;
+  } else {
+    owner = data.owner;
+    repository = data.repository;
+  }
+
+
   if (self.fileDir && self.fileDir != '') {
-    self.fileDir = self.fileDir + '/' + data.owner + '/' + data.repository;
+    self.fileDir = self.fileDir + '/' + owner + '/' + repository;
   }
 }
 
