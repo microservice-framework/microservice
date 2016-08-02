@@ -54,7 +54,7 @@ LogDelete.prototype.process = function(callback) {
               }
             });
           } else {
-            if (self.fileDir != '') {
+            if (self.fileDir && self.fileDir != '') {
               var owner = '';
               var repository = '';
               if (!result.value.owner) {
