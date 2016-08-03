@@ -31,14 +31,15 @@ LogValidate.prototype.mongoTable = '';
 LogValidate.prototype.secureKey = '';
 
 LogValidate.prototype.debug = {
-  main: debugF('status:main')
+  main: debugF('status:main'),
+  debug: debugF('status:debug')
 };
 
 LogValidate.prototype.validate = function(method, callback) {
   var self = this;
+  debug.debug("Request %s ", JSON.stringify(self.requestDetails , null, 2));
   switch (method) {
     case 'PUT': {
-      console.log(self.requestDetails.headers);
       if (!self.requestDetails.headers.signature && !self.requestDetails.headers.token) {
         return callback(new Error('Signature or Token required'));
       }
@@ -82,7 +83,6 @@ LogValidate.prototype.validate = function(method, callback) {
     }
     case 'POST':
     case 'SEARCH': {
-      console.log(self.requestDetails.headers);
       if (!self.requestDetails.headers.signature) {
         return callback(new Error('Signature required'));
       }
@@ -97,7 +97,6 @@ LogValidate.prototype.validate = function(method, callback) {
       break;
     }
     default: {
-      console.log(self.requestDetails.headers);
       if (!self.requestDetails.headers.token) {
         return callback(new Error('Token required'));
       }
