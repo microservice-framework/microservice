@@ -94,8 +94,8 @@ LogUpdate.prototype.process = function(callback) {
                 var owner = '';
                 var repository = '';
 
-                if (!data.owner) {
-                  if (result.value.repository) {
+                if (!resultUpdate.value.owner) {
+                  if (resultUpdate.value.repository) {
                     owner = resultUpdate.value.repository.owner;
                     repository = resultUpdate.value.repository.repository;
                   }
