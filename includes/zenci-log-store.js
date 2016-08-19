@@ -36,21 +36,24 @@ function Log(options, data) {
     var repository = '';
 
     if (!data.owner) {
-      owner = data.repository.owner;
-      repository = data.repository.repository;
+      if(data.repository) {
+        owner = data.repository.owner;
+        repository = data.repository.repository;
+      }
     } else {
       owner = data.owner;
       repository = data.repository;
     }
 
-    if (!fs.existsSync(self.fileDir + '/' + owner)) {
-      fs.mkdirSync(self.fileDir + '/' + owner);
+    if(owner != '') {
+      if (!fs.existsSync(self.fileDir + '/' + owner)) {
+        fs.mkdirSync(self.fileDir + '/' + owner);
+      }
+      if (!fs.existsSync(self.fileDir + '/' + owner + '/' + repository)) {
+        fs.mkdirSync(self.fileDir + '/' + owner + '/' + repository);
+      }
+      self.fileDir = self.fileDir + '/' + owner + '/' + repository;
     }
-
-    if (!fs.existsSync(self.fileDir + '/' + owner + '/' + repository)) {
-      fs.mkdirSync(self.fileDir + '/' + owner + '/' + repository);
-    }
-    self.fileDir = self.fileDir + '/' + owner + '/' + repository;
   } else {
     self.fileDir = false;
   }

@@ -95,18 +95,23 @@ LogUpdate.prototype.process = function(callback) {
                 var repository = '';
 
                 if (!data.owner) {
-                  owner = resultUpdate.value.repository.owner;
-                  repository = resultUpdate.value.repository.repository;
+                  if(result.value.repository) {
+                    owner = resultUpdate.value.repository.owner;
+                    repository = resultUpdate.value.repository.repository;
+                  }
                 } else {
                   owner = resultUpdate.value.owner;
                   repository = resultUpdate.value.repository;
                 }
+                var filePath = self.fileDir + '/' + self.requestDetails.url;
 
-                if (self.fileDir && self.fileDir != '') {
-                  self.fileDir = self.fileDir + '/' + owner + '/' + repository;
+                if( owner != '' ) {
+                  filePath = self.fileDir + '/' + owner +
+                  '/' + repository + '/' + self.requestDetails.url;
                 }
-
-                fs.writeFile(self.fileDir + '/' + self.requestDetails.url, log);
+                if (fs.existsSync(filePath)) {
+                  fs.writeFile(filePath, log);
+                }
               }
               return callback(null, {
                 code: 200,

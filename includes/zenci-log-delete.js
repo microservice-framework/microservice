@@ -58,15 +58,19 @@ LogDelete.prototype.process = function(callback) {
               var owner = '';
               var repository = '';
               if (!result.value.owner) {
-                owner = result.value.repository.owner;
-                repository = result.value.repository.repository;
+                if(result.value.repository) {
+                  owner = result.value.repository.owner;
+                  repository = result.value.repository.repository;
+                }
               } else {
                 owner = result.value.owner;
                 repository = result.value.repository;
               }
-
-              let filePath = self.fileDir + '/' + owner +
+              var filePath = self.fileDir + '/' + self.requestDetails.url;
+              if( owner != '' ) {
+                filePath = self.fileDir + '/' + owner +
                 '/' + repository + '/' + self.requestDetails.url;
+              }
 
               if (fs.existsSync(filePath)) {
                 fs.unlink(filePath);

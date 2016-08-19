@@ -58,15 +58,20 @@ LogGet.prototype.process = function(callback) {
               var owner = '';
               var repository = '';
               if (!result.owner) {
-                owner = result.repository.owner;
-                repository = result.repository.repository;
+                if(result.repository) {
+                  owner = result.repository.owner;
+                  repository = result.repository.repository;
+                }
               } else {
                 owner = result.owner;
                 repository = result.repository;
               }
 
-              let filePath = self.fileDir + '/' + owner + '/' + repository +
-                '/' + self.requestDetails.url;
+              var filePath = self.fileDir + '/' + self.requestDetails.url;
+              if( owner != '' ) {
+                filePath = self.fileDir + '/' + owner +
+                '/' + repository + '/' + self.requestDetails.url;
+              }
 
               if (fs.existsSync(filePath)) {
                 result.log = JSON.parse(fs.readFileSync(filePath));
