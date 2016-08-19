@@ -58,7 +58,7 @@ LogDelete.prototype.process = function(callback) {
               var owner = '';
               var repository = '';
               if (!result.value.owner) {
-                if(result.value.repository) {
+                if (result.value.repository) {
                   owner = result.value.repository.owner;
                   repository = result.value.repository.repository;
                 }
@@ -67,7 +67,7 @@ LogDelete.prototype.process = function(callback) {
                 repository = result.value.repository;
               }
               var filePath = self.fileDir + '/' + self.requestDetails.url;
-              if( owner != '' ) {
+              if (owner != '') {
                 filePath = self.fileDir + '/' + owner +
                 '/' + repository + '/' + self.requestDetails.url;
               }

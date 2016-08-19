@@ -95,7 +95,7 @@ LogUpdate.prototype.process = function(callback) {
                 var repository = '';
 
                 if (!data.owner) {
-                  if(result.value.repository) {
+                  if (result.value.repository) {
                     owner = resultUpdate.value.repository.owner;
                     repository = resultUpdate.value.repository.repository;
                   }
@@ -105,7 +105,7 @@ LogUpdate.prototype.process = function(callback) {
                 }
                 var filePath = self.fileDir + '/' + self.requestDetails.url;
 
-                if( owner != '' ) {
+                if (owner != '') {
                   filePath = self.fileDir + '/' + owner +
                   '/' + repository + '/' + self.requestDetails.url;
                 }

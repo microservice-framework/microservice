@@ -58,7 +58,7 @@ LogGet.prototype.process = function(callback) {
               var owner = '';
               var repository = '';
               if (!result.owner) {
-                if(result.repository) {
+                if (result.repository) {
                   owner = result.repository.owner;
                   repository = result.repository.repository;
                 }
@@ -68,7 +68,7 @@ LogGet.prototype.process = function(callback) {
               }
 
               var filePath = self.fileDir + '/' + self.requestDetails.url;
-              if( owner != '' ) {
+              if (owner != '') {
                 filePath = self.fileDir + '/' + owner +
                 '/' + repository + '/' + self.requestDetails.url;
               }

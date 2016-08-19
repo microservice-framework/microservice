@@ -37,7 +37,7 @@ LogValidate.prototype.debug = {
 
 LogValidate.prototype.validate = function(method, callback) {
   var self = this;
-  self.debug.debug("Request %s ", JSON.stringify(self.requestDetails , null, 2));
+  self.debug.debug('Request %s ', JSON.stringify(self.requestDetails , null, 2));
   switch (method) {
     case 'PUT': {
       if (!self.requestDetails.headers.signature && !self.requestDetails.headers.token) {

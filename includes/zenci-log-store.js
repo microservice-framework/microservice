@@ -36,7 +36,7 @@ function Log(options, data) {
     var repository = '';
 
     if (!data.owner) {
-      if(data.repository) {
+      if (data.repository) {
         owner = data.repository.owner;
         repository = data.repository.repository;
       }
@@ -45,7 +45,7 @@ function Log(options, data) {
       repository = data.repository;
     }
 
-    if(owner != '') {
+    if (owner != '') {
       if (!fs.existsSync(self.fileDir + '/' + owner)) {
         fs.mkdirSync(self.fileDir + '/' + owner);
       }
