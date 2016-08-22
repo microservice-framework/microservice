@@ -81,8 +81,8 @@ LogSearch.prototype.process = function(callback) {
                   repository = results[i].repository.repository;
                 }
               } else {
-                owner = result.owner;
-                repository = result.repository;
+                owner = results[i].owner;
+                repository = results[i].repository;
               }
               filePath = self.fileDir + '/' +
                 owner + '/' +
