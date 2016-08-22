@@ -49,10 +49,20 @@ LogSearch.prototype.process = function(callback) {
     }
 
     var options = {};
-    if (self.data.options) {
-      options = self.data.options;
+    var cursor = collection.find(query);
+
+    if (self.data.sort) {
+      cursor = cursor.sort(self.data.sort);
     }
-    collection.find(query, options).toArray(function(err, results) {
+
+    if (self.data.limit) {
+      cursor = cursor.limit(self.data.limit);
+    }
+    if (self.data.skip) {
+      cursor = cursor.skip(self.data.skip);
+    }
+
+    cursor.toArray(function(err, results) {
       if (err) {
         return callback(err, results);
       }
