@@ -68,6 +68,7 @@ LogSearch.prototype.process = function(callback) {
         if (self.fileDir && self.fileDir != '') {
           var owner = '';
           var repository = '';
+          var filePath = '';
 
           for (var i in results) {
             if (results[i]._id) {
