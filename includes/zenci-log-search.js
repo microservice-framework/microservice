@@ -43,7 +43,16 @@ LogSearch.prototype.process = function(callback) {
 
     var collection = db.collection(self.mongoTable);
     var query = self.data;
-    collection.find(query).toArray(function(err, results) {
+
+    if (self.data.query) {
+      query = self.data.query;
+    }
+
+    var options = {};
+    if (self.data.options) {
+      options = self.data.options;
+    }
+    collection.find(query, options).toArray(function(err, results) {
       if (err) {
         return callback(err, results);
       }
@@ -54,6 +63,40 @@ LogSearch.prototype.process = function(callback) {
             message: 'Not found'
           }
         });
+      }
+      if (self.data.log == true) {
+        if (self.fileDir && self.fileDir != '') {
+          var owner = '';
+          var repository = '';
+
+          for (var i in results) {
+            if (results[i]._id) {
+              owner = '';
+              repository = '';
+
+              if (!results[i].owner) {
+                if (results[i].repository) {
+                  owner = results[i].repository.owner;
+                  repository = results[i].repository.repository;
+                }
+              } else {
+                owner = result.owner;
+                repository = result.repository;
+              }
+              filePath = self.fileDir + '/' +
+                owner + '/' +
+                repository + '/' +
+                results[i]._id;
+              if (fs.existsSync(filePath)) {
+                try {
+                  results[i].log = JSON.parse(fs.readFileSync(filePath));
+                } catch(e) {
+                  results[i].log = {};
+                }
+              }
+            }
+          }
+        }
       }
       return callback(null, {
         code: 200,
