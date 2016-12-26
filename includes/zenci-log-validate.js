@@ -89,13 +89,11 @@ LogValidate.prototype.validate = function(method, callback) {
       if (!self.requestDetails.headers.signature && !self.requestDetails.headers.token) {
         return callback(new Error('Signature or Token required'));
       }
-      if (self.authMethod == 0) {
-        if (self.requestDetails.headers.signature) {
-          self.SignatureSystem(callback);
-        }
-        if (self.requestDetails.headers.token) {
-          self.TokenSystem(callback);
-        }
+      if (self.requestDetails.headers.signature) {
+        return self.SignatureSystem(callback);
+      }
+      if (self.requestDetails.headers.token) {
+        return self.TokenSystem(callback);
       }
       break;
     }
@@ -104,14 +102,17 @@ LogValidate.prototype.validate = function(method, callback) {
       if (!self.requestDetails.headers.signature) {
         return callback(new Error('Signature required'));
       }
-      self.SignatureSystem(callback);
+
+      return self.SignatureSystem(callback);
+
       break;
     }
     default: {
       if (!self.requestDetails.headers.token) {
         return callback(new Error('Token required'));
       }
-      self.SignatureSystem(callback);
+      return self.TokenSystem(callback);
+
       break;
     }
   }
