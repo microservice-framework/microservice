@@ -7,6 +7,7 @@ const signature = require('./signature.js');
 const MongoClient = require('mongodb').MongoClient;
 const ObjectID = require('mongodb').ObjectID;
 const debugF = require('debug');
+const MicroserviceClient = require('zenci-microservice-client');
 const fs = require('fs');
 
 const bind = function(fn, me) { return function() { return fn.apply(me, arguments); }; };
@@ -27,6 +28,7 @@ function LogValidate(options, data, requestDetails) {
   self.requestDetails = requestDetails;
   self.SignatureSystem = bind(self.SignatureSystem, self);
   self.TokenSystem = bind(self.TokenSystem, self);
+  self.AccessToken = bind(self.AccessToken, self);
 }
 
 LogValidate.prototype.data = {};
@@ -81,9 +83,41 @@ LogValidate.prototype.TokenSystem = function(callback) {
   });
 }
 
+LogValidate.prototype.AccessToken = function(callback) {
+  var self = this;
+  let authServer = new MicroserviceClient({
+    URL: process.env.AUTH_URL,
+    secureKey: process.env.AUTH_SECRET
+  });
+  authServer.search({
+    "accessToken": self.requestDetails.headers.access_token,
+    'scope': process.env.SCOPE
+  }, function(err, taskAnswer) {
+    if (err) {
+      console.log('---');
+      console.log(err);
+      console.log(err.stack);
+      return callback(err, taskAnswer);
+    }
+    else {
+      self.debug.debug('Auth answer %s ', JSON.stringify(taskAnswer , null, 2));
+      if(!taskAnswer.values) {
+        return callback(new Error('Access denied'));
+      }
+      self.requestDetails.auth_scope = taskAnswer.values;
+      return callback(err, taskAnswer);
+    }
+
+  });
+
+}
+
 LogValidate.prototype.validate = function(method, callback) {
   var self = this;
   self.debug.debug('Request %s ', JSON.stringify(self.requestDetails , null, 2));
+  if(self.requestDetails.headers.access_token) {
+    return self.AccessToken(callback);
+  }
   switch (method) {
     case 'PUT': {
       if (!self.requestDetails.headers.signature && !self.requestDetails.headers.token) {
