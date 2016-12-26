@@ -9,6 +9,8 @@ const ObjectID = require('mongodb').ObjectID;
 const debugF = require('debug');
 const fs = require('fs');
 
+const bind = function(fn, me) { return function() { return fn.apply(me, arguments); }; };
+
 /**
  * Constructor.
  *   Prepare data for test.
@@ -20,8 +22,11 @@ function LogValidate(options, data, requestDetails) {
   self.mongoUrl = options.mongoUrl;
   self.mongoTable = options.mongoTable;
   self.secureKey = options.secureKey;
-  this.data = data;
-  this.requestDetails = requestDetails;
+  self.authMethod = options.authMethod || 0;
+  self.data = data;
+  self.requestDetails = requestDetails;
+  self.SignatureSystem = bind(self.SignatureSystem, self);
+  self.TokenSystem = bind(self.TokenSystem, self);
 }
 
 LogValidate.prototype.data = {};
@@ -35,6 +40,47 @@ LogValidate.prototype.debug = {
   debug: debugF('status:debug')
 };
 
+LogValidate.prototype.SignatureSystem = function(callback) {
+  var self = this;
+
+  var sign = self.requestDetails.headers.signature.split('=');
+  if (sign.length != 2) {
+    return callback(new Error('Malformed signature'));
+  }
+  if (sign[ 1 ] != signature(sign[ 0 ], self.data, self.secureKey)) {
+    return callback(new Error('Signature mismatch'));
+  }
+  return callback(null);
+}
+
+LogValidate.prototype.TokenSystem = function(callback) {
+  var self = this;
+
+  if (self.requestDetails.url.length != 24) {
+    return callback(new Error('Wrong request'));
+  }
+  MongoClient.connect(self.mongoUrl, function(err, db) {
+    if (err) {
+      return callback(err);
+    }
+
+    var collection = db.collection(self.mongoTable);
+    var query = {
+      token: self.requestDetails.headers.token,
+      _id: new ObjectID(self.requestDetails.url)
+    };
+    collection.findOne(query, function(err, result) {
+      if (err) {
+        return callback(err);
+      }
+      if (!result) {
+        return callback(new Error('Not found'));
+      }
+      return callback(null);
+    });
+  });
+}
+
 LogValidate.prototype.validate = function(method, callback) {
   var self = this;
   self.debug.debug('Request %s ', JSON.stringify(self.requestDetails , null, 2));
@@ -43,41 +89,13 @@ LogValidate.prototype.validate = function(method, callback) {
       if (!self.requestDetails.headers.signature && !self.requestDetails.headers.token) {
         return callback(new Error('Signature or Token required'));
       }
-
-      if (self.requestDetails.headers.signature) {
-        var sign = self.requestDetails.headers.signature.split('=');
-        if (sign.length != 2) {
-          return callback(new Error('Malformed signature'));
+      if (self.authMethod == 0) {
+        if (self.requestDetails.headers.signature) {
+          self.SignatureSystem(callback);
         }
-        if (sign[ 1 ] != signature(sign[ 0 ], this.data, self.secureKey)) {
-          return callback(new Error('Signature mismatch'));
+        if (self.requestDetails.headers.token) {
+          self.TokenSystem(callback);
         }
-        return callback(null);
-      }
-      if (self.requestDetails.headers.token) {
-        if (self.requestDetails.url.length != 24) {
-          return callback(new Error('Wrong request'));
-        }
-        MongoClient.connect(self.mongoUrl, function(err, db) {
-          if (err) {
-            return callback(err);
-          }
-
-          var collection = db.collection(self.mongoTable);
-          var query = {
-            token: self.requestDetails.headers.token,
-            _id: new ObjectID(self.requestDetails.url)
-          };
-          collection.findOne(query, function(err, result) {
-            if (err) {
-              return callback(err);
-            }
-            if (!result) {
-              return callback(new Error('Not found'));
-            }
-            return callback(null);
-          });
-        });
       }
       break;
     }
@@ -86,45 +104,14 @@ LogValidate.prototype.validate = function(method, callback) {
       if (!self.requestDetails.headers.signature) {
         return callback(new Error('Signature required'));
       }
-      var sign = self.requestDetails.headers.signature.split('=');
-      if (sign.length != 2) {
-        return callback(new Error('Malformed signature'));
-      }
-      if (sign[ 1 ] != signature(sign[ 0 ], this.data, self.secureKey)) {
-        return callback(new Error('Signature mismatch'));
-      }
-      return callback(null);
+      self.SignatureSystem(callback);
       break;
     }
     default: {
       if (!self.requestDetails.headers.token) {
         return callback(new Error('Token required'));
       }
-      if (self.requestDetails.url.length != 24) {
-        return callback(new Error('Wrong request'));
-      }
-
-      MongoClient.connect(self.mongoUrl, function(err, db) {
-        if (!err) {
-          var collection = db.collection(self.mongoTable);
-          var query = {
-            token: self.requestDetails.headers.token,
-            _id: new ObjectID(self.requestDetails.url)
-          };
-          collection.findOne(query, function(err, result) {
-            db.close();
-            if (!err) {
-              if (!result) {
-                return callback(new Error('Not found'));
-              }
-              return callback(null);
-            }
-            return callback(err);
-          });
-        } else {
-          return callback(err);
-        }
-      });
+      self.SignatureSystem(callback);
       break;
     }
   }
