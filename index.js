@@ -79,6 +79,13 @@ ZenciMicroservice.prototype.get = function(jsonData, requestDetails, callback) {
 ZenciMicroservice.prototype.post = function(jsonData, requestDetails, callback) {
   var self = this;
 
+  // If auth_scope active, auto add variables.
+  if(requestDetails.auth_scope) {
+    for (var i in requestDetails.auth_scope) {
+      jsonData[i] = requestDetails.auth_scope[i];
+    }
+  }
+
   var errors = self.validateJson(jsonData);
   if (true !== errors) {
     return callback(new Error(errors));

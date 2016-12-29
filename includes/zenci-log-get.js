@@ -43,6 +43,14 @@ LogGet.prototype.process = function(callback) {
       var query = {
         _id: new ObjectID(self.requestDetails.url)
       };
+
+      // If auth_scope active, apply filter to search.
+      if(self.requestDetails.auth_scope) {
+        for (var i in self.requestDetails.auth_scope) {
+          query[i] = self.requestDetails.auth_scope[i];
+        }
+      }
+
       collection.findOne(query, function(err, result) {
         db.close();
         if (!err) {
