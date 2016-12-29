@@ -47,7 +47,9 @@ LogSearch.prototype.process = function(callback) {
     if (self.data.query) {
       query = self.data.query;
     }
-    if(self.requestDetails.auth_scope) {
+
+    // If auth_scope active, apply filter to search.
+    if (self.requestDetails.auth_scope) {
       for (var i in self.requestDetails.auth_scope) {
         query[i] = self.requestDetails.auth_scope[i];
       }

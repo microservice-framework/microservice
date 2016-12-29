@@ -90,24 +90,21 @@ LogValidate.prototype.AccessToken = function(callback) {
     secureKey: process.env.AUTH_SECRET
   });
   authServer.search({
-    "accessToken": self.requestDetails.headers.access_token,
-    'scope': process.env.SCOPE
+    accessToken: self.requestDetails.headers.access_token,
+    scope: process.env.SCOPE
   }, function(err, taskAnswer) {
     if (err) {
       console.log('---');
       console.log(err);
       console.log(err.stack);
-      return callback(err, taskAnswer);
-    }
-    else {
+    } else {
       self.debug.debug('Auth answer %s ', JSON.stringify(taskAnswer , null, 2));
-      if(!taskAnswer.values) {
+      if (!taskAnswer.values) {
         return callback(new Error('Access denied'));
       }
       self.requestDetails.auth_scope = taskAnswer.values;
-      return callback(err, taskAnswer);
     }
-
+    return callback(err, taskAnswer);
   });
 
 }
@@ -115,7 +112,7 @@ LogValidate.prototype.AccessToken = function(callback) {
 LogValidate.prototype.validate = function(method, callback) {
   var self = this;
   self.debug.debug('Request %s ', JSON.stringify(self.requestDetails , null, 2));
-  if(self.requestDetails.headers.access_token) {
+  if (self.requestDetails.headers.access_token) {
     return self.AccessToken(callback);
   }
   switch (method) {

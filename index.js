@@ -80,7 +80,7 @@ ZenciMicroservice.prototype.post = function(jsonData, requestDetails, callback) 
   var self = this;
 
   // If auth_scope active, auto add variables.
-  if(requestDetails.auth_scope) {
+  if (requestDetails.auth_scope) {
     for (var i in requestDetails.auth_scope) {
       jsonData[i] = requestDetails.auth_scope[i];
     }
