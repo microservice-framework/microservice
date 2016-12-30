@@ -88,7 +88,9 @@ ZenciMicroservice.prototype.post = function(jsonData, requestDetails, callback) 
 
   var errors = self.validateJson(jsonData);
   if (true !== errors) {
-    return callback(new Error(errors));
+    var error = new Error;
+    error.message = errors.join();
+    return callback(error);
   }
   var Task = new LogStore(self.settings, jsonData);
   Task.process(callback);

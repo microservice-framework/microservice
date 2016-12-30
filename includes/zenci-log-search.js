@@ -69,6 +69,7 @@ LogSearch.prototype.process = function(callback) {
     }
 
     cursor.toArray(function(err, results) {
+      db.close();
       if (err) {
         return callback(err, results);
       }
