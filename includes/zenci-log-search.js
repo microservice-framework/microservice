@@ -54,6 +54,16 @@ LogSearch.prototype.process = function(callback) {
         query[i] = self.requestDetails.auth_scope[i];
       }
     }
+
+    // If search by ID, make sure that we convert it to object first.
+    if(query['_id']) {
+      query['_id'] = new ObjectID(query['_id']);
+    }
+
+    if(query['id']) {
+      query['_id'] = new ObjectID(query['id']);
+    }
+
     var options = {};
     var cursor = collection.find(query);
 
