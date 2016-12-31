@@ -7,6 +7,7 @@ const MongoClient = require('mongodb').MongoClient;
 const ObjectID = require('mongodb').ObjectID;
 const debugF = require('debug');
 const fs = require('fs');
+const updateAcceptedCmds = [ '$inc', '$mul', '$set', '$unset', '$min', '$max', '$currentDate' ];
 
 /**
  * Constructor.
@@ -54,9 +55,35 @@ LogUpdate.prototype.process = function(callback) {
           query[i] = self.requestDetails.auth_scope[i];
         }
       }
-      collection.findOne(query, function(err, resultFind) {
+      var updateCmd = {};
+      var forceSet = true;
+      for (var key in self.data) {
+        if (updateAcceptedCmds.indexOf(key) > -1 ) {
+          forceSet = false;
+          updateCmd[key] = self.data[key];
+        }
+      }
+
+      if(forceSet) {
+        updateCmd['$set'] = self.data;
+      }
+
+      // Update changed field.
+      if(updateCmd['$set']) {
+        updateCmd['$set']['changed'] = Date.now();
+      } else {
+        updateCmd['$set'] = {
+          changed: Date.now()
+        }
+      }
+
+      console.log(updateCmd);
+
+      collection.findOneAndUpdate(query, updateCmd, { returnOriginal: false },
+        function(err, resultUpdate) {
+        db.close();
         if (!err) {
-          if (!resultFind) {
+          if (!resultUpdate) {
             return callback(null, {
               code: 404,
               answer: {
@@ -64,74 +91,43 @@ LogUpdate.prototype.process = function(callback) {
               }
             });
           }
-          var record = resultFind;
 
-          // Get all new data to keep all fields. Like created.
-          // Update should ignore token
-          for (var key in self.data) {
-            if (key != 'token' && key != '_id') {
-              if (record[key]) {
-                record[key] = self.data[key];
+          if (!resultUpdate.value) {
+            return callback(null, {
+              code: 503,
+              message: 'Error to save data'
+            });
+          }
+          if (log) {
+            var owner = '';
+            var repository = '';
+
+            if (!resultUpdate.value.owner) {
+              if (resultUpdate.value.repository) {
+                owner = resultUpdate.value.repository.owner;
+                repository = resultUpdate.value.repository.repository;
               }
+            } else {
+              owner = resultUpdate.value.owner;
+              repository = resultUpdate.value.repository;
+            }
+            var filePath = self.fileDir + '/' + self.requestDetails.url;
+
+            if (owner != '') {
+              filePath = self.fileDir + '/' + owner +
+              '/' + repository + '/' + self.requestDetails.url;
+            }
+            if (fs.existsSync(filePath)) {
+              fs.writeFile(filePath, log);
             }
           }
-
-          // Update changed field.
-          record.changed = Date.now();
-          collection.findOneAndUpdate(query, record, { returnOriginal: false },
-            function(err, resultUpdate) {
-            db.close();
-            if (!err) {
-              if (!resultUpdate) {
-                return callback(null, {
-                  code: 404,
-                  answer: {
-                    message: 'Not found'
-                  }
-                });
-              }
-
-              if (!resultUpdate.value) {
-                return callback(null, {
-                  code: 503,
-                  message: 'Error to save data'
-                });
-              }
-              if (log) {
-                var owner = '';
-                var repository = '';
-
-                if (!resultUpdate.value.owner) {
-                  if (resultUpdate.value.repository) {
-                    owner = resultUpdate.value.repository.owner;
-                    repository = resultUpdate.value.repository.repository;
-                  }
-                } else {
-                  owner = resultUpdate.value.owner;
-                  repository = resultUpdate.value.repository;
-                }
-                var filePath = self.fileDir + '/' + self.requestDetails.url;
-
-                if (owner != '') {
-                  filePath = self.fileDir + '/' + owner +
-                  '/' + repository + '/' + self.requestDetails.url;
-                }
-                if (fs.existsSync(filePath)) {
-                  fs.writeFile(filePath, log);
-                }
-              }
-              return callback(null, {
-                code: 200,
-                answer: resultUpdate.value
-              });
-
-            }
-            return callback(err, null);
+          return callback(null, {
+            code: 200,
+            answer: resultUpdate.value
           });
-        } else {
-          db.close();
-          return callback(err, null);
+
         }
+        return callback(err, null);
       });
     } else {
       return callback(err, null);
