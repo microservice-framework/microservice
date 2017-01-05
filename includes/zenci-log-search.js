@@ -125,10 +125,14 @@ LogSearch.prototype.process = function(callback) {
                   if(process.env.FILE_PROPERTY_JSON) {
                     results[i][fileProperty] = JSON.parse(fs.readFileSync(filePath));
                   } else {
-                    results[i][fileProperty] = fs.readFileSync(filePath);
+                    results[i][fileProperty] = fs.readFileSync(filePath).toString();
                   }
                 } catch(e) {
-                  results[i][fileProperty] = {};
+                  if(process.env.FILE_PROPERTY_JSON) {
+                    results[i][fileProperty] = {};
+                  } else {
+                    results[i][fileProperty] = "";
+                  }
                 }
               }
             }

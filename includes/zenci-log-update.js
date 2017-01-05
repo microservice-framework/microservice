@@ -110,7 +110,7 @@ LogUpdate.prototype.process = function(callback) {
               message: 'Error to save data'
             });
           }
-          if (log) {
+          if (fileContent) {
             var owner = '';
             var repository = '';
 

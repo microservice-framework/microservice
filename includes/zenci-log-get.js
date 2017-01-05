@@ -91,7 +91,7 @@ LogGet.prototype.process = function(callback) {
                   if(process.env.FILE_PROPERTY_JSON) {
                     result[fileProperty] = JSON.parse(fs.readFileSync(filePath));
                   } else {
-                    result[fileProperty] = fs.readFileSync(filePath);
+                    result[fileProperty] = fs.readFileSync(filePath).toString();
                   }
                 } catch(e) {
                   if(process.env.FILE_PROPERTY_JSON) {
