@@ -36,6 +36,11 @@ LogSearch.prototype.debug = {
 LogSearch.prototype.process = function(callback) {
   var self = this;
 
+  var fileProperty = "log";
+  if(process.env.FILE_PROPERTY) {
+    fileProperty = process.env.FILE_PROPERTY;
+  }
+
   MongoClient.connect(self.mongoUrl, function(err, db) {
     if (err) {
       callback(err, null);
@@ -91,7 +96,7 @@ LogSearch.prototype.process = function(callback) {
           }
         });
       }
-      if (self.data.log == true) {
+      if (self.data[fileProperty] == true) {
         if (self.fileDir && self.fileDir != '') {
           var owner = '';
           var repository = '';
@@ -117,9 +122,13 @@ LogSearch.prototype.process = function(callback) {
                 results[i]._id;
               if (fs.existsSync(filePath)) {
                 try {
-                  results[i].log = JSON.parse(fs.readFileSync(filePath));
+                  if(process.env.FILE_PROPERTY_JSON) {
+                    results[i][fileProperty] = JSON.parse(fs.readFileSync(filePath));
+                  } else {
+                    results[i][fileProperty] = fs.readFileSync(filePath);
+                  }
                 } catch(e) {
-                  results[i].log = {};
+                  results[i][fileProperty] = {};
                 }
               }
             }

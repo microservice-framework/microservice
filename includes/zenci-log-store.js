@@ -71,8 +71,20 @@ Log.prototype.debug = {
 Log.prototype.process = function(callback) {
   var self = this;
 
-  var log = JSON.stringify(self.data.log);
-  delete(self.data.log);
+  var fileProperty = "log";
+  if(process.env.FILE_PROPERTY) {
+    fileProperty = process.env.FILE_PROPERTY;
+  }
+
+  var fileContent = false;
+  if(self.data[fileProperty]) {
+    if(process.env.FILE_PROPERTY_JSON) {
+      fileContent = JSON.stringify(self.data[fileProperty]);
+    } else {
+      fileContent = self.data[fileProperty];
+    }
+    delete(self.data[fileProperty]);
+  }
 
   MongoClient.connect(self.mongoUrl, function(err, db) {
     if (!err) {
@@ -80,9 +92,8 @@ Log.prototype.process = function(callback) {
       collection.insertOne(self.data, function(err, result) {
         db.close();
         if (!err) {
-          if (log && self.fileDir) {
-            fs.writeFile(self.fileDir + '/' + result.insertedId, log);
-            self.data.log = JSON.parse(log);
+          if (fileContent && self.fileDir) {
+            fs.writeFile(self.fileDir + '/' + result.insertedId, fileContent);
           }
           callback(null, {
             code: 200,

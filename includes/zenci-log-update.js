@@ -39,8 +39,20 @@ LogUpdate.prototype.debug = {
 LogUpdate.prototype.process = function(callback) {
   var self = this;
 
-  var log = JSON.stringify(self.data.log);
-  delete(self.data.log);
+  var fileProperty = "log";
+  if(process.env.FILE_PROPERTY) {
+    fileProperty = process.env.FILE_PROPERTY;
+  }
+
+  var fileContent = false;
+  if(self.data[fileProperty]) {
+    if(process.env.FILE_PROPERTY_JSON) {
+      fileContent = JSON.stringify(self.data[fileProperty]);
+    } else {
+      fileContent = self.data[fileProperty];
+    }
+    delete(self.data[fileProperty]);
+  }
 
   MongoClient.connect(self.mongoUrl, function(err, db) {
     if (!err) {
@@ -118,7 +130,7 @@ LogUpdate.prototype.process = function(callback) {
               '/' + repository + '/' + self.requestDetails.url;
             }
             if (fs.existsSync(filePath)) {
-              fs.writeFile(filePath, log);
+              fs.writeFile(filePath, fileContent);
             }
           }
           return callback(null, {

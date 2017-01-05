@@ -37,6 +37,11 @@ LogGet.prototype.debug = {
 LogGet.prototype.process = function(callback) {
   var self = this;
 
+  var fileProperty = "log";
+  if(process.env.FILE_PROPERTY) {
+    fileProperty = process.env.FILE_PROPERTY;
+  }
+
   MongoClient.connect(self.mongoUrl, function(err, db) {
     if (!err) {
       var collection = db.collection(self.mongoTable);
@@ -82,7 +87,19 @@ LogGet.prototype.process = function(callback) {
               }
 
               if (fs.existsSync(filePath)) {
-                result.log = JSON.parse(fs.readFileSync(filePath));
+                try {
+                  if(process.env.FILE_PROPERTY_JSON) {
+                    result[fileProperty] = JSON.parse(fs.readFileSync(filePath));
+                  } else {
+                    result[fileProperty] = fs.readFileSync(filePath);
+                  }
+                } catch(e) {
+                  if(process.env.FILE_PROPERTY_JSON) {
+                    result[fileProperty] = {};
+                  } else {
+                    result[fileProperty] = "";
+                  }
+                }
               }
             }
             callback(null, {
