@@ -76,7 +76,9 @@ LogValidate.prototype.TokenSystem = function(callback) {
         return callback(err);
       }
       if (!result) {
-        return callback(new Error('Not found'));
+        var error = new Error('Not found');
+        error.code = 404;
+        return callback(error);
       }
       return callback(null);
     });

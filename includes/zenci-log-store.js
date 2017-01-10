@@ -29,7 +29,11 @@ function Log(options, data) {
 
   if (self.fileDir && self.fileDir != '') {
     if (!fs.existsSync(self.fileDir)) {
-      fs.mkdirSync(self.fileDir);
+      try {
+        fs.mkdirSync(self.fileDir);
+      catch (e) {
+        console.log('Folder was created right after we checked it.');
+      }
     }
 
     var owner = '';
