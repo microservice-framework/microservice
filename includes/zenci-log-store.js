@@ -31,7 +31,7 @@ function Log(options, data) {
     if (!fs.existsSync(self.fileDir)) {
       try {
         fs.mkdirSync(self.fileDir);
-      catch (e) {
+      } catch (e) {
         console.log('Folder was created right after we checked it.');
       }
     }
