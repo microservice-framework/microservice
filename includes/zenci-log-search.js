@@ -148,7 +148,7 @@ LogSearch.prototype.process = function(callback) {
         return callback(null, {
           code: 200,
           answer: results,
-          headers: {count: count}
+          headers: {'x-total-count': count}
         });
       });
     });
