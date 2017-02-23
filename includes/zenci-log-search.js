@@ -75,7 +75,7 @@ LogSearch.prototype.process = function(callback) {
     cursor.count(function(err, count) {
       if (err) {
         db.close();
-        return callback(err, results);
+        return callback(err, null);
       }
 
       if (self.data.sort) {
