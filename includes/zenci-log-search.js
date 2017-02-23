@@ -72,78 +72,87 @@ LogSearch.prototype.process = function(callback) {
     var options = {};
     var cursor = collection.find(query);
 
-    if (self.data.sort) {
-      cursor = cursor.sort(self.data.sort);
-    }
-
-    if (self.data.limit) {
-      cursor = cursor.limit(self.data.limit);
-    }
-    if (self.data.skip) {
-      cursor = cursor.skip(self.data.skip);
-    }
-
-    cursor.toArray(function(err, results) {
-      db.close();
+    cursor.count(function(err, count) {
       if (err) {
+        db.close();
         return callback(err, results);
       }
-      if (!results || results.length == 0) {
-        return callback(null, {
-          code: 404,
-          answer: {
-            message: 'Not found'
-          }
-        });
+
+      if (self.data.sort) {
+        cursor = cursor.sort(self.data.sort);
       }
-      if (self.data[fileProperty] == true) {
-        if (self.fileDir && self.fileDir != '') {
-          var owner = '';
-          var repository = '';
-          var filePath = '';
 
-          for (var i in results) {
-            if (results[i]._id) {
-              owner = '';
-              repository = '';
+      if (self.data.limit) {
+        cursor = cursor.limit(self.data.limit);
+      }
+      if (self.data.skip) {
+        cursor = cursor.skip(self.data.skip);
+      }
 
-              if (!results[i].owner) {
-                if (results[i].repository) {
-                  owner = results[i].repository.owner;
-                  repository = results[i].repository.repository;
-                }
-              } else {
-                owner = results[i].owner;
-                repository = results[i].repository;
-              }
-              filePath = self.fileDir + '/' +
-                owner + '/' +
-                repository + '/' +
-                results[i]._id;
-              if (fs.existsSync(filePath)) {
-                try {
-                  if(process.env.FILE_PROPERTY_JSON) {
-                    results[i][fileProperty] = JSON.parse(fs.readFileSync(filePath));
-                  } else {
-                    results[i][fileProperty] = fs.readFileSync(filePath).toString();
+      cursor.toArray(function(err, results) {
+        db.close();
+        if (err) {
+          return callback(err, results);
+        }
+        if (!results || results.length == 0) {
+          return callback(null, {
+            code: 404,
+            answer: {
+              message: 'Not found'
+            }
+          });
+        }
+        if (self.data[fileProperty] == true) {
+          if (self.fileDir && self.fileDir != '') {
+            var owner = '';
+            var repository = '';
+            var filePath = '';
+
+            for (var i in results) {
+              if (results[i]._id) {
+                owner = '';
+                repository = '';
+
+                if (!results[i].owner) {
+                  if (results[i].repository) {
+                    owner = results[i].repository.owner;
+                    repository = results[i].repository.repository;
                   }
-                } catch(e) {
-                  if(process.env.FILE_PROPERTY_JSON) {
-                    results[i][fileProperty] = {};
-                  } else {
-                    results[i][fileProperty] = "";
+                } else {
+                  owner = results[i].owner;
+                  repository = results[i].repository;
+                }
+                filePath = self.fileDir + '/' +
+                  owner + '/' +
+                  repository + '/' +
+                  results[i]._id;
+                if (fs.existsSync(filePath)) {
+                  try {
+                    if(process.env.FILE_PROPERTY_JSON) {
+                      results[i][fileProperty] = JSON.parse(fs.readFileSync(filePath));
+                    } else {
+                      results[i][fileProperty] = fs.readFileSync(filePath).toString();
+                    }
+                  } catch(e) {
+                    if(process.env.FILE_PROPERTY_JSON) {
+                      results[i][fileProperty] = {};
+                    } else {
+                      results[i][fileProperty] = "";
+                    }
                   }
                 }
               }
             }
           }
         }
-      }
-      return callback(null, {
-        code: 200,
-        answer: results
+        return callback(null, {
+          code: 200,
+          answer: results,
+          headers: {count: count}
+        });
       });
     });
+
 
   });
   return;
