@@ -70,7 +70,7 @@ LogSearch.prototype.process = function(callback) {
     }
     var cursor;
     if (self.data.fields) {
-      cursor = collection.find(query, fields);
+      cursor = collection.find(query, self.data.fields);
     } else {
       cursor = collection.find(query);
     }
