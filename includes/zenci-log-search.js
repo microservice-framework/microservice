@@ -71,7 +71,7 @@ LogSearch.prototype.process = function(callback) {
     var cursor;
     if (self.data.fields) {
       cursor = collection.find(query, fields);
-    else {
+    } else {
       cursor = collection.find(query);
     }
     cursor.count(function(err, count) {
