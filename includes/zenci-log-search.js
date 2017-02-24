@@ -68,10 +68,12 @@ LogSearch.prototype.process = function(callback) {
     if(query['id']) {
       query['_id'] = new ObjectID(query['id']);
     }
-
-    var options = {};
-    var cursor = collection.find(query);
-
+    var cursor;
+    if (self.data.fields) {
+      cursor = collection.find(query, fields);
+    else {
+      cursor = collection.find(query);
+    }
     cursor.count(function(err, count) {
       if (err) {
         db.close();
