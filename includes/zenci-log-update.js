@@ -39,14 +39,14 @@ LogUpdate.prototype.debug = {
 LogUpdate.prototype.process = function(callback) {
   var self = this;
 
-  var fileProperty = "log";
-  if(process.env.FILE_PROPERTY) {
+  var fileProperty = 'log';
+  if (process.env.FILE_PROPERTY) {
     fileProperty = process.env.FILE_PROPERTY;
   }
 
   var fileContent = false;
-  if(self.data[fileProperty]) {
-    if(process.env.FILE_PROPERTY_JSON) {
+  if (self.data[fileProperty]) {
+    if (process.env.FILE_PROPERTY_JSON) {
       fileContent = JSON.stringify(self.data[fileProperty]);
     } else {
       fileContent = self.data[fileProperty];
@@ -70,18 +70,18 @@ LogUpdate.prototype.process = function(callback) {
       var updateCmd = {};
       var forceSet = true;
       for (var key in self.data) {
-        if (updateAcceptedCmds.indexOf(key) > -1 ) {
+        if (updateAcceptedCmds.indexOf(key) > -1) {
           forceSet = false;
           updateCmd[key] = self.data[key];
         }
       }
 
-      if(forceSet) {
+      if (forceSet) {
         updateCmd['$set'] = self.data;
       }
 
       // Update changed field.
-      if(updateCmd['$set']) {
+      if (updateCmd['$set']) {
         updateCmd['$set']['changed'] = Date.now();
       } else {
         updateCmd['$set'] = {

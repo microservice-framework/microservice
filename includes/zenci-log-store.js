@@ -75,14 +75,14 @@ Log.prototype.debug = {
 Log.prototype.process = function(callback) {
   var self = this;
 
-  var fileProperty = "log";
-  if(process.env.FILE_PROPERTY) {
+  var fileProperty = 'log';
+  if (process.env.FILE_PROPERTY) {
     fileProperty = process.env.FILE_PROPERTY;
   }
 
   var fileContent = false;
-  if(self.data[fileProperty]) {
-    if(process.env.FILE_PROPERTY_JSON) {
+  if (self.data[fileProperty]) {
+    if (process.env.FILE_PROPERTY_JSON) {
       fileContent = JSON.stringify(self.data[fileProperty]);
     } else {
       fileContent = self.data[fileProperty];

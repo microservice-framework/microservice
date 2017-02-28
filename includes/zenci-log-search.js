@@ -36,8 +36,8 @@ LogSearch.prototype.debug = {
 LogSearch.prototype.process = function(callback) {
   var self = this;
 
-  var fileProperty = "log";
-  if(process.env.FILE_PROPERTY) {
+  var fileProperty = 'log';
+  if (process.env.FILE_PROPERTY) {
     fileProperty = process.env.FILE_PROPERTY;
   }
 
@@ -61,11 +61,11 @@ LogSearch.prototype.process = function(callback) {
     }
 
     // If search by ID, make sure that we convert it to object first.
-    if(query['_id']) {
+    if (query['_id']) {
       query['_id'] = new ObjectID(query['_id']);
     }
 
-    if(query['id']) {
+    if (query['id']) {
       query['_id'] = new ObjectID(query['id']);
     }
     var cursor;
@@ -130,16 +130,16 @@ LogSearch.prototype.process = function(callback) {
                   results[i]._id;
                 if (fs.existsSync(filePath)) {
                   try {
-                    if(process.env.FILE_PROPERTY_JSON) {
+                    if (process.env.FILE_PROPERTY_JSON) {
                       results[i][fileProperty] = JSON.parse(fs.readFileSync(filePath));
                     } else {
                       results[i][fileProperty] = fs.readFileSync(filePath).toString();
                     }
                   } catch(e) {
-                    if(process.env.FILE_PROPERTY_JSON) {
+                    if (process.env.FILE_PROPERTY_JSON) {
                       results[i][fileProperty] = {};
                     } else {
-                      results[i][fileProperty] = "";
+                      results[i][fileProperty] = '';
                     }
                   }
                 }

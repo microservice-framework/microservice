@@ -37,8 +37,8 @@ LogGet.prototype.debug = {
 LogGet.prototype.process = function(callback) {
   var self = this;
 
-  var fileProperty = "log";
-  if(process.env.FILE_PROPERTY) {
+  var fileProperty = 'log';
+  if (process.env.FILE_PROPERTY) {
     fileProperty = process.env.FILE_PROPERTY;
   }
 
@@ -88,16 +88,16 @@ LogGet.prototype.process = function(callback) {
 
               if (fs.existsSync(filePath)) {
                 try {
-                  if(process.env.FILE_PROPERTY_JSON) {
+                  if (process.env.FILE_PROPERTY_JSON) {
                     result[fileProperty] = JSON.parse(fs.readFileSync(filePath));
                   } else {
                     result[fileProperty] = fs.readFileSync(filePath).toString();
                   }
                 } catch(e) {
-                  if(process.env.FILE_PROPERTY_JSON) {
+                  if (process.env.FILE_PROPERTY_JSON) {
                     result[fileProperty] = {};
                   } else {
-                    result[fileProperty] = "";
+                    result[fileProperty] = '';
                   }
                 }
               }
