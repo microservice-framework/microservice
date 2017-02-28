@@ -11,6 +11,7 @@ var LogGet = require('./includes/zenci-log-get.js');
 var LogDelete = require('./includes/zenci-log-delete.js');
 var LogValidate = require('./includes/zenci-log-validate.js');
 var LogSearch = require('./includes/zenci-log-search.js');
+var LogAggregate = require('./includes/zenci-log-aggregate.js');
 const fs = require('fs');
 
 const bind = function(fn, me) { return function() { return fn.apply(me, arguments); }; };
@@ -133,6 +134,19 @@ ZenciMicroservice.prototype.search = function(jsonData, requestDetails, callback
   return Task;
 
 };
+
+/**
+ * Process SEARCH request.
+ */
+ZenciMicroservice.prototype.aggregate = function(jsonData, requestDetails, callback) {
+  var self = this;
+
+  var Task = new LogAggregate(self.settings, jsonData, requestDetails);
+  Task.process(callback);
+  return Task;
+
+};
+
 
 
 /**
