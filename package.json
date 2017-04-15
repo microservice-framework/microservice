@@ -1,6 +1,6 @@
 {
-  "name": "zenci-microservice",
-  "version": "0.4.5",
+  "name": "microservice",
+  "version": "1.0.0",
   "description": "NodeJS based status worker. Store and update statuses. — Edit",
   "main": "index.js",
   "scripts": {
@@ -9,18 +9,18 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/itpatrol/zenci-microservice.git"
+    "url": "git+https://github.com/itpatrol/microservice.git"
   },
   "author": "Gormartsen",
   "license": "SEE LICENSE IN <LICENSE.txt>",
   "bugs": {
-    "url": "https://github.com/itpatrol/zenci-microservice/issues"
+    "url": "https://github.com/itpatrol/microservice/issues"
   },
-  "homepage": "https://github.com/itpatrol/zenci-microservice#readme",
+  "homepage": "https://github.com/itpatrol/microservice#readme",
   "dependencies": {
     "jsonschema": "^1.1.0",
     "mongodb": "^2.2.1",
     "debug": "^2.2.0",
-    "zenci-microservice-client": "github:itpatrol/zenci-microservice-client"
+    "microservice-client": "github:itpatrol/microservice-client"
   }
 }
