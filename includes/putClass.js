@@ -45,7 +45,7 @@ PutClass.prototype.process = function(callback) {
   }
 
   var fileContent = false;
-  if(fileProperty) {
+  if (fileProperty) {
     if (self.data[fileProperty]) {
       if (process.env.FILE_PROPERTY_JSON) {
         fileContent = JSON.stringify(self.data[fileProperty]);
@@ -57,7 +57,7 @@ PutClass.prototype.process = function(callback) {
   }
 
   MongoClient.connect(self.mongoUrl, function(err, db) {
-    if(err) {
+    if (err) {
       self.debug.debug('MongoClient:connect err: %O', err);
       return callback(err, null);
     }
@@ -99,7 +99,7 @@ PutClass.prototype.process = function(callback) {
     collection.findOneAndUpdate(query, updateCmd, { returnOriginal: false },
       function(err, resultUpdate) {
       db.close();
-      if(err) {
+      if (err) {
         self.debug.debug('MongoClient:findOneAndUpdate err: %O', err);
         return callback(err, null);
       }

@@ -58,7 +58,7 @@ PostClass.prototype.process = function(callback) {
   }
 
   var fileContent = false;
-  if(fileProperty) {
+  if (fileProperty) {
     if (self.data[fileProperty]) {
       if (process.env.FILE_PROPERTY_JSON) {
         fileContent = JSON.stringify(self.data[fileProperty]);
@@ -70,7 +70,7 @@ PostClass.prototype.process = function(callback) {
   }
 
   MongoClient.connect(self.mongoUrl, function(err, db) {
-    if(err) {
+    if (err) {
       self.debug.debug('MongoClient:connect err: %O', err);
       return callback(err, null);
     }
@@ -78,7 +78,7 @@ PostClass.prototype.process = function(callback) {
     var collection = db.collection(self.mongoTable);
     collection.insertOne(self.data, function(err, result) {
       db.close();
-      if(err) {
+      if (err) {
         self.debug.debug('MongoClient:insertOne err: %O', err);
         return callback(err, null);
       }

@@ -115,7 +115,7 @@ SearchClass.prototype.process = function(callback) {
 
             for (var i in results) {
               if (results[i]._id) {
-                if(self.fileDir && self.fileDir != '' && fileProperty) {
+                if (self.fileDir && self.fileDir != '' && fileProperty) {
                   filePath = self.fileDir + '/' + results[i]._id;
                   if (fs.existsSync(filePath)) {
                     try {

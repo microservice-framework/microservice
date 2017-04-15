@@ -38,7 +38,7 @@ DeleteClass.prototype.process = function(callback) {
   var self = this;
 
   MongoClient.connect(self.mongoUrl, function(err, db) {
-    if(err) {
+    if (err) {
       self.debug.debug('MongoClient:connect err: %O', err);
       return callback(err, null);
     }
@@ -49,7 +49,7 @@ DeleteClass.prototype.process = function(callback) {
     };
     collection.findOneAndDelete(query, function(err, result) {
       db.close();
-      if(err) {
+      if (err) {
         self.debug.debug('MongoClient:findOneAndDelete err: %O', err);
         return callback(err, null);
       }

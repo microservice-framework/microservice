@@ -43,7 +43,7 @@ GetClass.prototype.process = function(callback) {
   }
 
   MongoClient.connect(self.mongoUrl, function(err, db) {
-    if(err) {
+    if (err) {
       self.debug.debug('MongoClient:connect err: %O', err);
       return callback(err, null);
     }
@@ -61,7 +61,7 @@ GetClass.prototype.process = function(callback) {
 
     collection.findOne(query, function(err, result) {
       db.close();
-      if(err) {
+      if (err) {
         self.debug.debug('MongoClient:findOne err: %O', err);
         return callback(err, null);
       }
