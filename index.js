@@ -40,11 +40,6 @@ function Microservice(settings) {
   self.delete = bind(self.delete, self);
   self.validateJson = bind(self.validateJson, self);
   self.search = bind(self.search, self);
-  //  self.settings.mongoUrl = process.env.MONGO_URL;
-  //  self.settings.mongoTable = process.env.MONGO_TABLE;
-  //  self.settings.secureKey = process.env.SECURE_KEY;
-  //  self.settings.fileDir = process.env.FILE_DIR
-  //  self.settings.schema = process.env.SCHEMA
 }
 
 /**

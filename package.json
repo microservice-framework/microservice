@@ -1,7 +1,7 @@
 {
   "name": "microservice",
   "version": "1.0.0",
-  "description": "NodeJS based status worker. Store and update statuses. — Edit",
+  "description": "Microservice framework worker class.",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
@@ -9,18 +9,18 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/itpatrol/microservice.git"
+    "url": "git+https://github.com/microservice-framework/microservice.git"
   },
   "author": "Gormartsen",
-  "license": "SEE LICENSE IN <LICENSE.txt>",
+  "license": "GPL-3.0",
   "bugs": {
-    "url": "https://github.com/itpatrol/microservice/issues"
+    "url": "https://github.com/microservice-framework/microservice/issues"
   },
-  "homepage": "https://github.com/itpatrol/microservice#readme",
+  "homepage": "https://github.com/microservice-framework/microservice#readme",
   "dependencies": {
     "jsonschema": "^1.1.0",
     "mongodb": "^2.2.1",
     "debug": "^2.2.0",
-    "microservice-client": "github:itpatrol/microservice-client"
+    "microservice-client": "@microservice-framework/microservice-client"
   }
 }
