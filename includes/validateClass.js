@@ -7,7 +7,7 @@ const signature = require('./signature.js');
 const MongoClient = require('mongodb').MongoClient;
 const ObjectID = require('mongodb').ObjectID;
 const debugF = require('debug');
-const MicroserviceClient = require('zenci-microservice-client');
+const MicroserviceClient = require('microservice-client');
 const fs = require('fs');
 
 const bind = function(fn, me) { return function() { return fn.apply(me, arguments); }; };
@@ -16,7 +16,7 @@ const bind = function(fn, me) { return function() { return fn.apply(me, argument
  * Constructor.
  *   Prepare data for test.
  */
-function LogValidate(options, data, requestDetails) {
+function ValidateClass(options, data, requestDetails) {
 
   // Use a closure to preserve `this`
   var self = this;
@@ -31,38 +31,46 @@ function LogValidate(options, data, requestDetails) {
   self.AccessToken = bind(self.AccessToken, self);
 }
 
-LogValidate.prototype.data = {};
-LogValidate.prototype.requestDetails = {};
-LogValidate.prototype.mongoUrl = '';
-LogValidate.prototype.mongoTable = '';
-LogValidate.prototype.secureKey = '';
+ValidateClass.prototype.data = {};
+ValidateClass.prototype.requestDetails = {};
+ValidateClass.prototype.mongoUrl = '';
+ValidateClass.prototype.mongoTable = '';
+ValidateClass.prototype.secureKey = '';
 
-LogValidate.prototype.debug = {
-  main: debugF('status:main'),
-  debug: debugF('status:debug')
+ValidateClass.prototype.debug = {
+  debug: debugF('microservice:debug')
 };
 
-LogValidate.prototype.SignatureSystem = function(callback) {
+ValidateClass.prototype.SignatureSystem = function(callback) {
   var self = this;
-
+  self.debug.debug('Validate:SignatureSystem');
   var sign = self.requestDetails.headers.signature.split('=');
+
   if (sign.length != 2) {
+    self.debug.debug('Validate:SignatureSystem Malformed signature');
     return callback(new Error('Malformed signature'));
   }
+
   if (sign[ 1 ] != signature(sign[ 0 ], self.data, self.secureKey)) {
+    self.debug.debug('Validate:SignatureSystem Signature mismatch');
     return callback(new Error('Signature mismatch'));
   }
+
   return callback(null);
 }
 
-LogValidate.prototype.TokenSystem = function(callback) {
+ValidateClass.prototype.TokenSystem = function(callback) {
   var self = this;
 
+  self.debug.debug('Validate:TokenSystem');
   if (self.requestDetails.url.length != 24) {
+    self.debug.debug('Validate:TokenSystem Token length != 24');
     return callback(new Error('Wrong request'));
   }
+
   MongoClient.connect(self.mongoUrl, function(err, db) {
     if (err) {
+      self.debug.debug('MongoClient:connect err: %O', err);
       return callback(err);
     }
 
@@ -73,9 +81,11 @@ LogValidate.prototype.TokenSystem = function(callback) {
     };
     collection.findOne(query, function(err, result) {
       if (err) {
+        self.debug.debug('MongoClient:findOne err: %O', err);
         return callback(err);
       }
       if (!result) {
+        self.debug.debug('MongoClient:findOneAndUpdate object not found.');
         var error = new Error('Not found');
         error.code = 404;
         return callback(error);
@@ -85,41 +95,74 @@ LogValidate.prototype.TokenSystem = function(callback) {
   });
 }
 
-LogValidate.prototype.AccessToken = function(callback) {
+ValidateClass.prototype.AccessToken = function(callback) {
   var self = this;
-  let authServer = new MicroserviceClient({
-    URL: process.env.AUTH_URL,
-    secureKey: process.env.AUTH_SECRET
-  });
-  authServer.search({
-    accessToken: self.requestDetails.headers.access_token,
-    scope: process.env.SCOPE
-  }, function(err, taskAnswer) {
+
+  self.debug.debug('Validate:AccessToken');
+  self.clientViaRouter('auth', 'auth', function(err, authServer) {
     if (err) {
-      console.log('---');
-      console.log(err);
-      console.log(err.stack);
-    } else {
-      self.debug.debug('Auth answer %s ', JSON.stringify(taskAnswer , null, 2));
+      self.debug.debug('Validate:AccessToken err %O', err);
+      return callback(new Error('Access denied'));
+    }
+
+    authServer.search({
+      accessToken: self.requestDetails.headers.access_token,
+      scope: process.env.SCOPE
+    }, function(err, taskAnswer) {
+      if (err) {
+        self.debug.debug('authServer:search err: %O', err);
+        return callback(err, taskAnswer);
+      }
+
+      self.debug.debug('authServer:search %O ', taskAnswer);
       if (!taskAnswer.values) {
+        self.debug.debug('authServer:search no scope provided');
         return callback(new Error('Access denied'));
       }
-      self.requestDetails.auth_scope = taskAnswer.values;
-    }
-    return callback(err, taskAnswer);
-  });
 
+      self.requestDetails.auth_scope = taskAnswer.values;
+      return callback(err, taskAnswer);
+    });
+  });
 }
 
-LogValidate.prototype.validate = function(method, callback) {
+/**
+ * Wrapper to get secure access to service by path.
+ */
+ValidateClass.prototype.clientViaRouter = function(pathPattern, pathURL, callback) {
+  let routerServer = new MicroserviceClient({
+    URL: process.env.ROUTER_URL,
+    secureKey: process.env.ROUTER_SECRET
+  });
+
+  routerServer.search({
+      path: {
+        $in: [pathPattern]
+      }
+    }, function(err, routes) {
+      if (err) {
+        return callback(err);
+      }
+      let msClient = new MicroserviceClient({
+        URL: process.env.ROUTER_PROXY_URL + '/' + pathURL,
+        secureKey: routes[0].secureKey
+      });
+      callback(null, msClient);
+    });
+}
+
+ValidateClass.prototype.validate = function(method, callback) {
   var self = this;
-  self.debug.debug('Request %s ', JSON.stringify(self.requestDetails , null, 2));
+  self.debug.debug('Validate:requestDetails %O ', self.requestDetails);
+
   if (self.requestDetails.headers.access_token) {
     return self.AccessToken(callback);
   }
+
   switch (method) {
     case 'PUT': {
       if (!self.requestDetails.headers.signature && !self.requestDetails.headers.token) {
+        self.debug.debug('Validate:PUT Signature or Token required');
         return callback(new Error('Signature or Token required'));
       }
       if (self.requestDetails.headers.signature) {
@@ -133,22 +176,21 @@ LogValidate.prototype.validate = function(method, callback) {
     case 'POST':
     case 'SEARCH': {
       if (!self.requestDetails.headers.signature) {
+        self.debug.debug('Validate:%s Signature required', method);
         return callback(new Error('Signature required'));
       }
-
       return self.SignatureSystem(callback);
-
       break;
     }
     default: {
       if (!self.requestDetails.headers.token) {
+        self.debug.debug('Validate:%s Token required', method);
         return callback(new Error('Token required'));
       }
       return self.TokenSystem(callback);
-
       break;
     }
   }
 };
 
-module.exports = LogValidate;
+module.exports = ValidateClass;

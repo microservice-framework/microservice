@@ -12,7 +12,7 @@ const fs = require('fs');
  * Constructor.
  *   Prepare data for test.
  */
-function LogSearch(options, data, requestDetails) {
+function SearchClass(options, data, requestDetails) {
   // Use a closure to preserve `this`
   var self = this;
   self.mongoUrl = options.mongoUrl;
@@ -23,27 +23,28 @@ function LogSearch(options, data, requestDetails) {
   this.requestDetails = requestDetails;
 }
 
-LogSearch.prototype.data = {};
-LogSearch.prototype.requestDetails = {};
-LogSearch.prototype.fileDir = '';
-LogSearch.prototype.mongoUrl = '';
-LogSearch.prototype.mongoTable = '';
+SearchClass.prototype.data = {};
+SearchClass.prototype.requestDetails = {};
+SearchClass.prototype.fileDir = '';
+SearchClass.prototype.mongoUrl = '';
+SearchClass.prototype.mongoTable = '';
 
-LogSearch.prototype.debug = {
-  main: debugF('status:main')
+SearchClass.prototype.debug = {
+  debug: debugF('microservice:debug')
 };
 
-LogSearch.prototype.process = function(callback) {
+SearchClass.prototype.process = function(callback) {
   var self = this;
 
-  var fileProperty = 'log';
+  var fileProperty = false;
   if (process.env.FILE_PROPERTY) {
     fileProperty = process.env.FILE_PROPERTY;
   }
 
   MongoClient.connect(self.mongoUrl, function(err, db) {
     if (err) {
-      callback(err, null);
+      self.debug.debug('MongoClient:connect err: %O', err);
+      return callback(err, null);
     }
 
     var collection = db.collection(self.mongoTable);
@@ -67,6 +68,7 @@ LogSearch.prototype.process = function(callback) {
 
     if (query['id']) {
       query['_id'] = new ObjectID(query['id']);
+      delete query['id'];
     }
     var cursor;
     if (self.data.fields) {
@@ -77,6 +79,7 @@ LogSearch.prototype.process = function(callback) {
     cursor.count(function(err, count) {
       if (err) {
         db.close();
+        self.debug.debug('MongoClient:count err: %O', err);
         return callback(err, null);
       }
 
@@ -94,9 +97,11 @@ LogSearch.prototype.process = function(callback) {
       cursor.toArray(function(err, results) {
         db.close();
         if (err) {
+          self.debug.debug('MongoClient:toArray err: %O', err);
           return callback(err, results);
         }
         if (!results || results.length == 0) {
+          self.debug.debug('MongoClient:toArray object not found.');
           return callback(null, {
             code: 404,
             answer: {
@@ -106,40 +111,25 @@ LogSearch.prototype.process = function(callback) {
         }
         if (self.data[fileProperty] == true) {
           if (self.fileDir && self.fileDir != '') {
-            var owner = '';
-            var repository = '';
             var filePath = '';
 
             for (var i in results) {
               if (results[i]._id) {
-                owner = '';
-                repository = '';
-
-                if (!results[i].owner) {
-                  if (results[i].repository) {
-                    owner = results[i].repository.owner;
-                    repository = results[i].repository.repository;
-                  }
-                } else {
-                  owner = results[i].owner;
-                  repository = results[i].repository;
-                }
-                filePath = self.fileDir + '/' +
-                  owner + '/' +
-                  repository + '/' +
-                  results[i]._id;
-                if (fs.existsSync(filePath)) {
-                  try {
-                    if (process.env.FILE_PROPERTY_JSON) {
-                      results[i][fileProperty] = JSON.parse(fs.readFileSync(filePath));
-                    } else {
-                      results[i][fileProperty] = fs.readFileSync(filePath).toString();
-                    }
-                  } catch(e) {
-                    if (process.env.FILE_PROPERTY_JSON) {
-                      results[i][fileProperty] = {};
-                    } else {
-                      results[i][fileProperty] = '';
+                if(self.fileDir && self.fileDir != '' && fileProperty) {
+                  filePath = self.fileDir + '/' + results[i]._id;
+                  if (fs.existsSync(filePath)) {
+                    try {
+                      if (process.env.FILE_PROPERTY_JSON) {
+                        results[i][fileProperty] = JSON.parse(fs.readFileSync(filePath));
+                      } else {
+                        results[i][fileProperty] = fs.readFileSync(filePath).toString();
+                      }
+                    } catch(e) {
+                      if (process.env.FILE_PROPERTY_JSON) {
+                        results[i][fileProperty] = {};
+                      } else {
+                        results[i][fileProperty] = '';
+                      }
                     }
                   }
                 }
@@ -154,10 +144,8 @@ LogSearch.prototype.process = function(callback) {
         });
       });
     });
-
-
   });
   return;
 };
 
-module.exports = LogSearch;
+module.exports = SearchClass;

@@ -12,7 +12,7 @@ const fs = require('fs');
  * Constructor.
  *   Prepare data for test.
  */
-function LogAggregate(options, data, requestDetails) {
+function AggregateClass(options, data, requestDetails) {
   // Use a closure to preserve `this`
   var self = this;
   self.mongoUrl = options.mongoUrl;
@@ -23,22 +23,23 @@ function LogAggregate(options, data, requestDetails) {
   this.requestDetails = requestDetails;
 }
 
-LogAggregate.prototype.data = {};
-LogAggregate.prototype.requestDetails = {};
-LogAggregate.prototype.fileDir = '';
-LogAggregate.prototype.mongoUrl = '';
-LogAggregate.prototype.mongoTable = '';
+AggregateClass.prototype.data = {};
+AggregateClass.prototype.requestDetails = {};
+AggregateClass.prototype.fileDir = '';
+AggregateClass.prototype.mongoUrl = '';
+AggregateClass.prototype.mongoTable = '';
 
-LogAggregate.prototype.debug = {
-  main: debugF('status:main')
+AggregateClass.prototype.debug = {
+  debug: debugF('microservice:debug')
 };
 
-LogAggregate.prototype.process = function(callback) {
+AggregateClass.prototype.process = function(callback) {
   var self = this;
 
   MongoClient.connect(self.mongoUrl, function(err, db) {
     if (err) {
-      callback(err, null);
+      self.debug.debug('MongoClient:connect err: %O', err);
+      return callback(err, null);
     }
 
     var collection = db.collection(self.mongoTable);
@@ -46,9 +47,11 @@ LogAggregate.prototype.process = function(callback) {
     collection.aggregate(self.data).toArray(function(err, results) {
       db.close();
       if (err) {
+        self.debug.debug('MongoClient:aggregate err: %O', err);
         return callback(err, results);
       }
       if (!results || results.length == 0) {
+        self.debug.debug('MongoClient:aggregate object not found.');
         return callback(null, {
           code: 404,
           answer: {
@@ -65,4 +68,4 @@ LogAggregate.prototype.process = function(callback) {
   return;
 };
 
-module.exports = LogAggregate;
+module.exports = AggregateClass;

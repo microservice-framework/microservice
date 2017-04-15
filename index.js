@@ -5,19 +5,20 @@
 'use strict';
 
 var Validator = require('jsonschema').Validator;
-var LogStore = require('./includes/zenci-log-store.js');
-var LogUpdate = require('./includes/zenci-log-update.js');
-var LogGet = require('./includes/zenci-log-get.js');
-var LogDelete = require('./includes/zenci-log-delete.js');
-var LogValidate = require('./includes/zenci-log-validate.js');
-var LogSearch = require('./includes/zenci-log-search.js');
-var LogAggregate = require('./includes/zenci-log-aggregate.js');
+var PostClass = require('./includes/postClass.js');
+var PutClass = require('./includes/putClass.js');
+var GetClass = require('./includes/getClass.js');
+var DeleteClass = require('./includes/deleteClass.js');
+var ValidateClass = require('./includes/validateClass.js');
+var SearchClass = require('./includes/searchClass.js');
+var AggregateClass = require('./includes/aggregateClass.js');
+const debugF = require('debug');
 const fs = require('fs');
 
 const bind = function(fn, me) { return function() { return fn.apply(me, arguments); }; };
 
 /**
- * Constructor of ZenciMicroservice object.
+ * Constructor of Microservice object.
  *   .
  *   settings.mongoUrl = process.env.MONGO_URL;
  *   settings.mongoTable = process.env.MONGO_TABLE;
@@ -25,7 +26,7 @@ const bind = function(fn, me) { return function() { return fn.apply(me, argument
  *   settings.fileDir = process.env.FILE_DIR
  *   settings.schema = process.env.SCHEMA
  */
-function ZenciMicroservice(settings) {
+function Microservice(settings) {
 
   // Use a closure to preserve `this`
   var self = this;
@@ -49,15 +50,19 @@ function ZenciMicroservice(settings) {
 /**
  * Settings for microservice.
  */
-ZenciMicroservice.prototype.settings = {};
+Microservice.prototype.settings = {};
+
+Microservice.prototype.debug = {
+  debug: debugF('microservice:debug')
+};
 
 /**
  * Validate data by method.
  */
-ZenciMicroservice.prototype.validate = function(method, jsonData, requestDetails, callback) {
+Microservice.prototype.validate = function(method, jsonData, requestDetails, callback) {
   var self = this;
 
-  var Validate = new LogValidate(self.settings, jsonData, requestDetails);
+  var Validate = new ValidateClass(self.settings, jsonData, requestDetails);
   Validate.validate(method, callback);
   return Validate;
 };
@@ -65,19 +70,19 @@ ZenciMicroservice.prototype.validate = function(method, jsonData, requestDetails
 /**
  * Process Get request.
  */
-ZenciMicroservice.prototype.get = function(jsonData, requestDetails, callback) {
+Microservice.prototype.get = function(jsonData, requestDetails, callback) {
   var self = this;
 
-  var Task = new LogGet(self.settings, jsonData, requestDetails);
-  Task.process(callback);
-  return Task;
+  var Get = new GetClass(self.settings, jsonData, requestDetails);
+  Get.process(callback);
+  return Get;
 
 };
 
 /**
  * Process Get request.
  */
-ZenciMicroservice.prototype.post = function(jsonData, requestDetails, callback) {
+Microservice.prototype.post = function(jsonData, requestDetails, callback) {
   var self = this;
 
   // If auth_scope active, auto add variables.
@@ -91,75 +96,74 @@ ZenciMicroservice.prototype.post = function(jsonData, requestDetails, callback) 
   if (true !== errors) {
     var error = new Error;
     error.message = errors.join();
+    self.debug.debug('POST:validateJson %O', error);
     return callback(error);
   }
-  var Task = new LogStore(self.settings, jsonData);
-  Task.process(callback);
-  return Task;
+  var Post = new PostClass(self.settings, jsonData);
+  Post.process(callback);
+  return Post;
 
 };
 
 /**
  * Process PUT request.
  */
-ZenciMicroservice.prototype.put = function(jsonData, requestDetails, callback) {
+Microservice.prototype.put = function(jsonData, requestDetails, callback) {
   var self = this;
 
-  var Task = new LogUpdate(self.settings, jsonData, requestDetails);
-  Task.process(callback);
-  return Task;
+  var Put = new PutClass(self.settings, jsonData, requestDetails);
+  Put.process(callback);
+  return Put;
 
 };
 
 /**
  * Process Get request.
  */
-ZenciMicroservice.prototype.delete = function(jsonData, requestDetails, callback) {
+Microservice.prototype.delete = function(jsonData, requestDetails, callback) {
   var self = this;
 
-  var Task = new LogDelete(self.settings, jsonData, requestDetails);
-  Task.process(callback);
-  return Task;
+  var Delete = new DeleteClass(self.settings, jsonData, requestDetails);
+  Delete.process(callback);
+  return Delete;
 
 };
 
 /**
  * Process SEARCH request.
  */
-ZenciMicroservice.prototype.search = function(jsonData, requestDetails, callback) {
+Microservice.prototype.search = function(jsonData, requestDetails, callback) {
   var self = this;
 
-  var Task = new LogSearch(self.settings, jsonData, requestDetails);
-  Task.process(callback);
-  return Task;
+  var Search = new SearchClass(self.settings, jsonData, requestDetails);
+  Search.process(callback);
+  return Search;
 
 };
 
 /**
  * Process SEARCH request.
  */
-ZenciMicroservice.prototype.aggregate = function(jsonData, requestDetails, callback) {
+Microservice.prototype.aggregate = function(jsonData, requestDetails, callback) {
   var self = this;
 
-  var Task = new LogAggregate(self.settings, jsonData, requestDetails);
-  Task.process(callback);
-  return Task;
+  var Aggregate = new AggregateClass(self.settings, jsonData, requestDetails);
+  Aggregate.process(callback);
+  return Aggregate;
 
 };
-
-
 
 /**
  * Process Get request.
  */
-ZenciMicroservice.prototype.validateJson = function(jsonData) {
+Microservice.prototype.validateJson = function(jsonData) {
   var self = this;
 
   var v = new Validator();
   try {
     var schemaTask = JSON.parse(fs.readFileSync('schema/' + self.settings.schema));
   } catch (e) {
-    console.log(e);
+    self.debug.debug('validateJson:Validator %O', e);
     throw new Error('Internal error: schema syntax error.');
   }
   var result = v.validate(jsonData, schemaTask);
@@ -174,4 +178,4 @@ ZenciMicroservice.prototype.validateJson = function(jsonData) {
 
 };
 
-module.exports = ZenciMicroservice;
+module.exports = Microservice;
