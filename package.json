@@ -21,6 +21,6 @@
     "jsonschema": "^1.1.0",
     "mongodb": "^2.2.1",
     "debug": "^2.2.0",
-    "microservice-client": "@microservice-framework/microservice-client"
+    "@microservice-framework/microservice-client": "@microservice-framework/microservice-client"
   }
 }

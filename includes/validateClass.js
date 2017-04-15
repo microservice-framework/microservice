@@ -7,7 +7,7 @@ const signature = require('./signature.js');
 const MongoClient = require('mongodb').MongoClient;
 const ObjectID = require('mongodb').ObjectID;
 const debugF = require('debug');
-const MicroserviceClient = require('microservice-client');
+const MicroserviceClient = require('@microservice-framework/microservice-client');
 const fs = require('fs');
 
 const bind = function(fn, me) { return function() { return fn.apply(me, arguments); }; };
