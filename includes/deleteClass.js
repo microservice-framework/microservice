@@ -69,6 +69,14 @@ DeleteClass.prototype.process = function(callback) {
           fs.unlink(filePath);
         }
       }
+
+      if (self.requestDetails.auth_scope) {
+        delete(result.token);
+      }
+
+      result.id = result._id;
+      delete(result._id);
+
       return callback(null, {
         code: 200,
         answer: result.value

@@ -19,8 +19,8 @@ function SearchClass(options, data, requestDetails) {
   self.mongoTable = options.mongoTable;
   self.fileDir = options.fileDir;
 
-  this.data = data;
-  this.requestDetails = requestDetails;
+  self.data = data;
+  self.requestDetails = requestDetails;
 }
 
 SearchClass.prototype.data = {};
@@ -137,6 +137,13 @@ SearchClass.prototype.process = function(callback) {
             }
           }
         }
+        results.forEach(function(element) {
+          element.id = element._id;
+          delete(element._id);
+          if (self.requestDetails.auth_scope) {
+            delete(element.token);
+          }
+        });
         return callback(null, {
           code: 200,
           answer: results,

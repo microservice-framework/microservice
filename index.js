@@ -94,7 +94,7 @@ Microservice.prototype.post = function(jsonData, requestDetails, callback) {
     self.debug.debug('POST:validateJson %O', error);
     return callback(error);
   }
-  var Post = new PostClass(self.settings, jsonData);
+  var Post = new PostClass(self.settings, jsonData, requestDetails);
   Post.process(callback);
   return Post;
 

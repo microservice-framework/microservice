@@ -13,7 +13,7 @@ const fs = require('fs');
  * Constructor.
  *   Prepare data for test.
  */
-function PostClass(options, data) {
+function PostClass(options, data, requestDetails) {
 
   // Use a closure to preserve `this`
   var self = this;
@@ -21,11 +21,12 @@ function PostClass(options, data) {
   self.mongoTable = options.mongoTable;
   self.fileDir = options.fileDir;
 
-  this.data = data;
+  self.data = data;
+  self.requestDetails = requestDetails;
 
-  this.data.created = Date.now();
-  this.data.changed = Date.now();
-  this.data.token = tokenGenerate(24);
+  self.data.created = Date.now();
+  self.data.changed = Date.now();
+  self.data.token = tokenGenerate(24);
 
   if (self.fileDir && self.fileDir != '') {
     if (!fs.existsSync(self.fileDir)) {
@@ -85,13 +86,17 @@ PostClass.prototype.process = function(callback) {
       if (fileContent && self.fileDir) {
         fs.writeFile(self.fileDir + '/' + result.insertedId, fileContent);
       }
+      var answer = {
+        message: 'Task accepted',
+        id: result.insertedId,
+        token: self.data.token
+      };
+      if (self.requestDetails.auth_scope) {
+        delete(answer.token);
+      }
       callback(null, {
         code: 200,
-        answer: {
-          message: 'Task accepted',
-          id: result.insertedId,
-          token: self.data.token
-        }
+        answer: answer
       });
     });
   });

@@ -95,7 +95,7 @@ ValidateClass.prototype.TokenSystem = function(callback) {
   });
 }
 
-ValidateClass.prototype.AccessToken = function(callback) {
+ValidateClass.prototype.AccessToken = function(method, callback) {
   var self = this;
 
   self.debug.debug('Validate:AccessToken');
@@ -111,7 +111,7 @@ ValidateClass.prototype.AccessToken = function(callback) {
     }, function(err, taskAnswer) {
       if (err) {
         self.debug.debug('authServer:search err: %O', err);
-        return callback(err, taskAnswer);
+        return callback(err);
       }
 
       self.debug.debug('authServer:search %O ', taskAnswer);
@@ -120,8 +120,18 @@ ValidateClass.prototype.AccessToken = function(callback) {
         return callback(new Error('Access denied'));
       }
 
+      if (!taskAnswer.methods) {
+        self.debug.debug('authServer:search no methods provided');
+        return callback(new Error('Access denied'));
+      }
+
+      if (!taskAnswer.methods[method.toLowerCase()]) {
+        self.debug.debug('Request:%s denied', method);
+        return callback(new Error('Access denied'));
+      }
+
       self.requestDetails.auth_scope = taskAnswer.values;
-      return callback(err, taskAnswer);
+      return callback(null);
     });
   });
 }
@@ -156,7 +166,7 @@ ValidateClass.prototype.validate = function(method, callback) {
   self.debug.debug('Validate:requestDetails %O ', self.requestDetails);
 
   if (self.requestDetails.headers.access_token) {
-    return self.AccessToken(callback);
+    return self.AccessToken(method, callback);
   }
 
   switch (method) {

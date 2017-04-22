@@ -21,8 +21,8 @@ function PutClass(options, data, requestDetails) {
   self.mongoTable = options.mongoTable;
   self.fileDir = options.fileDir;
 
-  this.data = data;
-  this.requestDetails = requestDetails;
+  self.data = data;
+  self.requestDetails = requestDetails;
 
 }
 
@@ -127,6 +127,12 @@ PutClass.prototype.process = function(callback) {
           fs.writeFile(filePath, fileContent);
         }
       }
+      if (self.requestDetails.auth_scope) {
+        delete(resultUpdate.value.token);
+      }
+      resultUpdate.value.id = resultUpdate.value._id;
+      delete(resultUpdate.value._id);
+
       return callback(null, {
         code: 200,
         answer: resultUpdate.value

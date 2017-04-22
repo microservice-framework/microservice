@@ -93,6 +93,12 @@ GetClass.prototype.process = function(callback) {
           }
         }
       }
+
+      if (self.requestDetails.auth_scope) {
+        delete(result.token);
+      }
+      result.id = result._id;
+      delete(result._id);
       return callback(null, {
         code: 200,
         answer: result
