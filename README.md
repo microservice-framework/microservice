@@ -1,5 +1,7 @@
 # microservice
 
+[![Gitter](https://img.shields.io/gitter/room/microservice-framework/chat.svg?style=flat-square)](https://gitter.im/microservice-framework/chat)
+
 Microservice framework worker class.
 
 Simple example:
