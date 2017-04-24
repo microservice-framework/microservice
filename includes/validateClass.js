@@ -111,7 +111,7 @@ ValidateClass.prototype.AccessToken = function(method, callback) {
     }, function(err, taskAnswer) {
       if (err) {
         self.debug.debug('authServer:search err: %O', err);
-        return callback(err);
+        return callback(new Error('Access denied. Token not found.'));
       }
 
       self.debug.debug('authServer:search %O ', taskAnswer);
