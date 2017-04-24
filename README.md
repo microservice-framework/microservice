@@ -2,6 +2,7 @@
 
 [![Gitter](https://img.shields.io/gitter/room/microservice-framework/chat.svg?style=flat-square)](https://gitter.im/microservice-framework/chat)
 [![npm](https://img.shields.io/npm/dt/@microservice-framework/microservice.svg?style=flat-square)](https://www.npmjs.com/~microservice-framework)
+[![microservice-frame.work](https://img.shields.io/badge/online%20docs-200-green.svg?style=flat-square)](http://microservice-frame.work)
 
 Microservice framework worker class.
 
@@ -38,3 +39,5 @@ var mControlCluster = new Cluster({
 });
 
 ```
+
+For more details please check our [website](http://microservice-frame.work)
