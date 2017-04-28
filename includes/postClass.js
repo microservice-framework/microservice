@@ -86,17 +86,16 @@ PostClass.prototype.process = function(callback) {
       if (fileContent && self.fileDir) {
         fs.writeFile(self.fileDir + '/' + result.insertedId, fileContent);
       }
-      var answer = {
-        message: 'Task accepted',
-        id: result.insertedId,
-        token: self.data.token
-      };
+      self.data.id = result.insertedId;
+      if(self.data._id) {
+        delete self.data._id;
+      }
       if (self.requestDetails.auth_scope) {
-        delete(answer.token);
+        delete(self.data.token);
       }
       callback(null, {
         code: 200,
-        answer: answer
+        answer: self.data
       });
     });
   });

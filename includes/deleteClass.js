@@ -71,11 +71,11 @@ DeleteClass.prototype.process = function(callback) {
       }
 
       if (self.requestDetails.auth_scope) {
-        delete(result.token);
+        delete(result.value.token);
       }
 
-      result.id = result._id;
-      delete(result._id);
+      result.value.id = result.value._id;
+      delete(result.value._id);
 
       return callback(null, {
         code: 200,
