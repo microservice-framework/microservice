@@ -87,7 +87,7 @@ PostClass.prototype.process = function(callback) {
         fs.writeFile(self.fileDir + '/' + result.insertedId, fileContent);
       }
       self.data.id = result.insertedId;
-      if(self.data._id) {
+      if (self.data._id) {
         delete self.data._id;
       }
       if (self.requestDetails.auth_scope) {
