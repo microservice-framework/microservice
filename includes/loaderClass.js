@@ -11,19 +11,19 @@ const MicroserviceClient = require('@microservice-framework/microservice-client'
  * Constructor.
  *   Prepare data for test.
  */
-function LoaderClass(settings) {
+function LoaderClass(headers) {
   EventEmitter.call(this);
   var self = this;
-  self.settings = settings;
+  self.headers = headers;
   self.preLoad = [];
   self.errorResult = [];
   self.okResult = {};
   self.processedCount = 0;
-  for (var name in self.settings.headers) {
+  for (var name in self.headers) {
     if (name.substr(0, 4) == 'mfw-') {
       self.preLoad.push({
         name: name.substr(4),
-        value: self.settings.headers[name]
+        value: self.headers[name]
       });
     }
   }
@@ -33,14 +33,14 @@ function LoaderClass(settings) {
       pairSearch: pairSearch
     });
     self.processedCount = self.processedCount + 1;
-    if (self.processedCount == preLoad.length) {
+    if (self.processedCount == self.preLoad.length) {
       self.emit('error', self.errorResult);
     }
   });
   self.on('itemOk', function(pairSearch, searchResult) {
     self.okResult[pairSearch.name] = searchResult;
     self.processedCount = self.processedCount + 1;
-    if (self.processedCount == preLoad.length) {
+    if (self.processedCount == self.preLoad.length) {
       if (self.errorResult.length > 0) {
         self.emit('error', self.errorResult);
       } else {
@@ -91,6 +91,7 @@ LoaderClass.prototype.processPair = function(pairSearch) {
  * Wrapper to get secure access to service by path.
  */
 LoaderClass.prototype.getLoader = function(name, callback) {
+  var self = this;
   let routerServer = new MicroserviceClient({
     URL: process.env.ROUTER_URL,
     secureKey: process.env.ROUTER_SECRET
@@ -107,8 +108,8 @@ LoaderClass.prototype.getLoader = function(name, callback) {
       var clientSettings = {
         URL: process.env.ROUTER_PROXY_URL + '/' + routes[0].path[0]
       }
-      if (self.settings.headers.access_token) {
-        clientSettings.accessToken = self.settings.headers.access_token;
+      if (self.headers.access_token) {
+        clientSettings.accessToken = self.headers.access_token;
       } else {
         clientSettings.secureKey = routes[0].secureKey;
       }

@@ -4,14 +4,15 @@
  */
 'use strict';
 
-var Validator = require('jsonschema').Validator;
-var PostClass = require('./includes/postClass.js');
-var PutClass = require('./includes/putClass.js');
-var GetClass = require('./includes/getClass.js');
-var DeleteClass = require('./includes/deleteClass.js');
-var ValidateClass = require('./includes/validateClass.js');
-var SearchClass = require('./includes/searchClass.js');
-var AggregateClass = require('./includes/aggregateClass.js');
+const Validator = require('jsonschema').Validator;
+const PostClass = require('./includes/postClass.js');
+const PutClass = require('./includes/putClass.js');
+const GetClass = require('./includes/getClass.js');
+const DeleteClass = require('./includes/deleteClass.js');
+const ValidateClass = require('./includes/validateClass.js');
+const SearchClass = require('./includes/searchClass.js');
+const AggregateClass = require('./includes/aggregateClass.js');
+const LoadClass = require('./includes/loaderClass.js');
 const debugF = require('debug');
 const fs = require('fs');
 
@@ -146,6 +147,32 @@ Microservice.prototype.aggregate = function(jsonData, requestDetails, callback) 
   Aggregate.process(callback);
   return Aggregate;
 
+};
+
+/**
+ * Process SEARCH request.
+ */
+Microservice.prototype.loader = function(headers, callback) {
+  var self = this;
+
+  var preLoadValues = new LoadClass(headers);
+  preLoadValues.process();
+
+  preLoadValues.on('error', function(result) {
+    var errorMessage = 'Pre Load failed:\n';
+    for (var i in result) {
+      var errorItem = result[i];
+      errorMessage = errorMessage + ' - ' + errorItem.pairSearch.name
+        + ': ' + errorItem.error.message + '\n';
+    }
+    return callback(new Error(errorMessage));
+  });
+
+  preLoadValues.on('done', function(result) {
+    callback(null, result);
+  });
+
+  return preLoadValues;
 };
 
 /**

@@ -9,7 +9,6 @@ const ObjectID = require('mongodb').ObjectID;
 const debugF = require('debug');
 const MicroserviceClient = require('@microservice-framework/microservice-client');
 const fs = require('fs');
-const LoadClass = require('./loaderClass.js');
 
 const bind = function(fn, me) { return function() { return fn.apply(me, arguments); }; };
 
@@ -176,60 +175,38 @@ ValidateClass.prototype.validate = function(method, callback) {
     return self.AccessToken(method, callback);
   }
 
-  var preLoadValues = new LoadClass({
-    headers: self.requestDetails.headers
-  });
-
-  preLoadValues.process();
-  preLoadValues.on('error', function(result) {
-    var errorMessage = 'Pre Load failed:\n';
-    for (var i in result) {
-      var errorItem = result[i];
-      errorMessage = errorMessage + ' - ' + errorItem.pairSearch.name
-        + ': ' + errorItem.error.message + '\n';
-    }
-    return callback(new Error(errorMessage));
-  });
-
-  preLoadValues.on('done', function(result) {
-    if (result) {
-      for (var name in result) {
-        self.requestDetails[name] = result[name];
+  switch (method) {
+    case 'PUT': {
+      if (!self.requestDetails.headers.signature && !self.requestDetails.headers.token) {
+        self.debug.debug('Validate:PUT Signature or Token required');
+        return callback(new Error('Signature or Token required'));
       }
-    }
-    switch (method) {
-      case 'PUT': {
-        if (!self.requestDetails.headers.signature && !self.requestDetails.headers.token) {
-          self.debug.debug('Validate:PUT Signature or Token required');
-          return callback(new Error('Signature or Token required'));
-        }
-        if (self.requestDetails.headers.signature) {
-          return self.SignatureSystem(callback);
-        }
-        if (self.requestDetails.headers.token) {
-          return self.TokenSystem(callback);
-        }
-        break;
-      }
-      case 'POST':
-      case 'SEARCH': {
-        if (!self.requestDetails.headers.signature) {
-          self.debug.debug('Validate:%s Signature required', method);
-          return callback(new Error('Signature required'));
-        }
+      if (self.requestDetails.headers.signature) {
         return self.SignatureSystem(callback);
-        break;
       }
-      default: {
-        if (!self.requestDetails.headers.token) {
-          self.debug.debug('Validate:%s Token required', method);
-          return callback(new Error('Token required'));
-        }
+      if (self.requestDetails.headers.token) {
         return self.TokenSystem(callback);
-        break;
       }
+      break;
     }
-  });
+    case 'POST':
+    case 'SEARCH': {
+      if (!self.requestDetails.headers.signature) {
+        self.debug.debug('Validate:%s Signature required', method);
+        return callback(new Error('Signature required'));
+      }
+      return self.SignatureSystem(callback);
+      break;
+    }
+    default: {
+      if (!self.requestDetails.headers.token) {
+        self.debug.debug('Validate:%s Token required', method);
+        return callback(new Error('Token required'));
+      }
+      return self.TokenSystem(callback);
+      break;
+    }
+  }
 };
 
 module.exports = ValidateClass;
