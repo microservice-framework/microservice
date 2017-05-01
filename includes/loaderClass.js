@@ -77,7 +77,19 @@ LoaderClass.prototype.processPair = function(pairSearch) {
       return self.emit('itemError', err, pairSearch);
     }
     var searchQuery = {};
-    searchQuery[searchBy] = pairSearch.value;
+    switch(searchBy.type){
+      case 'number': {
+          searchQuery[searchBy.field] = parseInt(pairSearch.value);
+        break;
+      }
+      case 'float': {
+          searchQuery[searchBy.field] = parseFloat(pairSearch.value);
+        break;
+      }
+      default: {
+        searchQuery[searchBy.field] = pairSearch.value;
+      }
+    }
     client.search(searchQuery, function(err, searchResult) {
       if (err) {
         return self.emit('itemError', err, pairSearch);
