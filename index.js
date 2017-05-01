@@ -151,10 +151,11 @@ Microservice.prototype.aggregate = function(jsonData, requestDetails, callback) 
 
 /**
  * Loader is a static method to wrap around LoadClass.
+ * load mfw-name as requestDetails.name objects provided by other services.
  */
-Microservice.loader = function(headers, callback) {
+Microservice.loader = function(method, jsonData, requestDetails, callback) {
 
-  var preLoadValues = new LoadClass(headers);
+  var preLoadValues = new LoadClass(requestDetails.headers);
   preLoadValues.process();
 
   preLoadValues.on('error', function(result) {
@@ -168,7 +169,12 @@ Microservice.loader = function(headers, callback) {
   });
 
   preLoadValues.on('done', function(result) {
-    callback(null, result);
+    if (result) {
+      for (var name in result) {
+        requestDetails[name] = result[name];
+      }
+    }
+    callback(null);
   });
 
   return preLoadValues;
