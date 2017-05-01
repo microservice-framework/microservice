@@ -150,10 +150,9 @@ Microservice.prototype.aggregate = function(jsonData, requestDetails, callback) 
 };
 
 /**
- * Process SEARCH request.
+ * Loader is a static method to wrap around LoadClass.
  */
-Microservice.prototype.loader = function(headers, callback) {
-  var self = this;
+Microservice.loader = function(headers, callback) {
 
   var preLoadValues = new LoadClass(headers);
   preLoadValues.process();
