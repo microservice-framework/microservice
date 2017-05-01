@@ -54,13 +54,6 @@ SearchClass.prototype.process = function(callback) {
       query = self.data.query;
     }
 
-    // If auth_scope active, apply filter to search.
-    if (self.requestDetails.auth_scope) {
-      for (var i in self.requestDetails.auth_scope) {
-        query[i] = self.requestDetails.auth_scope[i];
-      }
-    }
-
     // If search by ID, make sure that we convert it to object first.
     if (query['_id']) {
       query['_id'] = new ObjectID(query['_id']);
@@ -140,7 +133,7 @@ SearchClass.prototype.process = function(callback) {
         results.forEach(function(element) {
           element.id = element._id;
           delete(element._id);
-          if (self.requestDetails.auth_scope) {
+          if (self.requestDetails.credential) {
             delete(element.token);
           }
         });

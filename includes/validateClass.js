@@ -108,8 +108,7 @@ ValidateClass.prototype.AccessToken = function(method, callback) {
     authServer.search({
       accessToken: self.requestDetails.headers.access_token,
       scope: process.env.SCOPE,
-      method: method,
-      headers: self.requestDetails.headers
+      validate: true,
     }, function(err, taskAnswer) {
       if (err) {
         self.debug.debug('authServer:search err: %O', err);
@@ -117,11 +116,6 @@ ValidateClass.prototype.AccessToken = function(method, callback) {
       }
 
       self.debug.debug('authServer:search %O ', taskAnswer);
-      if (!taskAnswer.values) {
-        self.debug.debug('authServer:search no scope provided');
-        return callback(new Error('Access denied'));
-      }
-
       if (!taskAnswer.methods) {
         self.debug.debug('authServer:search no methods provided');
         return callback(new Error('Access denied'));
@@ -134,9 +128,10 @@ ValidateClass.prototype.AccessToken = function(method, callback) {
 
       if (taskAnswer.credential) {
         self.requestDetails.credential = taskAnswer.credential;
+      } else {
+        self.requestDetails.credential = {};
       }
 
-      self.requestDetails.auth_scope = taskAnswer.values;
       return callback(null);
     });
   });

@@ -90,7 +90,7 @@ PostClass.prototype.process = function(callback) {
       if (self.data._id) {
         delete self.data._id;
       }
-      if (self.requestDetails.auth_scope) {
+      if (self.requestDetails.credential) {
         delete(self.data.token);
       }
       callback(null, {

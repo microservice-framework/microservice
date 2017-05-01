@@ -67,12 +67,6 @@ PutClass.prototype.process = function(callback) {
       _id: new ObjectID(self.requestDetails.url)
     };
 
-    // If auth_scope active, apply filter to search.
-    if (self.requestDetails.auth_scope) {
-      for (var i in self.requestDetails.auth_scope) {
-        query[i] = self.requestDetails.auth_scope[i];
-      }
-    }
     var updateCmd = {};
     var forceSet = true;
     for (var key in self.data) {
@@ -127,7 +121,7 @@ PutClass.prototype.process = function(callback) {
           fs.writeFile(filePath, fileContent);
         }
       }
-      if (self.requestDetails.auth_scope) {
+      if (self.requestDetails.credential) {
         delete(resultUpdate.value.token);
       }
       resultUpdate.value.id = resultUpdate.value._id;

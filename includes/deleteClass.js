@@ -70,7 +70,7 @@ DeleteClass.prototype.process = function(callback) {
         }
       }
 
-      if (self.requestDetails.auth_scope) {
+      if (self.requestDetails.credential) {
         delete(result.value.token);
       }
 
