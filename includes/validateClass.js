@@ -133,7 +133,7 @@ ValidateClass.prototype.AccessToken = function(method, callback) {
         return callback(new Error('Access denied'));
       }
 
-      if(taskAnswer.credential) {
+      if (taskAnswer.credential) {
         self.requestDetails.credential = taskAnswer.credential;
       }
 
@@ -183,17 +183,17 @@ ValidateClass.prototype.validate = function(method, callback) {
   preLoadValues.process();
   preLoadValues.on('error', function(result) {
     var errorMessage = 'Pre Load failed:\n';
-    for(var i in result){
+    for (var i in result) {
       var errorItem = result[i];
       errorMessage = errorMessage + ' - ' + errorItem.pairSearch.name
-        + ': ' errorItem.error.message + '\n';
+        + ': ' + errorItem.error.message + '\n';
     }
     return callback(new Error(errorMessage));
   });
 
   preLoadValues.on('done', function(result) {
-    if(result){
-      for(var name in result) {
+    if (result) {
+      for (var name in result) {
         self.requestDetails[name] = result[name];
       }
     }

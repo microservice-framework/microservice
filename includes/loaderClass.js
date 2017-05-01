@@ -19,8 +19,8 @@ function LoaderClass(settings) {
   self.errorResult = [];
   self.okResult = {};
   self.processedCount = 0;
-  for(var name in self.settings.headers) {
-    if(name.substr(0, 4) == 'mfw-') {
+  for (var name in self.settings.headers) {
+    if (name.substr(0, 4) == 'mfw-') {
       self.preLoad.push({
         name: name.substr(4),
         value: self.settings.headers[name]
@@ -33,15 +33,15 @@ function LoaderClass(settings) {
       pairSearch: pairSearch
     });
     self.processedCount = self.processedCount + 1;
-    if(self.processedCount == preLoad.length) {
+    if (self.processedCount == preLoad.length) {
       self.emit('error', self.errorResult);
     }
   });
   self.on('itemOk', function(pairSearch, searchResult) {
     self.okResult[pairSearch.name] = searchResult;
     self.processedCount = self.processedCount + 1;
-    if(self.processedCount == preLoad.length) {
-      if(self.errorResult.length > 0) {
+    if (self.processedCount == preLoad.length) {
+      if (self.errorResult.length > 0) {
         self.emit('error', self.errorResult);
       } else {
         self.emit('done', self.okResult);
@@ -57,10 +57,10 @@ function LoaderClass(settings) {
  */
 LoaderClass.prototype.process = function() {
   var self = this;
-  if(self.preLoad.length == 0){
+  if (self.preLoad.length == 0) {
     return self.emit('done', false);
   }
-  for(var i in self.preLoad) {
+  for (var i in self.preLoad) {
     var pairSearch = self.preLoad[i];
     self.processPair(pairSearch);
   }
@@ -73,12 +73,12 @@ LoaderClass.prototype.process = function() {
 LoaderClass.prototype.processPair = function(pairSearch) {
   var self = this;
   self.getLoader(pairSearch.name, function(err, client, searchBy) {
-    if(err) {
+    if (err) {
       return self.emit('itemError', err, pairSearch);
     }
     var searchQuery = {};
     searchQuery[searchBy] = pairSearch.value;
-    client.search(searchQuery, function(err, searchResult){
+    client.search(searchQuery, function(err, searchResult) {
       if (err) {
         return self.emit('itemError', err, pairSearch);
       }
@@ -95,19 +95,19 @@ LoaderClass.prototype.getLoader = function(name, callback) {
     URL: process.env.ROUTER_URL,
     secureKey: process.env.ROUTER_SECRET
   });
+  var searchQuery = {};
+  searchQuery['provides.:' + name] = {
+    $exists: true
+  }
 
-  routerServer.search({
-      "provides.:" + name : {
-        $exists: true
-      }
-    }, function(err, routes) {
+  routerServer.search(searchQuery, function(err, routes) {
       if (err) {
         return callback(err);
       }
       var clientSettings = {
         URL: process.env.ROUTER_PROXY_URL + '/' + routes[0].path[0]
       }
-      if(self.settings.headers.access_token) {
+      if (self.settings.headers.access_token) {
         clientSettings.accessToken = self.settings.headers.access_token;
       } else {
         clientSettings.secureKey = routes[0].secureKey;
