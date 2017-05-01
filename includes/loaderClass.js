@@ -114,7 +114,7 @@ LoaderClass.prototype.getLoader = function(name, callback) {
         clientSettings.secureKey = routes[0].secureKey;
       }
       let msClient = new MicroserviceClient(clientSettings);
-      callback(null, msClient, routes[0].provides[name]);
+      callback(null, msClient, routes[0].provides[':' + name]);
     });
 }
 
