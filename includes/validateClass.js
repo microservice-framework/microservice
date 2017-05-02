@@ -112,7 +112,7 @@ ValidateClass.prototype.AccessToken = function(method, callback) {
     }, function(err, taskAnswer) {
       if (err) {
         self.debug.debug('authServer:search err: %O', err);
-        return callback(new Error('Access denied. Token not found.'));
+        return callback(new Error('Access denied. Token not found or expired.'));
       }
 
       self.debug.debug('authServer:search %O ', taskAnswer);

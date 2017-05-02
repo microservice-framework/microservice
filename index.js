@@ -12,7 +12,6 @@ const DeleteClass = require('./includes/deleteClass.js');
 const ValidateClass = require('./includes/validateClass.js');
 const SearchClass = require('./includes/searchClass.js');
 const AggregateClass = require('./includes/aggregateClass.js');
-const LoadClass = require('./includes/loaderClass.js');
 const debugF = require('debug');
 const fs = require('fs');
 
@@ -147,37 +146,6 @@ Microservice.prototype.aggregate = function(jsonData, requestDetails, callback) 
   Aggregate.process(callback);
   return Aggregate;
 
-};
-
-/**
- * Loader is a static method to wrap around LoadClass.
- * load mfw-name as requestDetails.name objects provided by other services.
- */
-Microservice.loader = function(method, jsonData, requestDetails, callback) {
-
-  var preLoadValues = new LoadClass(requestDetails.headers);
-  preLoadValues.process();
-
-  preLoadValues.on('error', function(result) {
-    var errorMessage = 'Pre Load failed:\n';
-    for (var i in result) {
-      var errorItem = result[i];
-      errorMessage = errorMessage + ' - ' + errorItem.pairSearch.name
-        + ': ' + errorItem.error.message + '\n';
-    }
-    return callback(new Error(errorMessage));
-  });
-
-  preLoadValues.on('done', function(result) {
-    if (result) {
-      for (var name in result) {
-        requestDetails[name] = result[name];
-      }
-    }
-    callback(null);
-  });
-
-  return preLoadValues;
 };
 
 /**
