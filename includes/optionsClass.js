@@ -93,5 +93,9 @@ OptionsClass.prototype.process = function(callback) {
       }
     }
   }
+  return callback(null, {
+    code: 200,
+    answer: answer
+  });
 };
 module.exports = OptionsClass;
