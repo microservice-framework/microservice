@@ -12,6 +12,7 @@ const DeleteClass = require('./includes/deleteClass.js');
 const ValidateClass = require('./includes/validateClass.js');
 const SearchClass = require('./includes/searchClass.js');
 const AggregateClass = require('./includes/aggregateClass.js');
+const OptionsClass = require('./includes/optionsClass.js');
 const debugF = require('debug');
 const fs = require('fs');
 
@@ -80,13 +81,6 @@ Microservice.prototype.get = function(jsonData, requestDetails, callback) {
 Microservice.prototype.post = function(jsonData, requestDetails, callback) {
   var self = this;
 
-  // If auth_scope active, auto add variables.
-  if (requestDetails.auth_scope) {
-    for (var i in requestDetails.auth_scope) {
-      jsonData[i] = requestDetails.auth_scope[i];
-    }
-  }
-
   var errors = self.validateJson(jsonData);
   if (true !== errors) {
     var error = new Error;
@@ -133,6 +127,18 @@ Microservice.prototype.search = function(jsonData, requestDetails, callback) {
   var Search = new SearchClass(self.settings, jsonData, requestDetails);
   Search.process(callback);
   return Search;
+
+};
+
+/**
+ * Process OPTIONS request.
+ */
+Microservice.prototype.options = function(jsonData, requestDetails, callbacks, callback) {
+  var self = this;
+
+  var Options = new OptionsClass(self.settings, jsonData, callbacks, requestDetails);
+  Options.process(callback);
+  return Options;
 
 };
 

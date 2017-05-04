@@ -126,6 +126,8 @@ ValidateClass.prototype.AccessToken = function(method, callback) {
         return callback(new Error('Access denied'));
       }
 
+      self.requestDetails.auth_methods = taskAnswer.methods;
+
       if (taskAnswer.credential) {
         self.requestDetails.credential = taskAnswer.credential;
       } else {
