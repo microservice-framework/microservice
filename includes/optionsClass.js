@@ -6,6 +6,8 @@
 const fs = require('fs');
 const debugF = require('debug');
 
+const bind = function(fn, me) { return function() { return fn.apply(me, arguments); }; };
+
 /**
  * Constructor.
  *   Prepare data for test.
@@ -16,6 +18,7 @@ function OptionsClass(options, data, callbacks, requestDetails) {
   self.callbacks = callbacks;
   self.options = options;
   self.requestDetails = requestDetails;
+  self.process = bind(self.process, self);
 
 }
 
@@ -27,7 +30,7 @@ OptionsClass.prototype.debug = {
 OptionsClass.prototype.process = function(callback) {
   var self = this;
   try {
-    var schemaTask = JSON.parse(fs.readFileSync('schema/' + self.settings.schema));
+    var schemaTask = JSON.parse(fs.readFileSync('schema/' + self.options.schema));
   } catch (e) {
     self.debug.options('Failed to read schema file: %O', e);
     return callback(new Error('Failed to read schema file.'));

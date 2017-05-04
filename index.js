@@ -41,6 +41,7 @@ function Microservice(settings) {
   self.delete = bind(self.delete, self);
   self.validateJson = bind(self.validateJson, self);
   self.search = bind(self.search, self);
+  self.options = bind(self.options, self);
 }
 
 /**
