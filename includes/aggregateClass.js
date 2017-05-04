@@ -30,7 +30,7 @@ AggregateClass.prototype.mongoUrl = '';
 AggregateClass.prototype.mongoTable = '';
 
 AggregateClass.prototype.debug = {
-  debug: debugF('microservice:debug')
+  aggregate: debugF('microservice:aggregate')
 };
 
 AggregateClass.prototype.process = function(callback) {
@@ -38,7 +38,7 @@ AggregateClass.prototype.process = function(callback) {
 
   MongoClient.connect(self.mongoUrl, function(err, db) {
     if (err) {
-      self.debug.debug('MongoClient:connect err: %O', err);
+      self.debug.aggregate('MongoClient:connect err: %O', err);
       return callback(err, null);
     }
 
@@ -47,11 +47,11 @@ AggregateClass.prototype.process = function(callback) {
     collection.aggregate(self.data).toArray(function(err, results) {
       db.close();
       if (err) {
-        self.debug.debug('MongoClient:aggregate err: %O', err);
+        self.debug.aggregate('MongoClient:aggregate err: %O', err);
         return callback(err, results);
       }
       if (!results || results.length == 0) {
-        self.debug.debug('MongoClient:aggregate object not found.');
+        self.debug.aggregate('MongoClient:aggregate object not found.');
         return callback(null, {
           code: 404,
           answer: {

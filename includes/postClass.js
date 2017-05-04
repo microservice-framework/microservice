@@ -47,7 +47,7 @@ PostClass.prototype.mongoUrl = '';
 PostClass.prototype.mongoTable = '';
 
 PostClass.prototype.debug = {
-  debug: debugF('microservice:debug')
+  post: debugF('microservice:post')
 };
 
 PostClass.prototype.process = function(callback) {
@@ -72,7 +72,7 @@ PostClass.prototype.process = function(callback) {
 
   MongoClient.connect(self.mongoUrl, function(err, db) {
     if (err) {
-      self.debug.debug('MongoClient:connect err: %O', err);
+      self.debug.post('MongoClient:connect err: %O', err);
       return callback(err, null);
     }
 
@@ -80,7 +80,7 @@ PostClass.prototype.process = function(callback) {
     collection.insertOne(self.data, function(err, result) {
       db.close();
       if (err) {
-        self.debug.debug('MongoClient:insertOne err: %O', err);
+        self.debug.post('MongoClient:insertOne err: %O', err);
         return callback(err, null);
       }
       if (fileContent && self.fileDir) {

@@ -33,7 +33,7 @@ PutClass.prototype.mongoUrl = '';
 PutClass.prototype.mongoTable = '';
 
 PutClass.prototype.debug = {
-  debug: debugF('microservice:debug')
+  put: debugF('microservice:put')
 };
 
 PutClass.prototype.process = function(callback) {
@@ -58,7 +58,7 @@ PutClass.prototype.process = function(callback) {
 
   MongoClient.connect(self.mongoUrl, function(err, db) {
     if (err) {
-      self.debug.debug('MongoClient:connect err: %O', err);
+      self.debug.put('MongoClient:connect err: %O', err);
       return callback(err, null);
     }
 
@@ -88,17 +88,17 @@ PutClass.prototype.process = function(callback) {
         changed: Date.now()
       }
     }
-    self.debug.debug('updateCmd %O', updateCmd);
+    self.debug.put('updateCmd %O', updateCmd);
 
     collection.findOneAndUpdate(query, updateCmd, { returnOriginal: false },
       function(err, resultUpdate) {
       db.close();
       if (err) {
-        self.debug.debug('MongoClient:findOneAndUpdate err: %O', err);
+        self.debug.put('MongoClient:findOneAndUpdate err: %O', err);
         return callback(err, null);
       }
       if (!resultUpdate) {
-        self.debug.debug('MongoClient:findOneAndUpdate object not found.');
+        self.debug.put('MongoClient:findOneAndUpdate object not found.');
         return callback(null, {
           code: 404,
           answer: {
@@ -108,7 +108,7 @@ PutClass.prototype.process = function(callback) {
       }
 
       if (!resultUpdate.value) {
-        self.debug.debug('MongoClient:findOneAndUpdate failed to save data.');
+        self.debug.put('MongoClient:findOneAndUpdate failed to save data.');
         return callback(null, {
           code: 503,
           message: 'Error to save data'

@@ -31,7 +31,7 @@ DeleteClass.prototype.mongoUrl = '';
 DeleteClass.prototype.mongoTable = '';
 
 DeleteClass.prototype.debug = {
-  debug: debugF('microservice:debug')
+  delete: debugF('microservice:delete')
 };
 
 DeleteClass.prototype.process = function(callback) {
@@ -39,7 +39,7 @@ DeleteClass.prototype.process = function(callback) {
 
   MongoClient.connect(self.mongoUrl, function(err, db) {
     if (err) {
-      self.debug.debug('MongoClient:connect err: %O', err);
+      self.debug.delete('MongoClient:connect err: %O', err);
       return callback(err, null);
     }
 
@@ -50,12 +50,12 @@ DeleteClass.prototype.process = function(callback) {
     collection.findOneAndDelete(query, function(err, result) {
       db.close();
       if (err) {
-        self.debug.debug('MongoClient:findOneAndDelete err: %O', err);
+        self.debug.delete('MongoClient:findOneAndDelete err: %O', err);
         return callback(err, null);
       }
 
       if (!result.value) {
-        self.debug.debug('MongoClient:findOneAndDelete object not found.');
+        self.debug.delete('MongoClient:findOneAndDelete object not found.');
         return callback(null, {
           code: 404,
           answer: {

@@ -38,21 +38,21 @@ ValidateClass.prototype.mongoTable = '';
 ValidateClass.prototype.secureKey = '';
 
 ValidateClass.prototype.debug = {
-  debug: debugF('microservice:debug')
+  validate: debugF('microservice:validate')
 };
 
 ValidateClass.prototype.SignatureSystem = function(callback) {
   var self = this;
-  self.debug.debug('Validate:SignatureSystem');
+  self.debug.validate('Validate:SignatureSystem');
   var sign = self.requestDetails.headers.signature.split('=');
 
   if (sign.length != 2) {
-    self.debug.debug('Validate:SignatureSystem Malformed signature');
+    self.debug.validate('Validate:SignatureSystem Malformed signature');
     return callback(new Error('Malformed signature'));
   }
 
   if (sign[ 1 ] != signature(sign[ 0 ], self.data, self.secureKey)) {
-    self.debug.debug('Validate:SignatureSystem Signature mismatch');
+    self.debug.validate('Validate:SignatureSystem Signature mismatch');
     return callback(new Error('Signature mismatch'));
   }
 
@@ -62,15 +62,15 @@ ValidateClass.prototype.SignatureSystem = function(callback) {
 ValidateClass.prototype.TokenSystem = function(callback) {
   var self = this;
 
-  self.debug.debug('Validate:TokenSystem');
+  self.debug.validate('Validate:TokenSystem');
   if (self.requestDetails.url.length != 24) {
-    self.debug.debug('Validate:TokenSystem Token length != 24');
+    self.debug.validate('Validate:TokenSystem Token length != 24');
     return callback(new Error('Wrong request'));
   }
 
   MongoClient.connect(self.mongoUrl, function(err, db) {
     if (err) {
-      self.debug.debug('MongoClient:connect err: %O', err);
+      self.debug.validate('MongoClient:connect err: %O', err);
       return callback(err);
     }
 
@@ -81,11 +81,11 @@ ValidateClass.prototype.TokenSystem = function(callback) {
     };
     collection.findOne(query, function(err, result) {
       if (err) {
-        self.debug.debug('MongoClient:findOne err: %O', err);
+        self.debug.validate('MongoClient:findOne err: %O', err);
         return callback(err);
       }
       if (!result) {
-        self.debug.debug('MongoClient:findOneAndUpdate object not found.');
+        self.debug.validate('MongoClient:findOneAndUpdate object not found.');
         var error = new Error('Not found');
         error.code = 404;
         return callback(error);
@@ -98,10 +98,10 @@ ValidateClass.prototype.TokenSystem = function(callback) {
 ValidateClass.prototype.AccessToken = function(method, callback) {
   var self = this;
 
-  self.debug.debug('Validate:AccessToken');
+  self.debug.validate('Validate:AccessToken');
   self.clientViaRouter('auth', 'auth', function(err, authServer) {
     if (err) {
-      self.debug.debug('Validate:AccessToken err %O', err);
+      self.debug.validate('Validate:AccessToken err %O', err);
       return callback(new Error('Access denied'));
     }
 
@@ -111,18 +111,18 @@ ValidateClass.prototype.AccessToken = function(method, callback) {
       validate: true,
     }, function(err, taskAnswer) {
       if (err) {
-        self.debug.debug('authServer:search err: %O', err);
+        self.debug.validate('authServer:search err: %O', err);
         return callback(new Error('Access denied. Token not found or expired.'));
       }
 
-      self.debug.debug('authServer:search %O ', taskAnswer);
+      self.debug.validate('authServer:search %O ', taskAnswer);
       if (!taskAnswer.methods) {
-        self.debug.debug('authServer:search no methods provided');
+        self.debug.validate('authServer:search no methods provided');
         return callback(new Error('Access denied'));
       }
 
       if (!taskAnswer.methods[method.toLowerCase()]) {
-        self.debug.debug('Request:%s denied', method);
+        self.debug.validate('Request:%s denied', method);
         return callback(new Error('Access denied'));
       }
 
@@ -164,7 +164,7 @@ ValidateClass.prototype.clientViaRouter = function(pathPattern, pathURL, callbac
 
 ValidateClass.prototype.validate = function(method, callback) {
   var self = this;
-  self.debug.debug('Validate:requestDetails %O ', self.requestDetails);
+  self.debug.validate('Validate:requestDetails %O ', self.requestDetails);
 
   if (self.requestDetails.headers.access_token) {
     return self.AccessToken(method, callback);
@@ -173,7 +173,7 @@ ValidateClass.prototype.validate = function(method, callback) {
   switch (method) {
     case 'PUT': {
       if (!self.requestDetails.headers.signature && !self.requestDetails.headers.token) {
-        self.debug.debug('Validate:PUT Signature or Token required');
+        self.debug.validate('Validate:PUT Signature or Token required');
         return callback(new Error('Signature or Token required'));
       }
       if (self.requestDetails.headers.signature) {
@@ -185,9 +185,10 @@ ValidateClass.prototype.validate = function(method, callback) {
       break;
     }
     case 'POST':
+    case 'OPTIONS':
     case 'SEARCH': {
       if (!self.requestDetails.headers.signature) {
-        self.debug.debug('Validate:%s Signature required', method);
+        self.debug.validate('Validate:%s Signature required', method);
         return callback(new Error('Signature required'));
       }
       return self.SignatureSystem(callback);
@@ -195,7 +196,7 @@ ValidateClass.prototype.validate = function(method, callback) {
     }
     default: {
       if (!self.requestDetails.headers.token) {
-        self.debug.debug('Validate:%s Token required', method);
+        self.debug.validate('Validate:%s Token required', method);
         return callback(new Error('Token required'));
       }
       return self.TokenSystem(callback);

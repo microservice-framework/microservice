@@ -31,7 +31,7 @@ GetClass.prototype.mongoUrl = '';
 GetClass.prototype.mongoTable = '';
 
 GetClass.prototype.debug = {
-  debug: debugF('microservice:debug')
+  get: debugF('microservice:get')
 };
 
 GetClass.prototype.process = function(callback) {
@@ -44,7 +44,7 @@ GetClass.prototype.process = function(callback) {
 
   MongoClient.connect(self.mongoUrl, function(err, db) {
     if (err) {
-      self.debug.debug('MongoClient:connect err: %O', err);
+      self.debug.get('MongoClient:connect err: %O', err);
       return callback(err, null);
     }
     var collection = db.collection(self.mongoTable);
@@ -55,12 +55,12 @@ GetClass.prototype.process = function(callback) {
     collection.findOne(query, function(err, result) {
       db.close();
       if (err) {
-        self.debug.debug('MongoClient:findOne err: %O', err);
+        self.debug.get('MongoClient:findOne err: %O', err);
         return callback(err, null);
       }
 
       if (!result) {
-        self.debug.debug('MongoClient:findOneAndUpdate object not found.');
+        self.debug.get('MongoClient:findOneAndUpdate object not found.');
         return callback(null, {
           code: 404,
           answer: {

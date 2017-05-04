@@ -30,7 +30,7 @@ SearchClass.prototype.mongoUrl = '';
 SearchClass.prototype.mongoTable = '';
 
 SearchClass.prototype.debug = {
-  debug: debugF('microservice:debug')
+  search: debugF('microservice:search')
 };
 
 SearchClass.prototype.process = function(callback) {
@@ -43,7 +43,7 @@ SearchClass.prototype.process = function(callback) {
 
   MongoClient.connect(self.mongoUrl, function(err, db) {
     if (err) {
-      self.debug.debug('MongoClient:connect err: %O', err);
+      self.debug.search('MongoClient:connect err: %O', err);
       return callback(err, null);
     }
 
@@ -72,7 +72,7 @@ SearchClass.prototype.process = function(callback) {
     cursor.count(function(err, count) {
       if (err) {
         db.close();
-        self.debug.debug('MongoClient:count err: %O', err);
+        self.debug.search('MongoClient:count err: %O', err);
         return callback(err, null);
       }
 
@@ -90,11 +90,11 @@ SearchClass.prototype.process = function(callback) {
       cursor.toArray(function(err, results) {
         db.close();
         if (err) {
-          self.debug.debug('MongoClient:toArray err: %O', err);
+          self.debug.search('MongoClient:toArray err: %O', err);
           return callback(err, results);
         }
         if (!results || results.length == 0) {
-          self.debug.debug('MongoClient:toArray object not found.');
+          self.debug.search('MongoClient:toArray object not found.');
           return callback(null, {
             code: 404,
             answer: {
