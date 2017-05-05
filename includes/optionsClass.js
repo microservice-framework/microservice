@@ -43,7 +43,9 @@ OptionsClass.prototype.process = function(callback) {
       description: 'Generated record ID',
     },
     methods: {},
-    properties: schemaTask.properties
+    properties: schemaTask.properties,
+    version: process.env.npm_package_version,
+    description: process.env.npm_package_description,
   };
   if (self.options.id) {
     answer.id = self.options.id;
