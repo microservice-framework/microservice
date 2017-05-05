@@ -36,9 +36,18 @@ OptionsClass.prototype.process = function(callback) {
     return callback(new Error('Failed to read schema file.'));
   }
   let answer = {
+    id: {
+      title: 'ID',
+      field: 'id',
+      type: 'string',
+      description: 'Generated record ID',
+    },
     methods: {},
     properties: schemaTask.properties
   };
+  if (self.options.id) {
+    answer.id = self.options.id;
+  }
   if (self.options.mongoTable && self.options.mongoTable != '') {
     answer.properties['created'] = {
       type: 'number',

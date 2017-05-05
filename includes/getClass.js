@@ -19,6 +19,7 @@ function GetClass(options, data, requestDetails) {
   self.mongoUrl = options.mongoUrl;
   self.mongoTable = options.mongoTable;
   self.fileDir = options.fileDir;
+  self.id = options.id;
 
   this.data = data;
   this.requestDetails = requestDetails;
@@ -48,9 +49,24 @@ GetClass.prototype.process = function(callback) {
       return callback(err, null);
     }
     var collection = db.collection(self.mongoTable);
-    var query = {
-      _id: new ObjectID(self.requestDetails.url)
-    };
+    var query = {}
+    if (self.id && self.id.field) {
+      switch (self.id.type) {
+        case 'number': {
+          query[self.id.field] = parseInt(self.requestDetails.url);
+          break;
+        }
+        case 'float': {
+          query[self.id.field] = parseFloat(self.requestDetails.url);
+          break;
+        }
+        default: {
+          query[self.id.field] = self.requestDetails.url;
+        }
+      }
+    } else {
+      query._id = new ObjectID(self.requestDetails.url);
+    }
 
     collection.findOne(query, function(err, result) {
       db.close();

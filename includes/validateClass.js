@@ -25,6 +25,7 @@ function ValidateClass(options, data, requestDetails) {
   self.secureKey = options.secureKey;
   self.authMethod = options.authMethod || 0;
   self.data = data;
+  self.id = options.id;
   self.requestDetails = requestDetails;
   self.SignatureSystem = bind(self.SignatureSystem, self);
   self.TokenSystem = bind(self.TokenSystem, self);
@@ -63,10 +64,6 @@ ValidateClass.prototype.TokenSystem = function(callback) {
   var self = this;
 
   self.debug.validate('Validate:TokenSystem');
-  if (self.requestDetails.url.length != 24) {
-    self.debug.validate('Validate:TokenSystem Token length != 24');
-    return callback(new Error('Wrong request'));
-  }
 
   MongoClient.connect(self.mongoUrl, function(err, db) {
     if (err) {
@@ -75,10 +72,31 @@ ValidateClass.prototype.TokenSystem = function(callback) {
     }
 
     var collection = db.collection(self.mongoTable);
-    var query = {
-      token: self.requestDetails.headers.token,
-      _id: new ObjectID(self.requestDetails.url)
-    };
+    var query = {}
+    if (self.id && self.id.field) {
+      switch (self.id.type) {
+        case 'number': {
+          query[self.id.field] = parseInt(self.requestDetails.url);
+          break;
+        }
+        case 'float': {
+          query[self.id.field] = parseFloat(self.requestDetails.url);
+          break;
+        }
+        default: {
+          query[self.id.field] = self.requestDetails.url;
+        }
+      }
+    } else {
+      if (self.requestDetails.url.length != 24) {
+        self.debug.validate('Validate:TokenSystem Token length != 24');
+        return callback(new Error('Wrong request'));
+      }
+
+      query._id = new ObjectID(self.requestDetails.url);
+    }
+    query.token = self.requestDetails.headers.token;
+
     collection.findOne(query, function(err, result) {
       if (err) {
         self.debug.validate('MongoClient:findOne err: %O', err);

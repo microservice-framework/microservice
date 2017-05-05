@@ -18,6 +18,7 @@ function DeleteClass(options, data, requestDetails) {
   var self = this;
   self.mongoUrl = options.mongoUrl;
   self.mongoTable = options.mongoTable;
+  self.id = options.id;
   self.fileDir = options.fileDir;
 
   this.data = data;
@@ -44,9 +45,24 @@ DeleteClass.prototype.process = function(callback) {
     }
 
     var collection = db.collection(self.mongoTable);
-    var query = {
-      _id: new ObjectID(self.requestDetails.url)
-    };
+    var query = {}
+    if (self.id && self.id.field) {
+      switch (self.id.type) {
+        case 'number': {
+          query[self.id.field] = parseInt(self.requestDetails.url);
+          break;
+        }
+        case 'float': {
+          query[self.id.field] = parseFloat(self.requestDetails.url);
+          break;
+        }
+        default: {
+          query[self.id.field] = self.requestDetails.url;
+        }
+      }
+    } else {
+      query._id = new ObjectID(self.requestDetails.url);
+    }
     collection.findOneAndDelete(query, function(err, result) {
       db.close();
       if (err) {
