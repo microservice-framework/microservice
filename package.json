@@ -18,7 +18,7 @@
   },
   "homepage": "https://github.com/microservice-framework/microservice#readme",
   "dependencies": {
-    "@microservice-framework/microservice-client": "^1.1.0",
+    "@microservice-framework/microservice-client": "^1.2.1",
     "debug": "^2.2.0",
     "jsonschema": "^1.1.0",
     "mongodb": "^2.2.1"
