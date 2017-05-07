@@ -106,7 +106,11 @@ GetClass.prototype.process = function(callback) {
       if (self.requestDetails.credential) {
         delete(result.token);
       }
-      result.id = result._id;
+      if (self.id && self.id.field) {
+        result.url = process.env.SELF_PATH + '/' + result[self.id.field];
+      } else {
+        result.id = result._id;
+      }
       delete(result._id);
       return callback(null, {
         code: 200,

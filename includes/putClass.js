@@ -140,7 +140,11 @@ PutClass.prototype.process = function(callback) {
       if (self.requestDetails.credential) {
         delete(resultUpdate.value.token);
       }
-      resultUpdate.value.id = resultUpdate.value._id;
+      if (self.id && self.id.field) {
+        resultUpdate.value.url = process.env.SELF_PATH + '/' + resultUpdate.value[self.id.field];
+      } else {
+        resultUpdate.value.id = resultUpdate.value._id;
+      }
       delete(resultUpdate.value._id);
 
       return callback(null, {

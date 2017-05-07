@@ -89,8 +89,11 @@ DeleteClass.prototype.process = function(callback) {
       if (self.requestDetails.credential) {
         delete(result.value.token);
       }
-
-      result.value.id = result.value._id;
+      if (self.id && self.id.field) {
+        result.value.url = process.env.SELF_PATH + '/' + result.value[self.id.field];
+      } else {
+        result.value.id = result.value._id;
+      }
       delete(result.value._id);
 
       return callback(null, {

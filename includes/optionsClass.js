@@ -29,6 +29,7 @@ OptionsClass.prototype.debug = {
 
 OptionsClass.prototype.process = function(callback) {
   var self = this;
+
   try {
     var schemaTask = JSON.parse(fs.readFileSync('schema/' + self.options.schema));
   } catch (e) {

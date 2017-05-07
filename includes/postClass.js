@@ -20,6 +20,7 @@ function PostClass(options, data, requestDetails) {
   self.mongoUrl = options.mongoUrl;
   self.mongoTable = options.mongoTable;
   self.fileDir = options.fileDir;
+  self.id = options.id;
 
   self.data = data;
   self.requestDetails = requestDetails;
@@ -86,7 +87,11 @@ PostClass.prototype.process = function(callback) {
       if (fileContent && self.fileDir) {
         fs.writeFile(self.fileDir + '/' + result.insertedId, fileContent);
       }
-      self.data.id = result.insertedId;
+      if (self.id && self.id.field) {
+        self.data.url = process.env.SELF_PATH + '/' + self.data[self.id.field];
+      } else {
+        self.data.id = result.insertedId;
+      }
       if (self.data._id) {
         delete self.data._id;
       }

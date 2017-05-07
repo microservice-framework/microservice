@@ -18,7 +18,7 @@ function SearchClass(options, data, requestDetails) {
   self.mongoUrl = options.mongoUrl;
   self.mongoTable = options.mongoTable;
   self.fileDir = options.fileDir;
-
+  self.id = options.id;
   self.data = data;
   self.requestDetails = requestDetails;
 }
@@ -131,7 +131,11 @@ SearchClass.prototype.process = function(callback) {
           }
         }
         results.forEach(function(element) {
-          element.id = element._id;
+          if (self.id && self.id.field) {
+            element.url = process.env.SELF_PATH + '/' + element[self.id.field];
+          } else {
+            element.id = element._id;
+          }
           delete(element._id);
           if (self.requestDetails.credential) {
             delete(element.token);
