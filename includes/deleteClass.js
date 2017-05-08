@@ -60,6 +60,18 @@ DeleteClass.prototype.process = function(callback) {
           query[self.id.field] = self.requestDetails.url;
         }
       }
+      if(self.id.fields) {
+        for(let name in self.id.fields) {
+          let requestPath = self.id.fields[name].split('.');
+          let tmp = JSON.parse(JSON.stringify(self.requestDetails));
+          for(let item in requestPath){
+            if(tmp[item]) {
+              tmp = tmp[item];
+            }
+          }
+          query[name] = tmp;
+        }
+      }
     } else {
       query._id = new ObjectID(self.requestDetails.url);
     }

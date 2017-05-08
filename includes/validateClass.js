@@ -87,6 +87,18 @@ ValidateClass.prototype.TokenSystem = function(callback) {
           query[self.id.field] = self.requestDetails.url;
         }
       }
+      if(self.id.fields) {
+        for(let name in self.id.fields) {
+          let requestPath = self.id.fields[name].split('.');
+          let tmp = JSON.parse(JSON.stringify(self.requestDetails));
+          for(let item in requestPath){
+            if(tmp[item]) {
+              tmp = tmp[item];
+            }
+          }
+          query[name] = tmp;
+        }
+      }
     } else {
       if (self.requestDetails.url.length != 24) {
         self.debug.validate('Validate:TokenSystem Token length != 24');
