@@ -71,6 +71,25 @@ PostClass.prototype.process = function(callback) {
     }
   }
 
+  if (self.id && self.id.field) {
+    if (self.id.fields) {
+      for (let name in self.id.fields) {
+        let requestPath = self.id.fields[name].split('.');
+        let tmp = JSON.parse(JSON.stringify(self.requestDetails));
+        let isFind = false;
+        for (let item in requestPath) {
+          let pathItem = requestPath[item];
+          if (tmp[pathItem]) {
+            isFind = true;
+            tmp = tmp[pathItem];
+          }
+        }
+        if (isFind) {
+          self.data[name] = tmp;
+        }
+      }
+    }
+  }
   MongoClient.connect(self.mongoUrl, function(err, db) {
     if (err) {
       self.debug.post('MongoClient:connect err: %O', err);
