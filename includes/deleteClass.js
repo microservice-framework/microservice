@@ -65,8 +65,9 @@ DeleteClass.prototype.process = function(callback) {
           let requestPath = self.id.fields[name].split('.');
           let tmp = JSON.parse(JSON.stringify(self.requestDetails));
           for(let item in requestPath){
-            if(tmp[item]) {
-              tmp = tmp[item];
+            let pathItem = requestPath[item];
+            if(tmp[pathItem]) {
+              tmp = tmp[pathItem];
             }
           }
           query[name] = tmp;
