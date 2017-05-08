@@ -79,13 +79,13 @@ PutClass.prototype.process = function(callback) {
           query[self.id.field] = self.requestDetails.url;
         }
       }
-      if(self.id.fields) {
-        for(let name in self.id.fields) {
+      if (self.id.fields) {
+        for (let name in self.id.fields) {
           let requestPath = self.id.fields[name].split('.');
           let tmp = JSON.parse(JSON.stringify(self.requestDetails));
-          for(let item in requestPath){
+          for (let item in requestPath) {
             let pathItem = requestPath[item];
-            if(tmp[pathItem]) {
+            if (tmp[pathItem]) {
               tmp = tmp[pathItem];
             }
           }
