@@ -159,10 +159,10 @@ ValidateClass.prototype.AccessToken = function(method, callback) {
 
       self.requestDetails.auth_methods = taskAnswer.methods;
 
-      if (taskAnswer.credential) {
-        self.requestDetails.credential = taskAnswer.credential;
+      if (taskAnswer.credentials) {
+        self.requestDetails.credentials = taskAnswer.credentials;
       } else {
-        self.requestDetails.credential = {};
+        self.requestDetails.credentials = {};
       }
 
       return callback(null);
