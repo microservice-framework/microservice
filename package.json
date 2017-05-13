@@ -1,6 +1,6 @@
 {
   "name": "@microservice-framework/microservice",
-  "version": "1.2.4",
+  "version": "1.2.5",
   "description": "Microservice framework worker class.",
   "main": "index.js",
   "scripts": {
@@ -18,7 +18,7 @@
   },
   "homepage": "https://github.com/microservice-framework/microservice#readme",
   "dependencies": {
-    "@microservice-framework/microservice-client": "^1.2.1",
+    "@microservice-framework/microservice-client": "^1.2.2",
     "debug": "^2.2.0",
     "jsonschema": "^1.1.0",
     "mongodb": "^2.2.1"
