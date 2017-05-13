@@ -8,7 +8,7 @@ Microservice framework worker class.
 
 Simple example:
 
-```
+```js
 'use strict';
 
 const Cluster = require('@microservice-framework/microservice-cluster');
