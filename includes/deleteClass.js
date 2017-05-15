@@ -99,7 +99,7 @@ DeleteClass.prototype.process = function(callback) {
         }
       }
 
-      if (self.requestDetails.credential) {
+      if (self.requestDetails.credentials) {
         delete(result.value.token);
       }
       if (self.id && self.id.field) {

@@ -116,7 +116,7 @@ GetClass.prototype.process = function(callback) {
         }
       }
 
-      if (self.requestDetails.credential) {
+      if (self.requestDetails.credentials) {
         delete(result.token);
       }
       if (self.id && self.id.field) {

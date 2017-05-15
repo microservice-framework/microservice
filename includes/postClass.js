@@ -114,7 +114,7 @@ PostClass.prototype.process = function(callback) {
       if (self.data._id) {
         delete self.data._id;
       }
-      if (self.requestDetails.credential) {
+      if (self.requestDetails.credentials) {
         delete(self.data.token);
       }
       callback(null, {

@@ -137,7 +137,7 @@ SearchClass.prototype.process = function(callback) {
             element.id = element._id;
           }
           delete(element._id);
-          if (self.requestDetails.credential) {
+          if (self.requestDetails.credentials) {
             delete(element.token);
           }
         });

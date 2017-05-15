@@ -150,7 +150,7 @@ PutClass.prototype.process = function(callback) {
           fs.writeFile(filePath, fileContent);
         }
       }
-      if (self.requestDetails.credential) {
+      if (self.requestDetails.credentials) {
         delete(resultUpdate.value.token);
       }
       if (self.id && self.id.field) {
