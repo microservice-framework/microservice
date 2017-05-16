@@ -29,13 +29,6 @@ OptionsClass.prototype.debug = {
 
 OptionsClass.prototype.process = function(callback) {
   var self = this;
-
-  try {
-    var schemaTask = JSON.parse(fs.readFileSync('schema/' + self.options.schema));
-  } catch (e) {
-    self.debug.options('Failed to read schema file: %O', e);
-    return callback(new Error('Failed to read schema file.'));
-  }
   let answer = {
     id: {
       title: 'ID',
@@ -44,10 +37,18 @@ OptionsClass.prototype.process = function(callback) {
       description: 'Generated record ID',
     },
     methods: {},
-    properties: schemaTask.properties,
     version: process.env.npm_package_version,
     description: process.env.npm_package_description,
   };
+  if (self.options.schema) {
+    try {
+      var schemaTask = JSON.parse(fs.readFileSync('schema/' + self.options.schema));
+      answer.properties = schemaTask.properties;
+    } catch (e) {
+      self.debug.options('Failed to read schema file: %O', e);
+      return callback(new Error('Failed to read schema file.'));
+    }
+  }
   if (self.options.id) {
     answer.id = self.options.id;
   }
