@@ -7,7 +7,7 @@ const MongoClient = require('mongodb').MongoClient;
 const ObjectID = require('mongodb').ObjectID;
 const debugF = require('debug');
 const fs = require('fs');
-const updateAcceptedCmds = [ '$inc', '$mul', '$set', '$unset', '$min', '$max', '$currentDate' ];
+const updateAcceptedCmds = [ '$inc', '$mul', '$set', '$unset', '$min', '$max', '$currentDate', '$push', '$pull', '$pop', '$addToSet', '$pushAll', '$pullAll' ];
 
 /**
  * Constructor.
@@ -128,20 +128,12 @@ PutClass.prototype.process = function(callback) {
       }
       if (!resultUpdate) {
         self.debug.put('MongoClient:findOneAndUpdate object not found.');
-        return callback(null, {
-          code: 404,
-          answer: {
-            message: 'Not found'
-          }
-        });
+        return callback(new Error('Not found'), null);
       }
 
       if (!resultUpdate.value) {
         self.debug.put('MongoClient:findOneAndUpdate failed to save data.');
-        return callback(null, {
-          code: 503,
-          message: 'Error to save data'
-        });
+        return callback(new Error('Error to save data'), null);
       }
       if (fileContent) {
         var filePath = self.fileDir + '/' + self.requestDetails.url;
