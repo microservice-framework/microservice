@@ -78,7 +78,11 @@ GetClass.prototype.process = function(callback) {
         }
       }
     } else {
-      query._id = new ObjectID(self.requestDetails.url);
+      try {
+        query._id = new ObjectID(self.requestDetails.url);
+      } catch(e) {
+        return callback (e, null);
+      }
     }
 
     collection.findOne(query, function(err, result) {

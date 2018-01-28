@@ -4,7 +4,6 @@
 'use strict';
 
 const MongoClient = require('mongodb').MongoClient;
-const ObjectID = require('mongodb').ObjectID;
 const debugF = require('debug');
 const fs = require('fs');
 

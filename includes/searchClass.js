@@ -56,12 +56,20 @@ SearchClass.prototype.process = function(callback) {
 
     // If search by ID, make sure that we convert it to object first.
     if (query['_id']) {
-      query['_id'] = new ObjectID(query['_id']);
+      try {
+        query['_id'] = new ObjectID(query['_id']);
+      } catch(e) {
+        return callback (e, null);
+      }
     }
 
     if (query['id']) {
-      query['_id'] = new ObjectID(query['id']);
-      delete query['id'];
+      try {
+        query['_id'] = new ObjectID(query['id']);
+        delete query['id'];
+      } catch(e) {
+        return callback (e, null);
+      }
     }
     var cursor;
     if (self.data.fields) {

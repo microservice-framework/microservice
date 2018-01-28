@@ -106,7 +106,11 @@ ValidateClass.prototype.TokenSystem = function(callback) {
         return callback(new Error('Wrong request'));
       }
 
-      query._id = new ObjectID(self.requestDetails.url);
+      try {
+        query._id = new ObjectID(self.requestDetails.url);
+      } catch(e) {
+        return callback (e);
+      }
     }
     query.token = self.requestDetails.headers.token;
 
