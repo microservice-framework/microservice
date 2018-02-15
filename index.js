@@ -6,6 +6,8 @@
 
 const Validator = require('jsonschema').Validator;
 const MongoClient = require('mongodb').MongoClient;
+const EventEmitter = require('events').EventEmitter;
+const util = require('util');
 const PostClass = require('./includes/postClass.js');
 const PutClass = require('./includes/putClass.js');
 const GetClass = require('./includes/getClass.js');
@@ -50,12 +52,16 @@ function Microservice(settings) {
       if (err) {
         self.debug.debug('MongoClient:connect err: %O', err);
         self.debug.log('MongoClient:connect failed');
+        self.emit('error', err);
         return;
       }
       self.settings.mongoDB = db;
+      self.emit('ready');
     });
   }
 }
+
+util.inherits(Microservice, EventEmitter);
 
 /**
  * Settings for microservice.
