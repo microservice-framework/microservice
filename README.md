@@ -47,3 +47,4 @@ For more details please check our [website](http://microservice-frame.work)
 - `1.3.0` - open mongo connection on class init, instead of each request.
 - `1.3.1` - bug fix.
 - `1.3.2` - implements events error and ready.
+- `1.3.3-5` - Implementing new access token validation mechanism
