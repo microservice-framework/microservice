@@ -10,11 +10,9 @@ const bind = function(fn, me) { return function() { return fn.apply(me, argument
 
 /**
  * Constructor.
- *   Prepare data for test.
  */
-function OptionsClass(options, data, callbacks, requestDetails) {
+function OptionsClass(options, callbacks, requestDetails) {
   var self = this;
-  self.data = data;
   self.callbacks = callbacks;
   self.options = options;
   self.requestDetails = requestDetails;

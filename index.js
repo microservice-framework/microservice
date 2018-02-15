@@ -83,7 +83,13 @@ Microservice.prototype.validate = function(method, jsonData, requestDetails, cal
 Microservice.prototype.get = function(jsonData, requestDetails, callback) {
   var self = this;
 
-  var Get = new GetClass(self.settings, jsonData, requestDetails);
+  if (arguments.length === 2) {
+    // v1.3 < version compatibility
+    callback = requestDetails;
+    requestDetails = jsonData;
+  }
+
+  var Get = new GetClass(self.settings, requestDetails);
   Get.process(callback);
   return Get;
 
@@ -126,7 +132,13 @@ Microservice.prototype.put = function(jsonData, requestDetails, callback) {
 Microservice.prototype.delete = function(jsonData, requestDetails, callback) {
   var self = this;
 
-  var Delete = new DeleteClass(self.settings, jsonData, requestDetails);
+  if (arguments.length === 2) {
+    // v1.3 < version compatibility
+    callback = requestDetails;
+    requestDetails = jsonData;
+  }
+
+  var Delete = new DeleteClass(self.settings, requestDetails);
   Delete.process(callback);
   return Delete;
 
@@ -150,7 +162,15 @@ Microservice.prototype.search = function(jsonData, requestDetails, callback) {
 Microservice.prototype.options = function(jsonData, requestDetails, callbacks, callback) {
   var self = this;
 
-  var Options = new OptionsClass(self.settings, jsonData, callbacks, requestDetails);
+  if (arguments.length === 3) {
+    // v1.3 < version compatibility
+    callback = callbacks;
+    callbacks = requestDetails;
+    requestDetails = jsonData;
+  }
+
+
+  var Options = new OptionsClass(self.settings, callbacks, requestDetails);
   Options.process(callback);
   return Options;
 

@@ -9,9 +9,8 @@ const fs = require('fs');
 
 /**
  * Constructor.
- *   Prepare data for test.
  */
-function DeleteClass(options, data, requestDetails) {
+function DeleteClass(options, requestDetails) {
 
   // Use a closure to preserve `this`
   var self = this;
@@ -26,11 +25,9 @@ function DeleteClass(options, data, requestDetails) {
   self.id = options.id;
   self.fileDir = options.fileDir;
 
-  this.data = data;
   this.requestDetails = requestDetails;
 }
 
-DeleteClass.prototype.data = {};
 DeleteClass.prototype.requestDetails = {};
 DeleteClass.prototype.fileDir = '';
 DeleteClass.prototype.mongoUrl = '';

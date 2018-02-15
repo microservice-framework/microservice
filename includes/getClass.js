@@ -9,9 +9,8 @@ const fs = require('fs');
 
 /**
  * Constructor.
- *   Prepare data for test.
  */
-function GetClass(options, data, requestDetails) {
+function GetClass(options, requestDetails) {
 
   // Use a closure to preserve `this`
   var self = this;
@@ -26,11 +25,9 @@ function GetClass(options, data, requestDetails) {
   self.fileDir = options.fileDir;
   self.id = options.id;
 
-  this.data = data;
   this.requestDetails = requestDetails;
 }
 
-GetClass.prototype.data = {};
 GetClass.prototype.requestDetails = {};
 GetClass.prototype.fileDir = '';
 GetClass.prototype.mongoUrl = '';
