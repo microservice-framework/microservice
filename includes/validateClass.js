@@ -137,43 +137,48 @@ ValidateClass.prototype.AccessToken = function(method, callback) {
   var self = this;
 
   self.debug.debug('Validate:AccessToken');
-  self.clientViaRouter('auth', 'auth', function(err, authServer) {
+  let accessToken = '';
+  let msClientSettings = {
+    URL: process.env.ROUTER_PROXY_URL + '/auth',
+    headers: {
+      scope: process.env.SCOPE,
+    }
+  };
+  // Compatibility with old versions
+  if (self.requestDetails.headers.access_token) {
+    accessToken = self.requestDetails.headers.access_token;
+    msClientSettings.headers.access_token = accessToken;
+  }
+  if (self.requestDetails.headers['Access-Token']) {
+    accessToken = self.requestDetails.headers['Access-Token'];
+    msClientSettings.headers['Access-Token'] = accessToken;
+  }
+  let authServer = new MicroserviceClient(msClientSettings);
+  authServer.get(accessToken, function(err, answer) {
     if (err) {
-      self.debug.debug('Validate:AccessToken err %O', err);
+      self.debug.debug('authServer:search err: %O', err);
+      return callback(new Error('Access denied. Token not found or expired.'));
+    }
+    self.debug.debug('authServer:search %O ', answer);
+    if (!answer.methods) {
+      self.debug.debug('authServer:search no methods provided');
       return callback(new Error('Access denied'));
     }
 
-    authServer.search({
-      accessToken: self.requestDetails.headers.access_token,
-      scope: process.env.SCOPE,
-      validate: true,
-    }, function(err, taskAnswer) {
-      if (err) {
-        self.debug.debug('authServer:search err: %O', err);
-        return callback(new Error('Access denied. Token not found or expired.'));
-      }
+    if (!answer.methods[method.toLowerCase()]) {
+      self.debug.debug('Request:%s denied', method);
+      return callback(new Error('Access denied'));
+    }
 
-      self.debug.debug('authServer:search %O ', taskAnswer);
-      if (!taskAnswer.methods) {
-        self.debug.debug('authServer:search no methods provided');
-        return callback(new Error('Access denied'));
-      }
+    self.requestDetails.auth_methods = answer.methods;
 
-      if (!taskAnswer.methods[method.toLowerCase()]) {
-        self.debug.debug('Request:%s denied', method);
-        return callback(new Error('Access denied'));
-      }
+    if (taskAnswer.credentials) {
+      self.requestDetails.credentials = answer.credentials;
+    } else {
+      self.requestDetails.credentials = {};
+    }
 
-      self.requestDetails.auth_methods = taskAnswer.methods;
-
-      if (taskAnswer.credentials) {
-        self.requestDetails.credentials = taskAnswer.credentials;
-      } else {
-        self.requestDetails.credentials = {};
-      }
-
-      return callback(null);
-    });
+    return callback(null);
   });
 }
 

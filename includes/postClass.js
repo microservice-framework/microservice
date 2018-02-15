@@ -3,7 +3,6 @@
  */
 'use strict';
 
-require('dotenv').config();
 const tokenGenerate = require('./token-generate.js');
 const debugF = require('debug');
 const fs = require('fs');
