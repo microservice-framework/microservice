@@ -46,7 +46,7 @@ function Microservice(settings) {
   self.settings.mongoDB = false;
 
   if (self.settings.mongoUrl) {
-    MongoClient.connect(self.mongoUrl, function(err, db) {
+    MongoClient.connect(self.settings.mongoUrl, function(err, db) {
       if (err) {
         self.debug.debug('MongoClient:connect err: %O', err);
         self.debug.log('MongoClient:connect failed');
