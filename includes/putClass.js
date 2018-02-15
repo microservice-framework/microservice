@@ -6,7 +6,21 @@
 const ObjectID = require('mongodb').ObjectID;
 const debugF = require('debug');
 const fs = require('fs');
-const updateAcceptedCmds = [ '$inc', '$mul', '$set', '$unset', '$min', '$max', '$currentDate', '$push', '$pull', '$pop', '$addToSet', '$pushAll', '$pullAll' ];
+const updateAcceptedCmds = [
+  '$addToSet',
+  '$currentDate',
+  '$inc',
+  '$max',
+  '$min',
+  '$mul',
+  '$pop',
+  '$push',
+  '$pushAll',
+  '$pull',
+  '$pullAll',
+  '$set',
+  '$unset',
+];
 
 /**
  * Constructor.
