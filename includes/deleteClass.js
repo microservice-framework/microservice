@@ -10,11 +10,11 @@ const fs = require('fs');
 /**
  * Constructor.
  */
-function DeleteClass(options, requestDetails) {
+function DeleteClass(db, options, requestDetails) {
 
   // Use a closure to preserve `this`
   var self = this;
-  self.mongoDB = options.mongoDB;
+  self.mongoDB = db;
   self.mongoTable = options.mongoTable;
 
   // If there is a need to change default table name.

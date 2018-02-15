@@ -10,11 +10,11 @@ const fs = require('fs');
 /**
  * Constructor.
  */
-function GetClass(options, requestDetails) {
+function GetClass(db, options, requestDetails) {
 
   // Use a closure to preserve `this`
   var self = this;
-  self.mongoDB = options.mongoDB;
+  self.mongoDB = db;
   self.mongoTable = options.mongoTable;
 
   // If there is a need to change default table name.

@@ -12,11 +12,11 @@ const fs = require('fs');
  * Constructor.
  *   Prepare data for test.
  */
-function PostClass(options, data, requestDetails) {
+function PostClass(db, options, data, requestDetails) {
 
   // Use a closure to preserve `this`
   var self = this;
-  self.mongoDB = options.mongoDB;
+  self.mongoDB = db;
   self.mongoTable = options.mongoTable;
 
   // If there is a need to change default table name.

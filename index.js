@@ -45,7 +45,7 @@ function Microservice(settings) {
   self.validateJson = bind(self.validateJson, self);
   self.search = bind(self.search, self);
   self.options = bind(self.options, self);
-  self.settings.mongoDB = false;
+  self.mongoDB = false;
 
   if (self.settings.mongoUrl) {
     MongoClient.connect(self.settings.mongoUrl, function(err, db) {
@@ -55,8 +55,8 @@ function Microservice(settings) {
         self.emit('error', err);
         return;
       }
-      self.settings.mongoDB = db;
-      self.emit('ready');
+      self.mongoDB = db;
+      self.emit('ready', db);
     });
   }
 }
@@ -78,7 +78,13 @@ Microservice.prototype.debug = {
  */
 Microservice.prototype.validate = function(method, jsonData, requestDetails, callback) {
   var self = this;
-  var Validate = new ValidateClass(self.settings, jsonData, requestDetails);
+  let db = false;
+  if (requestDetails.mongoDatabase) {
+    db = self.mongoDB.db(requestDetails.mongoDatabase);
+  } else {
+    db = self.mongoDB;
+  }
+  var Validate = new ValidateClass(db, self.settings, jsonData, requestDetails);
   Validate.validate(method, callback);
   return Validate;
 };
@@ -88,14 +94,19 @@ Microservice.prototype.validate = function(method, jsonData, requestDetails, cal
  */
 Microservice.prototype.get = function(jsonData, requestDetails, callback) {
   var self = this;
-
+  let db = false;
+  if (requestDetails.mongoDatabase) {
+    db = self.mongoDB.db(requestDetails.mongoDatabase);
+  } else {
+    db = self.mongoDB;
+  }
   if (arguments.length === 2) {
     // v1.3 < version compatibility
     callback = requestDetails;
     requestDetails = jsonData;
   }
 
-  var Get = new GetClass(self.settings, requestDetails);
+  var Get = new GetClass(db, self.settings, requestDetails);
   Get.process(callback);
   return Get;
 
@@ -114,7 +125,13 @@ Microservice.prototype.post = function(jsonData, requestDetails, callback) {
     self.debug.debug('POST:validateJson %O', error);
     return callback(error);
   }
-  var Post = new PostClass(self.settings, jsonData, requestDetails);
+  let db = false;
+  if (requestDetails.mongoDatabase) {
+    db = self.mongoDB.db(requestDetails.mongoDatabase);
+  } else {
+    db = self.mongoDB;
+  }
+  var Post = new PostClass(db,self.settings, jsonData, requestDetails);
   Post.process(callback);
   return Post;
 
@@ -125,8 +142,13 @@ Microservice.prototype.post = function(jsonData, requestDetails, callback) {
  */
 Microservice.prototype.put = function(jsonData, requestDetails, callback) {
   var self = this;
-
-  var Put = new PutClass(self.settings, jsonData, requestDetails);
+  let db = false;
+  if (requestDetails.mongoDatabase) {
+    db = self.mongoDB.db(requestDetails.mongoDatabase);
+  } else {
+    db = self.mongoDB;
+  }
+  var Put = new PutClass(db, self.settings, jsonData, requestDetails);
   Put.process(callback);
   return Put;
 
@@ -143,8 +165,13 @@ Microservice.prototype.delete = function(jsonData, requestDetails, callback) {
     callback = requestDetails;
     requestDetails = jsonData;
   }
-
-  var Delete = new DeleteClass(self.settings, requestDetails);
+  let db = false;
+  if (requestDetails.mongoDatabase) {
+    db = self.mongoDB.db(requestDetails.mongoDatabase);
+  } else {
+    db = self.mongoDB;
+  }
+  var Delete = new DeleteClass(db, self.settings, requestDetails);
   Delete.process(callback);
   return Delete;
 
@@ -155,8 +182,13 @@ Microservice.prototype.delete = function(jsonData, requestDetails, callback) {
  */
 Microservice.prototype.search = function(jsonData, requestDetails, callback) {
   var self = this;
-
-  var Search = new SearchClass(self.settings, jsonData, requestDetails);
+  let db = false;
+  if (requestDetails.mongoDatabase) {
+    db = self.mongoDB.db(requestDetails.mongoDatabase);
+  } else {
+    db = self.mongoDB;
+  }
+  var Search = new SearchClass(db, self.settings, jsonData, requestDetails);
   Search.process(callback);
   return Search;
 
@@ -187,8 +219,13 @@ Microservice.prototype.options = function(jsonData, requestDetails, callbacks, c
  */
 Microservice.prototype.aggregate = function(jsonData, requestDetails, callback) {
   var self = this;
-
-  var Aggregate = new AggregateClass(self.settings, jsonData, requestDetails);
+  let db = false;
+  if (requestDetails.mongoDatabase) {
+    db = self.mongoDB.db(requestDetails.mongoDatabase);
+  } else {
+    db = self.mongoDB;
+  }
+  var Aggregate = new AggregateClass(db, self.settings, jsonData, requestDetails);
   Aggregate.process(callback);
   return Aggregate;
 
