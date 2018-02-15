@@ -3,7 +3,6 @@
  */
 'use strict';
 
-const MongoClient = require('mongodb').MongoClient;
 const ObjectID = require('mongodb').ObjectID;
 const debugF = require('debug');
 const fs = require('fs');
@@ -16,8 +15,14 @@ function GetClass(options, data, requestDetails) {
 
   // Use a closure to preserve `this`
   var self = this;
-  self.mongoUrl = options.mongoUrl;
+  self.mongoDB = options.mongoDB;
   self.mongoTable = options.mongoTable;
+
+  // If there is a need to change default table name.
+  if (requestDetails.mongoTable) {
+    self.mongoTable = requestDetails.mongoTable;
+  }
+
   self.fileDir = options.fileDir;
   self.id = options.id;
 
@@ -32,7 +37,7 @@ GetClass.prototype.mongoUrl = '';
 GetClass.prototype.mongoTable = '';
 
 GetClass.prototype.debug = {
-  get: debugF('microservice:get')
+  debug: debugF('microservice:get')
 };
 
 GetClass.prototype.process = function(callback) {
@@ -43,96 +48,94 @@ GetClass.prototype.process = function(callback) {
     fileProperty = process.env.FILE_PROPERTY;
   }
 
-  MongoClient.connect(self.mongoUrl, function(err, db) {
+  if (!self.mongoDB) {
+    self.debug.debug('MongoClient:db is not ready');
+    return callback(new Error('DB is not ready'));
+  }
+
+  var collection = self.mongoDB.collection(self.mongoTable);
+  var query = {}
+  if (self.id && self.id.field) {
+    switch (self.id.type) {
+      case 'number': {
+        query[self.id.field] = parseInt(self.requestDetails.url);
+        break;
+      }
+      case 'float': {
+        query[self.id.field] = parseFloat(self.requestDetails.url);
+        break;
+      }
+      default: {
+        query[self.id.field] = self.requestDetails.url;
+      }
+    }
+    if (self.id.fields) {
+      for (let name in self.id.fields) {
+        let requestPath = self.id.fields[name].split('.');
+        let tmp = JSON.parse(JSON.stringify(self.requestDetails));
+        for (let item in requestPath) {
+          let pathItem = requestPath[item];
+          if (tmp[pathItem]) {
+            tmp = tmp[pathItem];
+          }
+        }
+        query[name] = tmp;
+      }
+    }
+  } else {
+    try {
+      query._id = new ObjectID(self.requestDetails.url);
+    } catch(e) {
+      return callback (e, null);
+    }
+  }
+
+  collection.findOne(query, function(err, result) {
     if (err) {
-      self.debug.get('MongoClient:connect err: %O', err);
+      self.debug.debug('MongoClient:findOne err: %O', err);
       return callback(err, null);
     }
-    var collection = db.collection(self.mongoTable);
-    var query = {}
-    if (self.id && self.id.field) {
-      switch (self.id.type) {
-        case 'number': {
-          query[self.id.field] = parseInt(self.requestDetails.url);
-          break;
+
+    if (!result) {
+      self.debug.debug('MongoClient:findOneAndUpdate object not found.');
+      return callback(null, {
+        code: 404,
+        answer: {
+          message: 'Not found'
         }
-        case 'float': {
-          query[self.id.field] = parseFloat(self.requestDetails.url);
-          break;
-        }
-        default: {
-          query[self.id.field] = self.requestDetails.url;
-        }
-      }
-      if (self.id.fields) {
-        for (let name in self.id.fields) {
-          let requestPath = self.id.fields[name].split('.');
-          let tmp = JSON.parse(JSON.stringify(self.requestDetails));
-          for (let item in requestPath) {
-            let pathItem = requestPath[item];
-            if (tmp[pathItem]) {
-              tmp = tmp[pathItem];
-            }
+      });
+    }
+    if (self.fileDir && self.fileDir != '' && fileProperty) {
+      var filePath = self.fileDir + '/' + self.requestDetails.url;
+      if (fs.existsSync(filePath)) {
+        try {
+          if (process.env.FILE_PROPERTY_JSON) {
+            result[fileProperty] = JSON.parse(fs.readFileSync(filePath));
+          } else {
+            result[fileProperty] = fs.readFileSync(filePath).toString();
           }
-          query[name] = tmp;
+        } catch(e) {
+          if (process.env.FILE_PROPERTY_JSON) {
+            result[fileProperty] = {};
+          } else {
+            result[fileProperty] = '';
+          }
         }
-      }
-    } else {
-      try {
-        query._id = new ObjectID(self.requestDetails.url);
-      } catch(e) {
-        return callback (e, null);
       }
     }
 
-    collection.findOne(query, function(err, result) {
-      db.close();
-      if (err) {
-        self.debug.get('MongoClient:findOne err: %O', err);
-        return callback(err, null);
-      }
-
-      if (!result) {
-        self.debug.get('MongoClient:findOneAndUpdate object not found.');
-        return callback(null, {
-          code: 404,
-          answer: {
-            message: 'Not found'
-          }
-        });
-      }
-      if (self.fileDir && self.fileDir != '' && fileProperty) {
-        var filePath = self.fileDir + '/' + self.requestDetails.url;
-        if (fs.existsSync(filePath)) {
-          try {
-            if (process.env.FILE_PROPERTY_JSON) {
-              result[fileProperty] = JSON.parse(fs.readFileSync(filePath));
-            } else {
-              result[fileProperty] = fs.readFileSync(filePath).toString();
-            }
-          } catch(e) {
-            if (process.env.FILE_PROPERTY_JSON) {
-              result[fileProperty] = {};
-            } else {
-              result[fileProperty] = '';
-            }
-          }
-        }
-      }
-
-      if (self.requestDetails.credentials) {
-        delete(result.token);
-      }
-      if (self.id && self.id.field) {
-        result.url = process.env.SELF_PATH + '/' + result[self.id.field];
-      } else {
-        result.id = result._id;
-      }
-      delete(result._id);
-      return callback(null, {
-        code: 200,
-        answer: result
-      });
+    if (self.requestDetails.credentials) {
+      delete(result.token);
+    }
+    if (self.id && self.id.field) {
+      result.url = process.env.SELF_PATH + '/' + result[self.id.field];
+    } else {
+      result.id = result._id;
+    }
+    delete(result._id);
+    return callback(null, {
+      code: 200,
+      answer: result
     });
   });
   return;

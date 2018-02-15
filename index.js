@@ -5,6 +5,7 @@
 'use strict';
 
 const Validator = require('jsonschema').Validator;
+const MongoClient = require('mongodb').MongoClient;
 const PostClass = require('./includes/postClass.js');
 const PutClass = require('./includes/putClass.js');
 const GetClass = require('./includes/getClass.js');
@@ -42,6 +43,18 @@ function Microservice(settings) {
   self.validateJson = bind(self.validateJson, self);
   self.search = bind(self.search, self);
   self.options = bind(self.options, self);
+  self.settings.mongoDB = false;
+
+  if (self.settings.mongoUrl) {
+    MongoClient.connect(self.mongoUrl, function(err, db) {
+      if (err) {
+        self.debug.debug('MongoClient:connect err: %O', err);
+        self.debug.log('MongoClient:connect failed');
+        return;
+      }
+      self.settings.mongoDB = db;
+    });
+  }
 }
 
 /**
@@ -50,7 +63,8 @@ function Microservice(settings) {
 Microservice.prototype.settings = {};
 
 Microservice.prototype.debug = {
-  debug: debugF('microservice:debug')
+  debug: debugF('microservice:debug'),
+  log: debugF('microservice:log')
 };
 
 /**
@@ -58,7 +72,6 @@ Microservice.prototype.debug = {
  */
 Microservice.prototype.validate = function(method, jsonData, requestDetails, callback) {
   var self = this;
-
   var Validate = new ValidateClass(self.settings, jsonData, requestDetails);
   Validate.validate(method, callback);
   return Validate;

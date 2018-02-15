@@ -3,7 +3,6 @@
  */
 'use strict';
 
-const MongoClient = require('mongodb').MongoClient;
 const debugF = require('debug');
 const fs = require('fs');
 
@@ -14,8 +13,14 @@ const fs = require('fs');
 function AggregateClass(options, data, requestDetails) {
   // Use a closure to preserve `this`
   var self = this;
-  self.mongoUrl = options.mongoUrl;
+  self.mongoDB = options.mongoDB;
   self.mongoTable = options.mongoTable;
+
+  // If there is a need to change default table name.
+  if (requestDetails.mongoTable) {
+    self.mongoTable = requestDetails.mongoTable;
+  }
+
   self.fileDir = options.fileDir;
 
   this.data = data;
@@ -29,41 +34,39 @@ AggregateClass.prototype.mongoUrl = '';
 AggregateClass.prototype.mongoTable = '';
 
 AggregateClass.prototype.debug = {
-  aggregate: debugF('microservice:aggregate')
+  debug: debugF('microservice:aggregate')
 };
 
 AggregateClass.prototype.process = function(callback) {
   var self = this;
 
-  MongoClient.connect(self.mongoUrl, function(err, db) {
+  if (!self.mongoDB) {
+    self.debug.debug('MongoClient:db is not ready');
+    return callback(new Error('DB is not ready'));
+  }
+
+  var collection = self.mongoDB.collection(self.mongoTable);
+
+  collection.aggregate(self.data).toArray(function(err, results) {
     if (err) {
-      self.debug.aggregate('MongoClient:connect err: %O', err);
-      return callback(err, null);
+      self.debug.debug('MongoClient:aggregate err: %O', err);
+      return callback(err, results);
     }
-
-    var collection = db.collection(self.mongoTable);
-
-    collection.aggregate(self.data).toArray(function(err, results) {
-      db.close();
-      if (err) {
-        self.debug.aggregate('MongoClient:aggregate err: %O', err);
-        return callback(err, results);
-      }
-      if (!results || results.length == 0) {
-        self.debug.aggregate('MongoClient:aggregate object not found.');
-        return callback(null, {
-          code: 404,
-          answer: {
-            message: 'Not found'
-          }
-        });
-      }
+    if (!results || results.length == 0) {
+      self.debug.debug('MongoClient:aggregate object not found.');
       return callback(null, {
-        code: 200,
-        answer: results,
+        code: 404,
+        answer: {
+          message: 'Not found'
+        }
       });
+    }
+    return callback(null, {
+      code: 200,
+      answer: results,
     });
   });
+
   return;
 };
 

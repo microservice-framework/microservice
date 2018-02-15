@@ -5,7 +5,6 @@
 
 require('dotenv').config();
 const tokenGenerate = require('./token-generate.js');
-const MongoClient = require('mongodb').MongoClient;
 const debugF = require('debug');
 const fs = require('fs');
 
@@ -17,8 +16,14 @@ function PostClass(options, data, requestDetails) {
 
   // Use a closure to preserve `this`
   var self = this;
-  self.mongoUrl = options.mongoUrl;
+  self.mongoDB = options.mongoDB;
   self.mongoTable = options.mongoTable;
+
+  // If there is a need to change default table name.
+  if (requestDetails.mongoTable) {
+    self.mongoTable = requestDetails.mongoTable;
+  }
+
   self.fileDir = options.fileDir;
   self.id = options.id;
 
@@ -48,7 +53,7 @@ PostClass.prototype.mongoUrl = '';
 PostClass.prototype.mongoTable = '';
 
 PostClass.prototype.debug = {
-  post: debugF('microservice:post')
+  debug: debugF('microservice:post')
 };
 
 PostClass.prototype.process = function(callback) {
@@ -90,39 +95,39 @@ PostClass.prototype.process = function(callback) {
       }
     }
   }
-  MongoClient.connect(self.mongoUrl, function(err, db) {
+
+  if (!self.mongoDB) {
+    self.debug.debug('MongoClient:db is not ready');
+    return callback(new Error('DB is not ready'));
+  }
+
+
+  var collection = self.mongoDB.collection(self.mongoTable);
+  collection.insertOne(self.data, function(err, result) {
     if (err) {
-      self.debug.post('MongoClient:connect err: %O', err);
+      self.debug.debug('MongoClient:insertOne err: %O', err);
       return callback(err, null);
     }
-
-    var collection = db.collection(self.mongoTable);
-    collection.insertOne(self.data, function(err, result) {
-      db.close();
-      if (err) {
-        self.debug.post('MongoClient:insertOne err: %O', err);
-        return callback(err, null);
-      }
-      if (fileContent && self.fileDir) {
-        fs.writeFile(self.fileDir + '/' + result.insertedId, fileContent);
-      }
-      if (self.id && self.id.field) {
-        self.data.url = process.env.SELF_PATH + '/' + self.data[self.id.field];
-      } else {
-        self.data.id = result.insertedId;
-      }
-      if (self.data._id) {
-        delete self.data._id;
-      }
-      if (self.requestDetails.credentials) {
-        delete(self.data.token);
-      }
-      callback(null, {
-        code: 200,
-        answer: self.data
-      });
+    if (fileContent && self.fileDir) {
+      fs.writeFile(self.fileDir + '/' + result.insertedId, fileContent);
+    }
+    if (self.id && self.id.field) {
+      self.data.url = process.env.SELF_PATH + '/' + self.data[self.id.field];
+    } else {
+      self.data.id = result.insertedId;
+    }
+    if (self.data._id) {
+      delete self.data._id;
+    }
+    if (self.requestDetails.credentials) {
+      delete(self.data.token);
+    }
+    callback(null, {
+      code: 200,
+      answer: self.data
     });
   });
+
   return;
 };
 
