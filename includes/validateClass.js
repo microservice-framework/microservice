@@ -147,12 +147,13 @@ ValidateClass.prototype.AccessToken = function(method, callback) {
   // Compatibility with old versions
   if (self.requestDetails.headers.access_token) {
     accessToken = self.requestDetails.headers.access_token;
-    msClientSettings.headers.access_token = accessToken;
+
   }
-  if (self.requestDetails.headers['Access-Token']) {
-    accessToken = self.requestDetails.headers['Access-Token'];
-    msClientSettings.headers['Access-Token'] = accessToken;
+  if (self.requestDetails.headers['access-token']) {
+    accessToken = self.requestDetails.headers['access-token'];
   }
+  msClientSettings.accessToken = accessToken;
+
   let authServer = new MicroserviceClient(msClientSettings);
   authServer.get(accessToken, function(err, answer) {
     if (err) {
@@ -211,7 +212,15 @@ ValidateClass.prototype.validate = function(method, callback) {
   var self = this;
   self.debug.debug('Validate:requestDetails %O ', self.requestDetails);
 
+  let isAccessToken = false;
   if (self.requestDetails.headers.access_token) {
+    isAccessToken = true;
+  }
+  if (self.requestDetails.headers['access-token']) {
+    isAccessToken = true;
+  }
+
+  if (isAccessToken) {
     return self.AccessToken(method, callback);
   }
 
