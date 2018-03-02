@@ -1,0 +1,21 @@
+{
+  "parserOptions": {
+    "ecmaVersion": 6
+  },
+  "rules": {
+    "keyword-spacing": [
+      2,
+      {}
+    ],
+    "camelcase": [
+      1,
+      {
+        "properties": "always"
+      }
+    ],
+    "max-len": [
+      2,
+      100
+    ]
+  }
+}

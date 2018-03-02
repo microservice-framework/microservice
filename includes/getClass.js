@@ -90,7 +90,7 @@ GetClass.prototype.process = function(callback) {
   } else {
     try {
       query._id = new ObjectID(self.requestDetails.url);
-    } catch(e) {
+    } catch (e) {
       return callback (e, null);
     }
   }
@@ -119,7 +119,7 @@ GetClass.prototype.process = function(callback) {
           } else {
             result[fileProperty] = fs.readFileSync(filePath).toString();
           }
-        } catch(e) {
+        } catch (e) {
           if (process.env.FILE_PROPERTY_JSON) {
             result[fileProperty] = {};
           } else {

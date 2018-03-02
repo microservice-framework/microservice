@@ -85,7 +85,7 @@ DeleteClass.prototype.process = function(callback) {
   } else {
     try {
       query._id = new ObjectID(self.requestDetails.url);
-    } catch(e) {
+    } catch (e) {
       return callback (e, null);
     }
   }

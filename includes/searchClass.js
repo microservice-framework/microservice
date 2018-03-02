@@ -62,7 +62,7 @@ SearchClass.prototype.process = function(callback) {
   if (query['_id']) {
     try {
       query['_id'] = new ObjectID(query['_id']);
-    } catch(e) {
+    } catch (e) {
       return callback (e, null);
     }
   }
@@ -71,7 +71,7 @@ SearchClass.prototype.process = function(callback) {
     try {
       query['_id'] = new ObjectID(query['id']);
       delete query['id'];
-    } catch(e) {
+    } catch (e) {
       return callback (e, null);
     }
   }
@@ -127,7 +127,7 @@ SearchClass.prototype.process = function(callback) {
                     } else {
                       results[i][fileProperty] = fs.readFileSync(filePath).toString();
                     }
-                  } catch(e) {
+                  } catch (e) {
                     if (process.env.FILE_PROPERTY_JSON) {
                       results[i][fileProperty] = {};
                     } else {
