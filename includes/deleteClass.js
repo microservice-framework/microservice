@@ -57,6 +57,14 @@ DeleteClass.prototype.process = function(callback) {
         query[self.id.field] = parseFloat(self.requestDetails.url);
         break;
       }
+      case 'ObjectID': {
+        try {
+          query[self.id.field] = new ObjectID(self.requestDetails.url);
+        } catch (e) {
+          return callback (e, null);
+        }
+        break;
+      }
       default: {
         query[self.id.field] = self.requestDetails.url;
       }
