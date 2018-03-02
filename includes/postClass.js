@@ -110,12 +110,16 @@ PostClass.prototype.process = function(callback) {
     if (fileContent && self.fileDir) {
       fs.writeFile(self.fileDir + '/' + result.insertedId, fileContent);
     }
+    let removeId = true;
     if (self.id && self.id.field) {
       self.data.url = process.env.SELF_PATH + '/' + self.data[self.id.field];
+      if (self.id.field == '_id') {
+        removeId = false;
+      }
     } else {
       self.data.id = result.insertedId;
     }
-    if (self.data._id) {
+    if (removeId && self.data._id) {
       delete self.data._id;
     }
     if (self.requestDetails.credentials) {

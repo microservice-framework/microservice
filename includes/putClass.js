@@ -175,12 +175,19 @@ PutClass.prototype.process = function(callback) {
     if (self.requestDetails.credentials) {
       delete(resultUpdate.value.token);
     }
+    let removeId = true;
     if (self.id && self.id.field) {
       resultUpdate.value.url = process.env.SELF_PATH + '/' + resultUpdate.value[self.id.field];
+      if (self.id.field == '_id') {
+        removeId = false;
+      }
     } else {
       resultUpdate.value.id = resultUpdate.value._id;
     }
-    delete(resultUpdate.value._id);
+    if (removeId){
+      delete(resultUpdate.value._id);
+    }
+    
 
     return callback(null, {
       code: 200,

@@ -50,3 +50,4 @@ For more details please check our [website](http://microservice-frame.work)
 - `1.3.3-5` - Implementing new access token validation mechanism
 - `1.3.6` - fix Access-token check. 
 - `1.3.7` - Add ObjectID like field defenition.
+- `1.3.8` - Fix removing _id from output when _id specified as field.

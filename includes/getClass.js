@@ -132,12 +132,18 @@ GetClass.prototype.process = function(callback) {
     if (self.requestDetails.credentials) {
       delete(result.token);
     }
+    let removeId = true;
     if (self.id && self.id.field) {
       result.url = process.env.SELF_PATH + '/' + result[self.id.field];
+      if (self.id.field == '_id') {
+        removeId = false;
+      }
     } else {
       result.id = result._id;
     }
-    delete(result._id);
+    if (removeId){
+      delete(result._id);
+    }
     return callback(null, {
       code: 200,
       answer: result

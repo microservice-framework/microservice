@@ -141,12 +141,18 @@ SearchClass.prototype.process = function(callback) {
         }
       }
       results.forEach(function(element) {
+        let removeId = true;
         if (self.id && self.id.field) {
           element.url = process.env.SELF_PATH + '/' + element[self.id.field];
+          if (self.id.field == '_id') {
+            removeId = false;
+          }
         } else {
           element.id = element._id;
         }
-        delete(element._id);
+        if (removeId){
+          delete(element._id);
+        }
         if (self.requestDetails.credentials) {
           delete(element.token);
         }
