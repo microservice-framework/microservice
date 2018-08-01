@@ -60,19 +60,38 @@ SearchClass.prototype.process = function(callback) {
 
   // If search by ID, make sure that we convert it to object first.
   if (query['_id']) {
-    try {
-      query['_id'] = new ObjectID(query['_id']);
-    } catch (e) {
-      return callback (e, null);
+    if (query['_id']['$in']) {
+      var ids = []
+      for (var i in query['_id']['$in']) {
+        ids.push(new ObjectID(query['_id']['$in'][i]));
+      }
+      query['_id']['$in'] = ids;
+    } else {
+      try {
+        query['_id'] = new ObjectID(query['_id']);
+      } catch (e) {
+        return callback (e, null);
+      }
     }
   }
 
   if (query['id']) {
-    try {
-      query['_id'] = new ObjectID(query['id']);
+    if (query['id']['$in']) {
+      var ids = []
+      for (var i in query['id']['$in']) {
+        ids.push(new ObjectID(query['id']['$in'][i]));
+      }
+      query['_id'] = {
+        $in: ids
+      }
       delete query['id'];
-    } catch (e) {
-      return callback (e, null);
+    } else {
+      try {
+        query['_id'] = new ObjectID(query['id']);
+        delete query['id'];
+      } catch (e) {
+        return callback (e, null);
+      }
     }
   }
   var cursor;
