@@ -45,6 +45,7 @@ function Microservice(settings) {
   self.validateJson = bind(self.validateJson, self);
   self.search = bind(self.search, self);
   self.options = bind(self.options, self);
+  self.aggregate = bind(self.aggregate, self);
   self.mongoDB = false;
 
   if (self.settings.mongoUrl) {
