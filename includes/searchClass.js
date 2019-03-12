@@ -189,6 +189,10 @@ SearchClass.prototype.process = function(callback) {
   } else {
     cursor = collection.find(query);
   }
+
+  if(self.data.noCount) {
+    return self.processFind(cursor, self.data, -1, callback);
+  }
   let requestHash = '';
   if (process.env.CACHE_COUNT && process.env.CACHE_COUNT > 1) {
     requestHash = hashObject(query);
