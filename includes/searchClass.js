@@ -51,7 +51,7 @@ SearchClass.prototype.processFind = function(cursor, data, count, callback) {
   if (process.env.FILE_PROPERTY) {
     fileProperty = process.env.FILE_PROPERTY;
   }
-
+  
   if (data.sort) {
     cursor = cursor.sort(data.sort);
   }
@@ -62,7 +62,12 @@ SearchClass.prototype.processFind = function(cursor, data, count, callback) {
   if (data.skip) {
     cursor = cursor.skip(data.skip);
   }
-
+  if (data.executionLimit) {
+    cursor = cursor.maxTimeMS(data.executionLimit);
+  }
+  else if(process.env.MAX_TIME_MS){
+    cursor = cursor.maxTimeMS(process.env.MAX_TIME_MS);
+  }
   cursor.toArray(function(err, results) {
     if (err) {
       self.debug.debug('MongoClient:toArray err: %O', err);
