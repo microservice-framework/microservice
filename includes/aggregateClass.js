@@ -34,7 +34,8 @@ AggregateClass.prototype.mongoUrl = '';
 AggregateClass.prototype.mongoTable = '';
 
 AggregateClass.prototype.debug = {
-  debug: debugF('microservice:aggregate')
+  debug: debugF('microservice:aggregate'),
+  warning: debugF('microservice:warning')
 };
 
 AggregateClass.prototype.process = function(callback) {
@@ -47,9 +48,25 @@ AggregateClass.prototype.process = function(callback) {
 
   var collection = self.mongoDB.collection(self.mongoTable);
 
-  collection.aggregate(self.data).toArray(function(err, results) {
+  var options = {}
+  if(process.env.MAX_TIME_MS){
+    options.maxTimeMS = parseInt(process.env.MAX_TIME_MS);
+  }
+
+  if (self.requestDetails.executionLimit) {
+    options.maxTimeMS = parseInt(self.requestDetails.executionLimit)
+  }
+  if (self.requestDetails.headers['execution-limit']) {
+    options.maxTimeMS = parseInt(self.requestDetails.headers['execution-limit'])
+  }
+
+  collection.aggregate(self.data, options).toArray(function(err, results) {
     if (err) {
       self.debug.debug('MongoClient:aggregate err: %O', err);
+      if(err && err.code && err.code == 50) {
+        self.debug.debug('executionLimit: %d query: %O',options.maxTimeMS, self.data )
+        self.debug.warning('executionLimit: %d query: %O',options.maxTimeMS, self.data )
+      }
       return callback(err, results);
     }
     if (!results || results.length == 0) {

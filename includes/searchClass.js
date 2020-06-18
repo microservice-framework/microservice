@@ -42,7 +42,8 @@ SearchClass.prototype.mongoUrl = '';
 SearchClass.prototype.mongoTable = '';
 
 SearchClass.prototype.debug = {
-  debug: debugF('microservice:search')
+  debug: debugF('microservice:search'),
+  warning: debugF('microservice:warning')
 };
 
 SearchClass.prototype.processFind = function(cursor, data, count, callback) {
@@ -62,10 +63,27 @@ SearchClass.prototype.processFind = function(cursor, data, count, callback) {
   if (data.skip) {
     cursor = cursor.skip(data.skip);
   }
+  var executionLimit = 0 ;
+  if(process.env.MAX_TIME_MS){
+    executionLimit = parseInt(process.env.MAX_TIME_MS);
+  }
+  if (data.executionLimit) {
+    executionLimit = parseInt(data.executionLimit)
+  }
+  if (self.requestDetails.headers['execution-limit']) {
+    executionLimit = parseInt(self.requestDetails.headers['execution-limit'])
+  }
+  if(executionLimit > 0) {
+    cursor = cursor.maxTimeMS(executionLimit);
+  }
 
   cursor.toArray(function(err, results) {
     if (err) {
       self.debug.debug('MongoClient:toArray err: %O', err);
+      if(err && err.code && err.code == 50) {
+        self.debug.debug('executionLimit: %d query: %O',executionLimit, data )
+        self.debug.warning('executionLimit: %d query: %O',executionLimit, data )
+      }
       return callback(err, results);
     }
     if (!results || results.length == 0) {
