@@ -70,6 +70,9 @@ SearchClass.prototype.processFind = function(cursor, data, count, callback) {
   if (data.executionLimit) {
     executionLimit = parseInt(data.executionLimit)
   }
+  if (self.requestDetails.headers['execution-limit']) {
+    executionLimit = parseInt(self.requestDetails.headers['execution-limit'])
+  }
   if(executionLimit > 0) {
     cursor = cursor.maxTimeMS(executionLimit);
   }
