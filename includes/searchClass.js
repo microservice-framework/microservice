@@ -81,8 +81,8 @@ SearchClass.prototype.processFind = function(cursor, data, count, callback) {
     if (err) {
       self.debug.debug('MongoClient:toArray err: %O', err);
       if(err && err.code && err.code == 50) {
-        self.debug.debug('executionLimit: %d query: %O',executionLimit, data )
-        self.debug.warning('executionLimit: %d query: %O',executionLimit, data )
+        self.debug.debug('executionLimit: %d query: %O',executionLimit, JSON.stringify(data) )
+        self.debug.warning('executionLimit: %d query: %O',executionLimit, JSON.stringify(data) )
       }
       return callback(err, results);
     }

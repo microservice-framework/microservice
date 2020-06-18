@@ -64,8 +64,8 @@ AggregateClass.prototype.process = function(callback) {
     if (err) {
       self.debug.debug('MongoClient:aggregate err: %O', err);
       if(err && err.code && err.code == 50) {
-        self.debug.debug('executionLimit: %d query: %O',options.maxTimeMS, self.data )
-        self.debug.warning('executionLimit: %d query: %O',options.maxTimeMS, self.data )
+        self.debug.debug('executionLimit: %d query: %O',options.maxTimeMS, JSON.stringify(self.data) )
+        self.debug.warning('executionLimit: %d query: %O',options.maxTimeMS, JSON.stringify(self.data ) )
       }
       return callback(err, results);
     }
