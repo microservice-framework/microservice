@@ -76,6 +76,9 @@ SearchClass.prototype.processFind = function(cursor, data, count, callback) {
   if(executionLimit > 0) {
     cursor = cursor.maxTimeMS(executionLimit);
   }
+  if (self.requestDetails.headers['force-index']) {
+    cursor = cursor.hint(self.requestDetails.headers['force-index']);
+  }
 
   cursor.toArray(function(err, results) {
     if (err) {
