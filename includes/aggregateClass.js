@@ -47,7 +47,25 @@ AggregateClass.prototype.process = function(callback) {
 
   var collection = self.mongoDB.collection(self.mongoTable);
 
-  collection.aggregate(self.data).toArray(function(err, results) {
+  var options = {}
+  if(process.env.MAX_TIME_MS){
+    options.maxTimeMS = parseInt(process.env.MAX_TIME_MS);
+  }
+
+  if (self.requestDetails.executionLimit) {
+    options.maxTimeMS = parseInt(self.requestDetails.executionLimit)
+  }
+  if (self.requestDetails.headers['execution-limit']) {
+    options.maxTimeMS = parseInt(self.requestDetails.headers['execution-limit'])
+  }
+  if (self.requestDetails.headers['force-index']) {
+    options.hint = self.requestDetails.headers['force-index'];
+  }
+  collection.aggregate(self.data, options).toArray(function(err, results) {
+    if(err && err.code && err.code == 50) {
+      self.debug.debug('executionLimit: %d query: %O',options.maxTimeMS, JSON.stringify(self.data) )
+      self.debug.warning('executionLimit: %d query: %O',options.maxTimeMS, JSON.stringify(self.data ) )
+    }
     if (err) {
       self.debug.debug('MongoClient:aggregate err: %O', err);
       return callback(err, results);
