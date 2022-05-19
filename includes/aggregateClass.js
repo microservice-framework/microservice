@@ -59,6 +59,9 @@ AggregateClass.prototype.process = function(callback) {
   if (self.requestDetails.headers['execution-limit']) {
     options.maxTimeMS = parseInt(self.requestDetails.headers['execution-limit'])
   }
+  if (self.requestDetails.headers['force-index']) {
+    options.hint = self.requestDetails.headers['force-index'];
+  }
 
   collection.aggregate(self.data, options).toArray(function(err, results) {
     if (err) {
