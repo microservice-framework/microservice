@@ -42,7 +42,8 @@ SearchClass.prototype.mongoUrl = '';
 SearchClass.prototype.mongoTable = '';
 
 SearchClass.prototype.debug = {
-  debug: debugF('microservice:search')
+  debug: debugF('microservice:search'),
+  warning: debugF('microservice:warning')
 };
 
 SearchClass.prototype.processFind = function(cursor, data, count, callback) {
@@ -62,8 +63,28 @@ SearchClass.prototype.processFind = function(cursor, data, count, callback) {
   if (data.skip) {
     cursor = cursor.skip(data.skip);
   }
+  var executionLimit = 0 ;
+  if(process.env.MAX_TIME_MS){
+    executionLimit = parseInt(process.env.MAX_TIME_MS);
+  }
+  if (data.executionLimit) {
+    executionLimit = parseInt(data.executionLimit)
+  }
+  if (self.requestDetails.headers['execution-limit']) {
+    executionLimit = parseInt(self.requestDetails.headers['execution-limit'])
+  }
+  if(executionLimit > 0) {
+    cursor = cursor.maxTimeMS(executionLimit);
+  }
+  if (self.requestDetails.headers['force-index']) {
+    cursor = cursor.hint(self.requestDetails.headers['force-index']);
+  }
 
   cursor.toArray(function(err, results) {
+    if(err && err.code && err.code == 50) {
+      self.debug.debug('executionLimit: %d query: %O',executionLimit, JSON.stringify(data) )
+      self.debug.warning('executionLimit: %d query: %O',executionLimit, JSON.stringify(data) )
+    }
     if (err) {
       self.debug.debug('MongoClient:toArray err: %O', err);
       return callback(err, results);
@@ -189,6 +210,9 @@ SearchClass.prototype.process = function(callback) {
   } else {
     cursor = collection.find(query);
   }
+  if(self.data.noCount) {
+    return self.processFind(cursor, self.data, -1, callback);
+  }
   let requestHash = '';
   if (process.env.CACHE_COUNT && process.env.CACHE_COUNT > 1) {
     requestHash = hashObject(query);
@@ -200,6 +224,9 @@ SearchClass.prototype.process = function(callback) {
       }
       delete countCache[requestHash];
     }
+  }
+  if (self.requestDetails.headers['force-index']) {
+    cursor = cursor.hint(self.requestDetails.headers['force-index']);
   }
   
   cursor.count(function(err, count) {
