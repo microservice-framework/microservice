@@ -227,6 +227,10 @@ SearchClass.prototype.process = function(callback) {
     }
   }
   
+  if (self.requestDetails.headers['force-index']) {
+    cursor = cursor.hint(self.requestDetails.headers['force-index']);
+  }
+  
   cursor.count(function(err, count) {
     if (err) {
       self.debug.debug('MongoClient:count err: %O', err);
