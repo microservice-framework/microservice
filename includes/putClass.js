@@ -141,11 +141,17 @@ PutClass.prototype.process = function(callback) {
   }
 
   // Update changed field.
-  if (updateCmd['$set']) {
-    updateCmd['$set']['changed'] = Date.now();
-  } else {
-    updateCmd['$set'] = {
-      changed: Date.now()
+  var updateChanged = true;
+  if (self.requestDetails.headers['skip-changed']) {
+    updateChanged = false;
+  }
+  if(updateChanged) {
+    if (updateCmd['$set']) {
+      updateCmd['$set']['changed'] = Date.now();
+    } else {
+      updateCmd['$set'] = {
+        changed: Date.now()
+      }
     }
   }
   self.debug.debug('updateCmd %O', updateCmd);
