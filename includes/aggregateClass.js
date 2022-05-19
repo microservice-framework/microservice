@@ -34,7 +34,8 @@ AggregateClass.prototype.mongoUrl = '';
 AggregateClass.prototype.mongoTable = '';
 
 AggregateClass.prototype.debug = {
-  debug: debugF('microservice:aggregate')
+  debug: debugF('microservice:aggregate'),
+  warning: debugF('microservice:warning')
 };
 
 AggregateClass.prototype.process = function(callback) {
