@@ -142,7 +142,7 @@ PutClass.prototype.process = function(callback) {
 
   // Update changed field.
   var updateChanged = true;
-  if (self.requestDetails.headers['skip-changed']) {
+  if (self.requestDetails.headers && self.requestDetails.headers['skip-changed']) {
     updateChanged = false;
   }
   if(updateChanged) {
