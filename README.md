@@ -51,3 +51,10 @@ For more details please check our [website](http://microservice-frame.work)
 - `1.3.6` - fix Access-token check. 
 - `1.3.7` - Add ObjectID like field defenition.
 - `1.3.8` - Fix removing _id from output when _id specified as field.
+
+- `2.0.0` - Fix search by id when it is array.
+          - support header execution-limit to limit execution time
+          - support header force-index to force index search
+          - support for env MAX_TIME_MS to set max exection time for search
+          - support noCount request params to avoid countin total-count on search
+          - properly close mongo connection on SIGINT (mfw stop serviceName)
