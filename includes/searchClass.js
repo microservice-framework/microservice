@@ -95,7 +95,8 @@ SearchClass.prototype.processFind = function(cursor, data, count, callback) {
         code: 404,
         answer: {
           message: 'Not found'
-        }
+        },
+        headers: {'x-total-count': count}
       });
     }
     if (data[fileProperty] == true) {
