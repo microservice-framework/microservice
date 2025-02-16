@@ -1,6 +1,6 @@
 {
   "name": "@microservice-framework/microservice",
-  "version": "2.0.1",
+  "version": "2.0.2",
   "description": "Microservice framework worker class.",
   "main": "index.js",
   "scripts": {
