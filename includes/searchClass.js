@@ -170,7 +170,10 @@ SearchClass.prototype.process = function(callback) {
   }
 
   // If search by ID, make sure that we convert it to object first.
-  
+  if (query['id'] && query['_id'] === undefined) {
+    query['_id'] = query['id']
+    delete query['id']
+  }
   if (query['_id']) {
     
     let arrayOptions = ['$in', '$nin']
