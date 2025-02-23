@@ -43,10 +43,10 @@ SearchClass.prototype.mongoTable = '';
 
 SearchClass.prototype.debug = {
   debug: debugF('microservice:search'),
-  warning: debugF('microservice:warning')
+  warning: debugF('microservice:warning'),
 };
 
-SearchClass.prototype.processFind = function(cursor, data, count, callback) {
+SearchClass.prototype.processFind = function (cursor, data, count, callback) {
   var self = this;
   var fileProperty = false;
   if (process.env.FILE_PROPERTY) {
@@ -63,29 +63,29 @@ SearchClass.prototype.processFind = function(cursor, data, count, callback) {
   if (data.skip) {
     cursor = cursor.skip(data.skip);
   }
-  var executionLimit = 0 ;
-  if(process.env.MAX_TIME_MS){
+  var executionLimit = 0;
+  if (process.env.MAX_TIME_MS) {
     executionLimit = parseInt(process.env.MAX_TIME_MS);
   }
   if (data.executionLimit) {
-    executionLimit = parseInt(data.executionLimit)
+    executionLimit = parseInt(data.executionLimit);
   }
   if (self.requestDetails.headers['execution-limit']) {
-    executionLimit = parseInt(self.requestDetails.headers['execution-limit'])
+    executionLimit = parseInt(self.requestDetails.headers['execution-limit']);
   }
-  if(executionLimit > 0) {
+  if (executionLimit > 0) {
     cursor = cursor.maxTimeMS(executionLimit);
   }
   if (self.requestDetails.headers['force-index']) {
     cursor = cursor.hint(self.requestDetails.headers['force-index']);
   }
 
-  cursor.toArray(function(err, results) {
+  cursor.toArray(function (err, results) {
     if (err) {
       self.debug.debug('MongoClient:toArray err: %O', err);
-      if(err && err.code && err.code == 50) {
-        self.debug.debug('executionLimit: %d query: %O',executionLimit, JSON.stringify(data) )
-        self.debug.warning('executionLimit: %d query: %O',executionLimit, JSON.stringify(data) )
+      if (err && err.code && err.code == 50) {
+        self.debug.debug('executionLimit: %d query: %O', executionLimit, JSON.stringify(data));
+        self.debug.warning('executionLimit: %d query: %O', executionLimit, JSON.stringify(data));
       }
       return callback(err, results);
     }
@@ -94,9 +94,9 @@ SearchClass.prototype.processFind = function(cursor, data, count, callback) {
       return callback(null, {
         code: 404,
         answer: {
-          message: 'Not found'
+          message: 'Not found',
         },
-        headers: {'x-total-count': count}
+        headers: { 'x-total-count': count },
       });
     }
     if (data[fileProperty] == true) {
@@ -127,7 +127,7 @@ SearchClass.prototype.processFind = function(cursor, data, count, callback) {
         }
       }
     }
-    results.forEach(function(element) {
+    results.forEach(function (element) {
       let removeId = true;
       if (self.id && self.id.field) {
         element.url = process.env.SELF_PATH + '/' + element[self.id.field];
@@ -137,25 +137,23 @@ SearchClass.prototype.processFind = function(cursor, data, count, callback) {
       } else {
         element.id = element._id;
       }
-      if (removeId){
-        delete(element._id);
+      if (removeId) {
+        delete element._id;
       }
       if (self.requestDetails.credentials) {
-        delete(element.token);
+        delete element.token;
       }
     });
     return callback(null, {
       code: 200,
       answer: results,
-      headers: {'x-total-count': count}
+      headers: { 'x-total-count': count },
     });
   });
-}
+};
 
-SearchClass.prototype.process = function(callback) {
+SearchClass.prototype.process = function (callback) {
   var self = this;
-
-  
 
   if (!self.mongoDB) {
     self.debug.debug('MongoClient:db is not ready');
@@ -171,32 +169,31 @@ SearchClass.prototype.process = function(callback) {
 
   // If search by ID, make sure that we convert it to object first.
   if (query['id'] && query['_id'] === undefined) {
-    query['_id'] = query['id']
-    delete query['id']
+    query['_id'] = query['id'];
+    delete query['id'];
   }
   if (query['_id']) {
-    
-    let arrayOptions = ['$in', '$nin']
-    let arrayFound = false
-    for(let i of arrayOptions) {
-      if (query['_id'][i] ) {
-        arrayFound = i
+    let arrayOptions = ['$in', '$nin'];
+    let arrayFound = false;
+    for (let i of arrayOptions) {
+      if (query['_id'][i]) {
+        arrayFound = i;
         break;
       }
     }
     if (arrayFound !== false) {
-      var ids = []
+      var ids = [];
       for (var i in query['_id'][arrayFound]) {
         ids.push(new ObjectID(query['_id'][arrayFound][i]));
       }
       query['_id'][arrayFound] = ids;
     }
-    
-    let valueOptions = ['$lt', '$lte', '$gt', '$gte']
-    let valueFound = false
-    for(let i of valueOptions) {
-      if (query['_id'][i] ) {
-        valueFound = i
+
+    let valueOptions = ['$lt', '$lte', '$gt', '$gte'];
+    let valueFound = false;
+    for (let i of valueOptions) {
+      if (query['_id'][i]) {
+        valueFound = i;
         break;
       }
     }
@@ -204,14 +201,14 @@ SearchClass.prototype.process = function(callback) {
       try {
         query['_id'][valueFound] = new ObjectID(query['_id'][valueFound]);
       } catch (e) {
-        return callback (e, null);
+        return callback(e, null);
       }
     }
-    if(!valueFound && !arrayFound) {
+    if (!valueFound && !arrayFound) {
       try {
         query['_id'] = new ObjectID(query['_id']);
       } catch (e) {
-        return callback (e, null);
+        return callback(e, null);
       }
     }
   }
@@ -223,7 +220,7 @@ SearchClass.prototype.process = function(callback) {
   }
   // Flip default behaviour
   // NON COMPATIBLE
-  if(!self.data.count) {
+  if (!self.data.count) {
     return self.processFind(cursor, self.data, -1, callback);
   }
   let requestHash = '';
@@ -238,21 +235,20 @@ SearchClass.prototype.process = function(callback) {
       delete countCache[requestHash];
     }
   }
-  
+
   if (self.requestDetails.headers['force-index']) {
     cursor = cursor.hint(self.requestDetails.headers['force-index']);
   }
-  
-  cursor.count(function(err, count) {
+
+  cursor.count(function (err, count) {
     if (err) {
       self.debug.debug('MongoClient:count err: %O', err);
       return callback(err, null);
     }
     if (process.env.CACHE_COUNT && process.env.CACHE_COUNT > 1) {
-      
       countCache[requestHash] = {
         count: count,
-        expireAt: Math.floor(Date.now() / 1000) + process.env.CACHE_COUNT // Token expire in 1 hour.
+        expireAt: Math.floor(Date.now() / 1000) + process.env.CACHE_COUNT, // Token expire in 1 hour.
       };
       self.debug.debug('Cached count stored %O', requestHash, countCache[requestHash]);
     }

@@ -7,16 +7,18 @@ const signature = require('./signature.js');
 const ObjectID = require('mongodb').ObjectID;
 const debugF = require('debug');
 const MicroserviceClient = require('@microservice-framework/microservice-client');
-const fs = require('fs');
 
-const bind = function(fn, me) { return function() { return fn.apply(me, arguments); }; };
+const bind = function (fn, me) {
+  return function () {
+    return fn.apply(me, arguments);
+  };
+};
 
 /**
  * Constructor.
  *   Prepare data for test.
  */
 function ValidateClass(db, options, data, requestDetails) {
-
   // Use a closure to preserve `this`
   var self = this;
   self.mongoDB = db;
@@ -44,10 +46,10 @@ ValidateClass.prototype.mongoTable = '';
 ValidateClass.prototype.secureKey = '';
 
 ValidateClass.prototype.debug = {
-  debug: debugF('microservice:validate')
+  debug: debugF('microservice:validate'),
 };
 
-ValidateClass.prototype.SignatureSystem = function(callback) {
+ValidateClass.prototype.SignatureSystem = function (callback) {
   var self = this;
   self.debug.debug('Validate:SignatureSystem');
   var sign = self.requestDetails.headers.signature.split('=');
@@ -57,15 +59,15 @@ ValidateClass.prototype.SignatureSystem = function(callback) {
     return callback(new Error('Malformed signature'));
   }
 
-  if (sign[ 1 ] != signature(sign[ 0 ], self.data, self.secureKey)) {
+  if (sign[1] != signature(sign[0], self.data, self.secureKey)) {
     self.debug.debug('Validate:SignatureSystem Signature mismatch');
     return callback(new Error('Signature mismatch'));
   }
 
   return callback(null);
-}
+};
 
-ValidateClass.prototype.TokenSystem = function(callback) {
+ValidateClass.prototype.TokenSystem = function (callback) {
   var self = this;
 
   self.debug.debug('Validate:TokenSystem');
@@ -76,7 +78,7 @@ ValidateClass.prototype.TokenSystem = function(callback) {
   }
 
   var collection = self.mongoDB.collection(self.mongoTable);
-  var query = {}
+  var query = {};
   if (self.id && self.id.field) {
     switch (self.id.type) {
       case 'number': {
@@ -91,7 +93,7 @@ ValidateClass.prototype.TokenSystem = function(callback) {
         try {
           query[self.id.field] = new ObjectID(self.requestDetails.url);
         } catch (e) {
-          return callback (e, null);
+          return callback(e, null);
         }
         break;
       }
@@ -121,12 +123,12 @@ ValidateClass.prototype.TokenSystem = function(callback) {
     try {
       query._id = new ObjectID(self.requestDetails.url);
     } catch (e) {
-      return callback (e);
+      return callback(e);
     }
   }
   query.token = self.requestDetails.headers.token;
 
-  collection.findOne(query, function(err, result) {
+  collection.findOne(query, function (err, result) {
     if (err) {
       self.debug.debug('MongoClient:findOne err: %O', err);
       return callback(err);
@@ -139,9 +141,9 @@ ValidateClass.prototype.TokenSystem = function(callback) {
     }
     return callback(null);
   });
-}
+};
 
-ValidateClass.prototype.AccessToken = function(method, callback) {
+ValidateClass.prototype.AccessToken = function (method, callback) {
   var self = this;
 
   self.debug.debug('Validate:AccessToken');
@@ -150,12 +152,11 @@ ValidateClass.prototype.AccessToken = function(method, callback) {
     URL: process.env.ROUTER_PROXY_URL + '/auth',
     headers: {
       scope: process.env.SCOPE,
-    }
+    },
   };
   // Compatibility with old versions
   if (self.requestDetails.headers.access_token) {
     accessToken = self.requestDetails.headers.access_token;
-
   }
   if (self.requestDetails.headers['access-token']) {
     accessToken = self.requestDetails.headers['access-token'];
@@ -163,7 +164,7 @@ ValidateClass.prototype.AccessToken = function(method, callback) {
   msClientSettings.accessToken = accessToken;
 
   let authServer = new MicroserviceClient(msClientSettings);
-  authServer.get(accessToken, function(err, answer) {
+  authServer.get(accessToken, function (err, answer) {
     if (err) {
       self.debug.debug('authServer:search err: %O', err);
       return callback(new Error('Access denied. Token not found or expired.'));
@@ -189,34 +190,37 @@ ValidateClass.prototype.AccessToken = function(method, callback) {
 
     return callback(null);
   });
-}
+};
 
 /**
  * Wrapper to get secure access to service by path.
  */
-ValidateClass.prototype.clientViaRouter = function(pathPattern, pathURL, callback) {
+ValidateClass.prototype.clientViaRouter = function (pathPattern, pathURL, callback) {
   let routerServer = new MicroserviceClient({
     URL: process.env.ROUTER_URL,
-    secureKey: process.env.ROUTER_SECRET
+    secureKey: process.env.ROUTER_SECRET,
   });
 
-  routerServer.search({
+  routerServer.search(
+    {
       path: {
-        $in: [pathPattern]
-      }
-    }, function(err, routes) {
+        $in: [pathPattern],
+      },
+    },
+    function (err, routes) {
       if (err) {
         return callback(err);
       }
       let msClient = new MicroserviceClient({
         URL: process.env.ROUTER_PROXY_URL + '/' + pathURL,
-        secureKey: routes[0].secureKey
+        secureKey: routes[0].secureKey,
       });
       callback(null, msClient);
-    });
-}
+    }
+  );
+};
 
-ValidateClass.prototype.validate = function(method, callback) {
+ValidateClass.prototype.validate = function (method, callback) {
   var self = this;
   self.debug.debug('Validate:requestDetails %O ', self.requestDetails);
 

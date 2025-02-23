@@ -12,7 +12,6 @@ const fs = require('fs');
  *   Prepare data for test.
  */
 function PostClass(db, options, data, requestDetails) {
-
   // Use a closure to preserve `this`
   var self = this;
   self.mongoDB = db;
@@ -52,10 +51,10 @@ PostClass.prototype.mongoUrl = '';
 PostClass.prototype.mongoTable = '';
 
 PostClass.prototype.debug = {
-  debug: debugF('microservice:post')
+  debug: debugF('microservice:post'),
 };
 
-PostClass.prototype.process = function(callback) {
+PostClass.prototype.process = function (callback) {
   var self = this;
 
   var fileProperty = false;
@@ -71,7 +70,7 @@ PostClass.prototype.process = function(callback) {
       } else {
         fileContent = self.data[fileProperty];
       }
-      delete(self.data[fileProperty]);
+      delete self.data[fileProperty];
     }
   }
 
@@ -100,9 +99,8 @@ PostClass.prototype.process = function(callback) {
     return callback(new Error('DB is not ready'));
   }
 
-
   var collection = self.mongoDB.collection(self.mongoTable);
-  collection.insertOne(self.data, function(err, result) {
+  collection.insertOne(self.data, function (err, result) {
     if (err) {
       self.debug.debug('MongoClient:insertOne err: %O', err);
       return callback(err, null);
@@ -123,11 +121,11 @@ PostClass.prototype.process = function(callback) {
       delete self.data._id;
     }
     if (self.requestDetails.credentials) {
-      delete(self.data.token);
+      delete self.data.token;
     }
     callback(null, {
       code: 200,
-      answer: self.data
+      answer: self.data,
     });
   });
 

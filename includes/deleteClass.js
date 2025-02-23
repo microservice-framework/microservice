@@ -11,7 +11,6 @@ const fs = require('fs');
  * Constructor.
  */
 function DeleteClass(db, options, requestDetails) {
-
   // Use a closure to preserve `this`
   var self = this;
   self.mongoDB = db;
@@ -34,10 +33,10 @@ DeleteClass.prototype.mongoUrl = '';
 DeleteClass.prototype.mongoTable = '';
 
 DeleteClass.prototype.debug = {
-  debug: debugF('microservice:delete')
+  debug: debugF('microservice:delete'),
 };
 
-DeleteClass.prototype.process = function(callback) {
+DeleteClass.prototype.process = function (callback) {
   var self = this;
 
   if (!self.mongoDB) {
@@ -46,7 +45,7 @@ DeleteClass.prototype.process = function(callback) {
   }
 
   var collection = self.mongoDB.collection(self.mongoTable);
-  var query = {}
+  var query = {};
   if (self.id && self.id.field) {
     switch (self.id.type) {
       case 'number': {
@@ -61,7 +60,7 @@ DeleteClass.prototype.process = function(callback) {
         try {
           query[self.id.field] = new ObjectID(self.requestDetails.url);
         } catch (e) {
-          return callback (e, null);
+          return callback(e, null);
         }
         break;
       }
@@ -86,10 +85,10 @@ DeleteClass.prototype.process = function(callback) {
     try {
       query._id = new ObjectID(self.requestDetails.url);
     } catch (e) {
-      return callback (e, null);
+      return callback(e, null);
     }
   }
-  collection.findOneAndDelete(query, function(err, result) {
+  collection.findOneAndDelete(query, function (err, result) {
     if (err) {
       self.debug.debug('MongoClient:findOneAndDelete err: %O', err);
       return callback(err, null);
@@ -100,8 +99,8 @@ DeleteClass.prototype.process = function(callback) {
       return callback(null, {
         code: 404,
         answer: {
-          message: 'Not found'
-        }
+          message: 'Not found',
+        },
       });
     }
     if (self.fileDir && self.fileDir != '') {
@@ -112,7 +111,7 @@ DeleteClass.prototype.process = function(callback) {
     }
 
     if (self.requestDetails.credentials) {
-      delete(result.value.token);
+      delete result.value.token;
     }
     let removeId = true;
     if (self.id && self.id.field) {
@@ -123,13 +122,13 @@ DeleteClass.prototype.process = function(callback) {
     } else {
       result.value.id = result.value._id;
     }
-    if (removeId){
-      delete(result.value._id);
+    if (removeId) {
+      delete result.value._id;
     }
 
     return callback(null, {
       code: 200,
-      answer: result.value
+      answer: result.value,
     });
   });
   return;

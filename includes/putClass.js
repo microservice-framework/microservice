@@ -27,7 +27,6 @@ const updateAcceptedCmds = [
  *   Prepare data for test.
  */
 function PutClass(db, options, data, requestDetails) {
-
   // Use a closure to preserve `this`
   var self = this;
   self.mongoDB = db;
@@ -43,7 +42,6 @@ function PutClass(db, options, data, requestDetails) {
 
   self.data = data;
   self.requestDetails = requestDetails;
-
 }
 
 PutClass.prototype.data = {};
@@ -53,10 +51,10 @@ PutClass.prototype.mongoUrl = '';
 PutClass.prototype.mongoTable = '';
 
 PutClass.prototype.debug = {
-  debug: debugF('microservice:put')
+  debug: debugF('microservice:put'),
 };
 
-PutClass.prototype.process = function(callback) {
+PutClass.prototype.process = function (callback) {
   var self = this;
 
   var fileProperty = false;
@@ -72,7 +70,7 @@ PutClass.prototype.process = function(callback) {
       } else {
         fileContent = self.data[fileProperty];
       }
-      delete(self.data[fileProperty]);
+      delete self.data[fileProperty];
     }
   }
 
@@ -83,7 +81,7 @@ PutClass.prototype.process = function(callback) {
 
   var collection = self.mongoDB.collection(self.mongoTable);
 
-  var query = {}
+  var query = {};
   if (self.id && self.id.field) {
     switch (self.id.type) {
       case 'number': {
@@ -98,7 +96,7 @@ PutClass.prototype.process = function(callback) {
         try {
           query[self.id.field] = new ObjectID(self.requestDetails.url);
         } catch (e) {
-          return callback (e, null);
+          return callback(e, null);
         }
         break;
       }
@@ -123,7 +121,7 @@ PutClass.prototype.process = function(callback) {
     try {
       query._id = new ObjectID(self.requestDetails.url);
     } catch (e) {
-      return callback (e, null);
+      return callback(e, null);
     }
   }
 
@@ -145,19 +143,18 @@ PutClass.prototype.process = function(callback) {
   if (self.requestDetails.headers && self.requestDetails.headers['skip-changed']) {
     updateChanged = false;
   }
-  if(updateChanged) {
+  if (updateChanged) {
     if (updateCmd['$set']) {
       updateCmd['$set']['changed'] = Date.now();
     } else {
       updateCmd['$set'] = {
-        changed: Date.now()
-      }
+        changed: Date.now(),
+      };
     }
   }
   self.debug.debug('updateCmd %O', updateCmd);
 
-  collection.findOneAndUpdate(query, updateCmd, { returnOriginal: false },
-    function(err, resultUpdate) {
+  collection.findOneAndUpdate(query, updateCmd, { returnOriginal: false }, function (err, resultUpdate) {
     if (err) {
       self.debug.debug('MongoClient:findOneAndUpdate err: %O', err);
       return callback(err, null);
@@ -179,7 +176,7 @@ PutClass.prototype.process = function(callback) {
       }
     }
     if (self.requestDetails.credentials) {
-      delete(resultUpdate.value.token);
+      delete resultUpdate.value.token;
     }
     let removeId = true;
     if (self.id && self.id.field) {
@@ -190,14 +187,13 @@ PutClass.prototype.process = function(callback) {
     } else {
       resultUpdate.value.id = resultUpdate.value._id;
     }
-    if (removeId){
-      delete(resultUpdate.value._id);
+    if (removeId) {
+      delete resultUpdate.value._id;
     }
-    
 
     return callback(null, {
       code: 200,
-      answer: resultUpdate.value
+      answer: resultUpdate.value,
     });
   });
   return;

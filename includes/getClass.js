@@ -11,7 +11,6 @@ const fs = require('fs');
  * Constructor.
  */
 function GetClass(db, options, requestDetails) {
-
   // Use a closure to preserve `this`
   var self = this;
   self.mongoDB = db;
@@ -34,10 +33,10 @@ GetClass.prototype.mongoUrl = '';
 GetClass.prototype.mongoTable = '';
 
 GetClass.prototype.debug = {
-  debug: debugF('microservice:get')
+  debug: debugF('microservice:get'),
 };
 
-GetClass.prototype.process = function(callback) {
+GetClass.prototype.process = function (callback) {
   var self = this;
 
   var fileProperty = false;
@@ -51,7 +50,7 @@ GetClass.prototype.process = function(callback) {
   }
 
   var collection = self.mongoDB.collection(self.mongoTable);
-  var query = {}
+  var query = {};
   if (self.id && self.id.field) {
     switch (self.id.type) {
       case 'number': {
@@ -66,7 +65,7 @@ GetClass.prototype.process = function(callback) {
         try {
           query[self.id.field] = new ObjectID(self.requestDetails.url);
         } catch (e) {
-          return callback (e, null);
+          return callback(e, null);
         }
         break;
       }
@@ -91,11 +90,11 @@ GetClass.prototype.process = function(callback) {
     try {
       query._id = new ObjectID(self.requestDetails.url);
     } catch (e) {
-      return callback (e, null);
+      return callback(e, null);
     }
   }
 
-  collection.findOne(query, function(err, result) {
+  collection.findOne(query, function (err, result) {
     if (err) {
       self.debug.debug('MongoClient:findOne err: %O', err);
       return callback(err, null);
@@ -106,8 +105,8 @@ GetClass.prototype.process = function(callback) {
       return callback(null, {
         code: 404,
         answer: {
-          message: 'Not found'
-        }
+          message: 'Not found',
+        },
       });
     }
     if (self.fileDir && self.fileDir != '' && fileProperty) {
@@ -130,7 +129,7 @@ GetClass.prototype.process = function(callback) {
     }
 
     if (self.requestDetails.credentials) {
-      delete(result.token);
+      delete result.token;
     }
     let removeId = true;
     if (self.id && self.id.field) {
@@ -141,12 +140,12 @@ GetClass.prototype.process = function(callback) {
     } else {
       result.id = result._id;
     }
-    if (removeId){
-      delete(result._id);
+    if (removeId) {
+      delete result._id;
     }
     return callback(null, {
       code: 200,
-      answer: result
+      answer: result,
     });
   });
   return;

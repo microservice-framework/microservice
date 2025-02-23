@@ -6,7 +6,11 @@
 const fs = require('fs');
 const debugF = require('debug');
 
-const bind = function(fn, me) { return function() { return fn.apply(me, arguments); }; };
+const bind = function (fn, me) {
+  return function () {
+    return fn.apply(me, arguments);
+  };
+};
 
 /**
  * Constructor.
@@ -17,15 +21,13 @@ function OptionsClass(options, callbacks, requestDetails) {
   self.options = options;
   self.requestDetails = requestDetails;
   self.process = bind(self.process, self);
-
 }
 
 OptionsClass.prototype.debug = {
-  options: debugF('microservice:options')
+  options: debugF('microservice:options'),
 };
 
-
-OptionsClass.prototype.process = function(callback) {
+OptionsClass.prototype.process = function (callback) {
   var self = this;
   let answer = {
     id: {
@@ -53,13 +55,12 @@ OptionsClass.prototype.process = function(callback) {
   if (self.options.mongoTable && self.options.mongoTable != '') {
     answer.properties['created'] = {
       type: 'number',
-      description: 'Will be added on CREATE(POST).'
-        + '\nThe number of milliseconds elapsed since 1 January 1970 00:00:00 UTC'
+      description: 'Will be added on CREATE(POST).' + '\nThe number of milliseconds elapsed since 1 January 1970 00:00:00 UTC',
     };
     answer.properties['changed'] = {
       type: 'number',
-      description: 'Will be added on CREATE(POST) and updated on UPDATE(PUT).'
-        + '\nThe number of milliseconds elapsed since 1 January 1970 00:00:00 UTC'
+      description:
+        'Will be added on CREATE(POST) and updated on UPDATE(PUT).' + '\nThe number of milliseconds elapsed since 1 January 1970 00:00:00 UTC',
     };
   }
   let recordTitle = 'record';
@@ -76,32 +77,31 @@ OptionsClass.prototype.process = function(callback) {
     switch (method) {
       case 'POST': {
         answer['methods']['POST'] = {
-          description: 'Create ' + recordTitle
+          description: 'Create ' + recordTitle,
         };
         break;
       }
       case 'GET': {
         answer['methods']['GET'] = {
-          description: 'Read ' + recordTitle
+          description: 'Read ' + recordTitle,
         };
         break;
       }
       case 'PUT': {
         answer['methods']['PUT'] = {
-          description: 'Update ' + recordTitle
+          description: 'Update ' + recordTitle,
         };
         break;
       }
       case 'DELETE': {
         answer['methods']['DELETE'] = {
-          description: 'Delete ' + recordTitle
+          description: 'Delete ' + recordTitle,
         };
         break;
       }
       case 'SEARCH': {
         answer['methods']['SEARCH'] = {
-          description: 'Search. \nSupport extra properties:'
-           + '\n skip, limit, sort, query. Query support basic Mongo find syntax.'
+          description: 'Search. \nSupport extra properties:' + '\n skip, limit, sort, query. Query support basic Mongo find syntax.',
         };
         break;
       }
@@ -109,7 +109,7 @@ OptionsClass.prototype.process = function(callback) {
   }
   return callback(null, {
     code: 200,
-    answer: answer
+    answer: answer,
   });
 };
 module.exports = OptionsClass;

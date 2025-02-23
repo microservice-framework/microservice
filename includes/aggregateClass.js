@@ -35,10 +35,10 @@ AggregateClass.prototype.mongoTable = '';
 
 AggregateClass.prototype.debug = {
   debug: debugF('microservice:aggregate'),
-  warning: debugF('microservice:warning')
+  warning: debugF('microservice:warning'),
 };
 
-AggregateClass.prototype.process = function(callback) {
+AggregateClass.prototype.process = function (callback) {
   var self = this;
 
   if (!self.mongoDB) {
@@ -48,27 +48,27 @@ AggregateClass.prototype.process = function(callback) {
 
   var collection = self.mongoDB.collection(self.mongoTable);
 
-  var options = {}
-  if(process.env.MAX_TIME_MS){
+  var options = {};
+  if (process.env.MAX_TIME_MS) {
     options.maxTimeMS = parseInt(process.env.MAX_TIME_MS);
   }
 
   if (self.requestDetails.executionLimit) {
-    options.maxTimeMS = parseInt(self.requestDetails.executionLimit)
+    options.maxTimeMS = parseInt(self.requestDetails.executionLimit);
   }
   if (self.requestDetails.headers['execution-limit']) {
-    options.maxTimeMS = parseInt(self.requestDetails.headers['execution-limit'])
+    options.maxTimeMS = parseInt(self.requestDetails.headers['execution-limit']);
   }
   if (self.requestDetails.headers['force-index']) {
     options.hint = self.requestDetails.headers['force-index'];
   }
 
-  collection.aggregate(self.data, options).toArray(function(err, results) {
+  collection.aggregate(self.data, options).toArray(function (err, results) {
     if (err) {
       self.debug.debug('MongoClient:aggregate err: %O', err);
-      if(err && err.code && err.code == 50) {
-        self.debug.debug('executionLimit: %d query: %O',options.maxTimeMS, JSON.stringify(self.data) )
-        self.debug.warning('executionLimit: %d query: %O',options.maxTimeMS, JSON.stringify(self.data ) )
+      if (err && err.code && err.code == 50) {
+        self.debug.debug('executionLimit: %d query: %O', options.maxTimeMS, JSON.stringify(self.data));
+        self.debug.warning('executionLimit: %d query: %O', options.maxTimeMS, JSON.stringify(self.data));
       }
       return callback(err, results);
     }
@@ -77,8 +77,8 @@ AggregateClass.prototype.process = function(callback) {
       return callback(null, {
         code: 404,
         answer: {
-          message: 'Not found'
-        }
+          message: 'Not found',
+        },
       });
     }
     return callback(null, {
