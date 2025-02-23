@@ -19,7 +19,11 @@ const OptionsClass = require('./includes/optionsClass.js');
 const debugF = require('debug');
 const fs = require('fs');
 
-const bind = function(fn, me) { return function() { return fn.apply(me, arguments); }; };
+const bind = function (fn, me) {
+  return function () {
+    return fn.apply(me, arguments);
+  };
+};
 
 /**
  * Constructor of Microservice object.
@@ -31,7 +35,6 @@ const bind = function(fn, me) { return function() { return fn.apply(me, argument
  *   settings.schema = process.env.SCHEMA
  */
 function Microservice(settings) {
-
   // Use a closure to preserve `this`
   var self = this;
 
@@ -47,11 +50,11 @@ function Microservice(settings) {
   self.options = bind(self.options, self);
   self.aggregate = bind(self.aggregate, self);
   self.mongoDB = false;
-  self.isTerminate = false
-  self.currentRequests = 0
+  self.isTerminate = false;
+  self.currentRequests = 0;
 
   if (self.settings.mongoUrl) {
-    MongoClient.connect(self.settings.mongoUrl, function(err, db) {
+    MongoClient.connect(self.settings.mongoUrl, function (err, db) {
       if (err) {
         self.debug.debug('MongoClient:connect err: %O', err);
         self.debug.log('MongoClient:connect failed');
@@ -60,20 +63,20 @@ function Microservice(settings) {
       }
       self.mongoDB = db;
       self.emit('ready', db);
-      process.on('SIGINT', function() {
+      process.on('SIGINT', function () {
         self.debug.log('SIGINT received');
-        self.isTerminate = true
+        self.isTerminate = true;
         //self.mongoDB.close()
-        if(self.currentRequests === 0) {
+        if (self.currentRequests === 0) {
           self.debug.log('Close mongo connection');
-          self.mongoDB.close()
-          return
+          self.mongoDB.close();
+          return;
         }
       });
-      // On sigterm close database connection immediately  
-      process.on('SIGTERM', function() {
+      // On sigterm close database connection immediately
+      process.on('SIGTERM', function () {
         self.debug.log('SIGTERM received');
-        self.mongoDB.close()
+        self.mongoDB.close();
       });
     });
   }
@@ -88,13 +91,13 @@ Microservice.prototype.settings = {};
 
 Microservice.prototype.debug = {
   debug: debugF('microservice:debug'),
-  log: debugF('microservice:log')
+  log: debugF('microservice:log'),
 };
 
 /**
  * Validate data by method.
  */
-Microservice.prototype.validate = function(method, jsonData, requestDetails, callback) {
+Microservice.prototype.validate = function (method, jsonData, requestDetails, callback) {
   var self = this;
   let db = false;
   if (requestDetails.mongoDatabase) {
@@ -102,14 +105,14 @@ Microservice.prototype.validate = function(method, jsonData, requestDetails, cal
   } else {
     db = self.mongoDB;
   }
-  self.currentRequests++
+  self.currentRequests++;
   var Validate = new ValidateClass(db, self.settings, jsonData, requestDetails);
-  Validate.validate(method, function(err, handlerAnswer) {
-    self.currentRequests--
-    callback(err, handlerAnswer)
-    if(self.isTerminate && self.currentRequests === 0 ) {
+  Validate.validate(method, function (err, handlerAnswer) {
+    self.currentRequests--;
+    callback(err, handlerAnswer);
+    if (self.isTerminate && self.currentRequests === 0) {
       self.debug.log('Close mongo connection');
-      self.mongoDB.close()
+      self.mongoDB.close();
     }
   });
   return Validate;
@@ -118,7 +121,7 @@ Microservice.prototype.validate = function(method, jsonData, requestDetails, cal
 /**
  * Process Get request.
  */
-Microservice.prototype.get = function(jsonData, requestDetails, callback) {
+Microservice.prototype.get = function (jsonData, requestDetails, callback) {
   var self = this;
   let db = false;
   if (requestDetails.mongoDatabase) {
@@ -126,7 +129,7 @@ Microservice.prototype.get = function(jsonData, requestDetails, callback) {
   } else {
     db = self.mongoDB;
   }
-  self.currentRequests++
+  self.currentRequests++;
   if (arguments.length === 2) {
     // v1.3 < version compatibility
     callback = requestDetails;
@@ -134,80 +137,77 @@ Microservice.prototype.get = function(jsonData, requestDetails, callback) {
   }
 
   var Get = new GetClass(db, self.settings, requestDetails);
-  Get.process(function(err, handlerAnswer) {
-    self.currentRequests--
-    callback(err, handlerAnswer)
-    if(self.isTerminate && self.currentRequests === 0 ) {
+  Get.process(function (err, handlerAnswer) {
+    self.currentRequests--;
+    callback(err, handlerAnswer);
+    if (self.isTerminate && self.currentRequests === 0) {
       self.debug.log('Close mongo connection');
-      self.mongoDB.close()
+      self.mongoDB.close();
     }
   });
   return Get;
-
 };
 
 /**
  * Process Get request.
  */
-Microservice.prototype.post = function(jsonData, requestDetails, callback) {
+Microservice.prototype.post = function (jsonData, requestDetails, callback) {
   var self = this;
 
   var errors = self.validateJson(jsonData);
   if (true !== errors) {
-    var error = new Error;
+    var error = new Error();
     error.message = errors.join();
     self.debug.debug('POST:validateJson %O', error);
     return callback(error);
   }
   let db = false;
-  self.currentRequests++
+  self.currentRequests++;
   if (requestDetails.mongoDatabase) {
     db = self.mongoDB.db(requestDetails.mongoDatabase);
   } else {
     db = self.mongoDB;
   }
-  var Post = new PostClass(db,self.settings, jsonData, requestDetails);
-  Post.process(function(err, handlerAnswer) {
-    self.currentRequests--
-    callback(err, handlerAnswer)
-    if(self.isTerminate && self.currentRequests === 0 ) {
+  var Post = new PostClass(db, self.settings, jsonData, requestDetails);
+  Post.process(function (err, handlerAnswer) {
+    self.currentRequests--;
+    callback(err, handlerAnswer);
+    if (self.isTerminate && self.currentRequests === 0) {
       self.debug.log('Close mongo connection');
-      self.mongoDB.close()
+      self.mongoDB.close();
     }
   });
   return Post;
-
 };
 
 /**
  * Process PUT request.
  */
-Microservice.prototype.put = function(jsonData, requestDetails, callback) {
+Microservice.prototype.put = function (jsonData, requestDetails, callback) {
   var self = this;
   let db = false;
-  self.currentRequests++
+  self.currentRequests++;
   if (requestDetails.mongoDatabase) {
     db = self.mongoDB.db(requestDetails.mongoDatabase);
   } else {
     db = self.mongoDB;
   }
   var Put = new PutClass(db, self.settings, jsonData, requestDetails);
-  Put.process(function(err, handlerAnswer) {
-    self.currentRequests--
-    callback(err, handlerAnswer)
-    if(self.isTerminate && self.currentRequests === 0 ) {
+  Put.process(function (err, handlerAnswer) {
+    self.currentRequests--;
+    callback(err, handlerAnswer);
+    if (self.isTerminate && self.currentRequests === 0) {
       self.debug.log('Close mongo connection');
-      self.mongoDB.close()
+      self.mongoDB.close();
     }
   });
   return Put;
-
 };
 
 /**
  * Process Get request.
  */
-Microservice.prototype.delete = function(jsonData, requestDetails, callback) {
+Microservice.prototype.delete = function (jsonData, requestDetails, callback) {
   var self = this;
 
   if (arguments.length === 2) {
@@ -216,54 +216,52 @@ Microservice.prototype.delete = function(jsonData, requestDetails, callback) {
     requestDetails = jsonData;
   }
   let db = false;
-  self.currentRequests++
+  self.currentRequests++;
   if (requestDetails.mongoDatabase) {
     db = self.mongoDB.db(requestDetails.mongoDatabase);
   } else {
     db = self.mongoDB;
   }
   var Delete = new DeleteClass(db, self.settings, requestDetails);
-  Delete.process(function(err, handlerAnswer) {
-    self.currentRequests--
-    callback(err, handlerAnswer)
-    if(self.isTerminate && self.currentRequests === 0 ) {
+  Delete.process(function (err, handlerAnswer) {
+    self.currentRequests--;
+    callback(err, handlerAnswer);
+    if (self.isTerminate && self.currentRequests === 0) {
       self.debug.log('Close mongo connection');
-      self.mongoDB.close()
+      self.mongoDB.close();
     }
   });
   return Delete;
-
 };
 
 /**
  * Process SEARCH request.
  */
-Microservice.prototype.search = function(jsonData, requestDetails, callback) {
+Microservice.prototype.search = function (jsonData, requestDetails, callback) {
   var self = this;
   let db = false;
-  self.currentRequests++
+  self.currentRequests++;
   if (requestDetails.mongoDatabase) {
     db = self.mongoDB.db(requestDetails.mongoDatabase);
   } else {
     db = self.mongoDB;
   }
   var Search = new SearchClass(db, self.settings, jsonData, requestDetails);
-  Search.process(function(err, handlerAnswer) {
-    self.currentRequests--
-    callback(err, handlerAnswer)
-    if(self.isTerminate && self.currentRequests === 0 ) {
+  Search.process(function (err, handlerAnswer) {
+    self.currentRequests--;
+    callback(err, handlerAnswer);
+    if (self.isTerminate && self.currentRequests === 0) {
       self.debug.log('Close mongo connection');
-      self.mongoDB.close()
+      self.mongoDB.close();
     }
   });
   return Search;
-
 };
 
 /**
  * Process OPTIONS request.
  */
-Microservice.prototype.options = function(jsonData, requestDetails, callbacks, callback) {
+Microservice.prototype.options = function (jsonData, requestDetails, callbacks, callback) {
   var self = this;
 
   if (arguments.length === 3) {
@@ -273,42 +271,39 @@ Microservice.prototype.options = function(jsonData, requestDetails, callbacks, c
     requestDetails = jsonData;
   }
 
-
   var Options = new OptionsClass(self.settings, callbacks, requestDetails);
   Options.process(callback);
   return Options;
-
 };
 
 /**
  * Process SEARCH request.
  */
-Microservice.prototype.aggregate = function(jsonData, requestDetails, callback) {
+Microservice.prototype.aggregate = function (jsonData, requestDetails, callback) {
   var self = this;
   let db = false;
-  self.currentRequests++
+  self.currentRequests++;
   if (requestDetails.mongoDatabase) {
     db = self.mongoDB.db(requestDetails.mongoDatabase);
   } else {
     db = self.mongoDB;
   }
   var Aggregate = new AggregateClass(db, self.settings, jsonData, requestDetails);
-  Aggregate.process(function(err, handlerAnswer) {
-    self.currentRequests--
-    callback(err, handlerAnswer)
-    if(self.isTerminate && self.currentRequests === 0 ) {
+  Aggregate.process(function (err, handlerAnswer) {
+    self.currentRequests--;
+    callback(err, handlerAnswer);
+    if (self.isTerminate && self.currentRequests === 0) {
       self.debug.log('Close mongo connection');
-      self.mongoDB.close()
+      self.mongoDB.close();
     }
   });
   return Aggregate;
-
 };
 
 /**
  * Process Get request.
  */
-Microservice.prototype.validateJson = function(jsonData) {
+Microservice.prototype.validateJson = function (jsonData) {
   var self = this;
 
   var v = new Validator();
@@ -322,12 +317,11 @@ Microservice.prototype.validateJson = function(jsonData) {
   if (result.errors.length > 0) {
     var errors = [];
     for (var errorNum in result.errors) {
-      errors.push(result.errors[ errorNum ].property + ' ' + result.errors[ errorNum ].message);
+      errors.push(result.errors[errorNum].property + ' ' + result.errors[errorNum].message);
     }
     return errors;
   }
   return true;
-
 };
 
 module.exports = Microservice;
