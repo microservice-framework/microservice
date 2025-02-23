@@ -3,168 +3,21 @@
  */
 'use strict';
 
-const ObjectID = require('mongodb').ObjectID;
-const debugF = require('debug');
-const fs = require('fs');
+import { ObjectId } from 'mongodb';
 
-const crypto = require('crypto');
-function hashObject(data) {
-  return crypto.createHash('md5').update(JSON.stringify(data)).digest('hex');
-}
 
-var countCache = {};
-
-/**
- * Constructor.
- *   Prepare data for test.
- */
-function SearchClass(db, options, data, requestDetails) {
-  // Use a closure to preserve `this`
-  var self = this;
-  self.mongoDB = db;
-  self.mongoTable = options.mongoTable;
-
-  // If there is a need to change default table name.
-  if (requestDetails.mongoTable) {
-    self.mongoTable = requestDetails.mongoTable;
+export default async function(data, requestDetails) {
+  if (!this.mongoDB) {
+    this.debug.debug('MongoClient:db is not ready');
+    return new Error('DB is not ready');
   }
 
-  self.fileDir = options.fileDir;
-  self.id = options.id;
-  self.data = data;
-  self.requestDetails = requestDetails;
-}
-
-SearchClass.prototype.data = {};
-SearchClass.prototype.requestDetails = {};
-SearchClass.prototype.fileDir = '';
-SearchClass.prototype.mongoUrl = '';
-SearchClass.prototype.mongoTable = '';
-
-SearchClass.prototype.debug = {
-  debug: debugF('microservice:search'),
-  warning: debugF('microservice:warning'),
-};
-
-SearchClass.prototype.processFind = function (cursor, data, count, callback) {
-  var self = this;
-  var fileProperty = false;
-  if (process.env.FILE_PROPERTY) {
-    fileProperty = process.env.FILE_PROPERTY;
-  }
-
-  if (data.sort) {
-    cursor = cursor.sort(data.sort);
-  }
-
-  if (data.limit) {
-    cursor = cursor.limit(data.limit);
-  }
-  if (data.skip) {
-    cursor = cursor.skip(data.skip);
-  }
-  var executionLimit = 0;
-  if (process.env.MAX_TIME_MS) {
-    executionLimit = parseInt(process.env.MAX_TIME_MS);
-  }
-  if (data.executionLimit) {
-    executionLimit = parseInt(data.executionLimit);
-  }
-  if (self.requestDetails.headers['execution-limit']) {
-    executionLimit = parseInt(self.requestDetails.headers['execution-limit']);
-  }
-  if (executionLimit > 0) {
-    cursor = cursor.maxTimeMS(executionLimit);
-  }
-  if (self.requestDetails.headers['force-index']) {
-    cursor = cursor.hint(self.requestDetails.headers['force-index']);
-  }
-
-  cursor.toArray(function (err, results) {
-    if (err) {
-      self.debug.debug('MongoClient:toArray err: %O', err);
-      if (err && err.code && err.code == 50) {
-        self.debug.debug('executionLimit: %d query: %O', executionLimit, JSON.stringify(data));
-        self.debug.warning('executionLimit: %d query: %O', executionLimit, JSON.stringify(data));
-      }
-      return callback(err, results);
-    }
-    if (!results || results.length == 0) {
-      self.debug.debug('MongoClient:toArray object not found.');
-      return callback(null, {
-        code: 404,
-        answer: {
-          message: 'Not found',
-        },
-        headers: { 'x-total-count': count },
-      });
-    }
-    if (data[fileProperty] == true) {
-      if (self.fileDir && self.fileDir != '') {
-        var filePath = '';
-
-        for (var i in results) {
-          if (results[i]._id) {
-            if (self.fileDir && self.fileDir != '' && fileProperty) {
-              filePath = self.fileDir + '/' + results[i]._id;
-              if (fs.existsSync(filePath)) {
-                try {
-                  if (process.env.FILE_PROPERTY_JSON) {
-                    results[i][fileProperty] = JSON.parse(fs.readFileSync(filePath));
-                  } else {
-                    results[i][fileProperty] = fs.readFileSync(filePath).toString();
-                  }
-                } catch (e) {
-                  if (process.env.FILE_PROPERTY_JSON) {
-                    results[i][fileProperty] = {};
-                  } else {
-                    results[i][fileProperty] = '';
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
-    }
-    results.forEach(function (element) {
-      let removeId = true;
-      if (self.id && self.id.field) {
-        element.url = process.env.SELF_PATH + '/' + element[self.id.field];
-        if (self.id.field == '_id') {
-          removeId = false;
-        }
-      } else {
-        element.id = element._id;
-      }
-      if (removeId) {
-        delete element._id;
-      }
-      if (self.requestDetails.credentials) {
-        delete element.token;
-      }
-    });
-    return callback(null, {
-      code: 200,
-      answer: results,
-      headers: { 'x-total-count': count },
-    });
-  });
-};
-
-SearchClass.prototype.process = function (callback) {
-  var self = this;
-
-  if (!self.mongoDB) {
-    self.debug.debug('MongoClient:db is not ready');
-    return callback(new Error('DB is not ready'));
-  }
-
-  var collection = self.mongoDB.collection(self.mongoTable);
-  var query = self.data;
-
-  if (self.data.query) {
-    query = self.data.query;
+  let collection = this.mongoDB.collection(this.mongoTable);
+  
+  let query = data;
+  // Working with two formats, query and data.query
+  if(data.query) {
+    query = data.query;
   }
 
   // If search by ID, make sure that we convert it to object first.
@@ -184,7 +37,7 @@ SearchClass.prototype.process = function (callback) {
     if (arrayFound !== false) {
       var ids = [];
       for (var i in query['_id'][arrayFound]) {
-        ids.push(new ObjectID(query['_id'][arrayFound][i]));
+        ids.push(new ObjectId(query['_id'][arrayFound][i]));
       }
       query['_id'][arrayFound] = ids;
     }
@@ -198,63 +51,102 @@ SearchClass.prototype.process = function (callback) {
       }
     }
     if (valueFound !== false) {
-      try {
-        query['_id'][valueFound] = new ObjectID(query['_id'][valueFound]);
-      } catch (e) {
-        return callback(e, null);
-      }
+      query['_id'][valueFound] = new ObjectId(query['_id'][valueFound]);
     }
     if (!valueFound && !arrayFound) {
-      try {
-        query['_id'] = new ObjectID(query['_id']);
-      } catch (e) {
-        return callback(e, null);
-      }
-    }
-  }
-  var cursor;
-  if (self.data.fields) {
-    cursor = collection.find(query, self.data.fields);
-  } else {
-    cursor = collection.find(query);
-  }
-  // Flip default behaviour
-  // NON COMPATIBLE
-  if (!self.data.count) {
-    return self.processFind(cursor, self.data, -1, callback);
-  }
-  let requestHash = '';
-  if (process.env.CACHE_COUNT && process.env.CACHE_COUNT > 1) {
-    requestHash = hashObject(query);
-    if (countCache[requestHash]) {
-      var cachedData = countCache[requestHash];
-      if (cachedData.expireAt > Math.floor(Date.now() / 1000)) {
-        self.debug.debug('Cached count %O', requestHash, cachedData);
-        return self.processFind(cursor, self.data, cachedData.count, callback);
-      }
-      delete countCache[requestHash];
+      query['_id'] = new ObjectId(query['_id']);
     }
   }
 
-  if (self.requestDetails.headers['force-index']) {
-    cursor = cursor.hint(self.requestDetails.headers['force-index']);
+
+  let limit = 20
+  if(process.env.LIMIT) {
+    limit = parseInt(process.env.LIMIT);
+  }
+  if(data.limit) {
+    limit = data.limit;
+  }
+  
+  let options = {
+    limit: limit
   }
 
-  cursor.count(function (err, count) {
-    if (err) {
-      self.debug.debug('MongoClient:count err: %O', err);
-      return callback(err, null);
+  if(data.skip) { 
+    options.skip = data.skip;
+  }
+  
+  if(data.sort) {
+    options.sort = data.sort;
+  }
+
+  if(data.fields) {
+    options.projection = {}
+    for(let i in data.fields) {
+      options.projection[data.fields[i]] = 1;
     }
-    if (process.env.CACHE_COUNT && process.env.CACHE_COUNT > 1) {
-      countCache[requestHash] = {
-        count: count,
-        expireAt: Math.floor(Date.now() / 1000) + process.env.CACHE_COUNT, // Token expire in 1 hour.
+  }
+
+  var executionLimit = 0;
+  if (process.env.MAX_TIME_MS) {
+    executionLimit = parseInt(process.env.MAX_TIME_MS);
+  }
+  if (data.executionLimit) {
+    executionLimit = parseInt(data.executionLimit);
+  }
+  if (requestDetails.headers['execution-limit']) {
+    executionLimit = parseInt(requestDetails.headers['execution-limit']);
+  }
+  if (executionLimit > 0) {
+    options.maxTimeMS(executionLimit);
+  } 
+
+  if (requestDetails.headers['force-index']) {
+    options.hint = requestDetails.headers['force-index'];
+  }
+
+  try {
+    let results = collection.find(query,options).toArray();
+    if (!results || results.length == 0) {
+      this.debug.debug('MongoClient:toArray object not found.');
+      return {
+        code: 404,
+        answer: {
+          message: 'Not found',
+        },
+        headers: { 'x-total-count': 0 },
       };
-      self.debug.debug('Cached count stored %O', requestHash, countCache[requestHash]);
     }
-    self.processFind(cursor, self.data, count, callback);
-  });
-  return;
-};
-
-module.exports = SearchClass;
+    let total = -1;
+    if(data.count) {
+      total = await collection.countDocuments(query);
+    }
+    results.forEach(function (element) {
+      let removeId = true;
+      if (this.id && this.id.field) {
+        element.url = process.env.SELF_PATH + '/' + element[this.id.field];
+        if (this.id.field == '_id') {
+          removeId = false;
+        }
+      } else {
+        element.id = element._id;
+      }
+      if (removeId) {
+        delete element._id;
+      }
+      if (requestDetails.credentials) {
+        delete element.token;
+      }
+    });
+    return callback(null, {
+      code: 200,
+      answer: results,
+      headers: { 'x-total-count': total },
+    });
+  } catch (err) {
+    this.debug.debug('MongoClient:find err: %O', err);
+    return {
+      code: 503,
+      answer: err
+    };
+  }
+}

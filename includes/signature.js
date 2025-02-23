@@ -3,8 +3,8 @@
  */
 'use strict';
 
-const crypto = require('crypto');
+import { createHmac } from 'node:crypto';
 
-module.exports = function signature(protocol, data, secret) {
-  return crypto.createHmac(protocol, secret).update(data).digest('hex');
+export default function(protocol, data, secret) {
+  return createHmac(protocol, secret).update(data).digest('hex');
 };

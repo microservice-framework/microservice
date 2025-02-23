@@ -2,33 +2,7 @@
  * Process Test task.
  */
 'use strict';
-
-const fs = require('fs');
-const debugF = require('debug');
-
-const bind = function (fn, me) {
-  return function () {
-    return fn.apply(me, arguments);
-  };
-};
-
-/**
- * Constructor.
- */
-function OptionsClass(options, callbacks, requestDetails) {
-  var self = this;
-  self.callbacks = callbacks;
-  self.options = options;
-  self.requestDetails = requestDetails;
-  self.process = bind(self.process, self);
-}
-
-OptionsClass.prototype.debug = {
-  options: debugF('microservice:options'),
-};
-
-OptionsClass.prototype.process = function (callback) {
-  var self = this;
+export default async function(data, requestDetails, methods) {
   let answer = {
     id: {
       title: 'ID',
@@ -40,19 +14,23 @@ OptionsClass.prototype.process = function (callback) {
     version: process.env.npm_package_version,
     description: process.env.npm_package_description,
   };
-  if (self.options.schema) {
+  if (this.schema) {
     try {
-      var schemaTask = JSON.parse(fs.readFileSync('schema/' + self.options.schema));
+      var schemaTask = JSON.parse(fs.readFileSync('schema/' + this.schema));
       answer.properties = schemaTask.properties;
     } catch (e) {
-      self.debug.options('Failed to read schema file: %O', e);
-      return callback(new Error('Failed to read schema file.'));
+      this.debug.options('Failed to read schema file: %O', e);
+      return {
+        code: 500,
+        answer: new Error('Failed to read schema file.'),
+      };
     }
   }
-  if (self.options.id) {
-    answer.id = self.options.id;
+  if (this.id) {
+    answer.id = this.id;
   }
-  if (self.options.mongoTable && self.options.mongoTable != '') {
+  // Add required fields to schema based on activated or disabled mongo
+  if (this.mongoTable && this.mongoTable != '') {
     answer.properties['created'] = {
       type: 'number',
       description: 'Will be added on CREATE(POST).' + '\nThe number of milliseconds elapsed since 1 January 1970 00:00:00 UTC',
@@ -67,10 +45,10 @@ OptionsClass.prototype.process = function (callback) {
   if (process.env.SCOPE) {
     recordTitle = process.env.SCOPE;
   }
-  for (let method in self.callbacks) {
-    if (self.requestDetails.auth_methods) {
-      if (!self.requestDetails.auth_methods[method.toLowerCase()]) {
-        self.debug.options('Access Token has no access to method: %s', method);
+  for (let method in methods) {
+    if (requestDetails.auth_methods) {
+      if (!requestDetails.auth_methods[method.toLowerCase()]) {
+        this.debug.options('Access Token has no access to method: %s', method);
         continue;
       }
     }
@@ -111,5 +89,4 @@ OptionsClass.prototype.process = function (callback) {
     code: 200,
     answer: answer,
   });
-};
-module.exports = OptionsClass;
+}

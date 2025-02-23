@@ -3,135 +3,77 @@
  */
 'use strict';
 
-const ObjectID = require('mongodb').ObjectID;
-const debugF = require('debug');
-const fs = require('fs');
-
-/**
- * Constructor.
- */
-function DeleteClass(db, options, requestDetails) {
-  // Use a closure to preserve `this`
-  var self = this;
-  self.mongoDB = db;
-  self.mongoTable = options.mongoTable;
-
-  // If there is a need to change default table name.
-  if (requestDetails.mongoTable) {
-    self.mongoTable = requestDetails.mongoTable;
+import { ObjectId } from 'mongodb';
+export default async function(recordId, requestDetails) {
+  if (!this.mongoDB) {
+    this.debug.debug('MongoClient:db is not ready');
+    return new Error('DB is not ready');
   }
-
-  self.id = options.id;
-  self.fileDir = options.fileDir;
-
-  this.requestDetails = requestDetails;
-}
-
-DeleteClass.prototype.requestDetails = {};
-DeleteClass.prototype.fileDir = '';
-DeleteClass.prototype.mongoUrl = '';
-DeleteClass.prototype.mongoTable = '';
-
-DeleteClass.prototype.debug = {
-  debug: debugF('microservice:delete'),
-};
-
-DeleteClass.prototype.process = function (callback) {
-  var self = this;
-
-  if (!self.mongoDB) {
-    self.debug.debug('MongoClient:db is not ready');
-    return callback(new Error('DB is not ready'));
-  }
-
-  var collection = self.mongoDB.collection(self.mongoTable);
-  var query = {};
-  if (self.id && self.id.field) {
-    switch (self.id.type) {
+  let collection = this.mongoDB.collection(this.mongoTable);
+  // convert requestDetails.url to number if id is number
+  if (this.id && this.id.field) {
+    switch (this.id.type) {
       case 'number': {
-        query[self.id.field] = parseInt(self.requestDetails.url);
+        query[this.id.field] = parseInt(recordId);
         break;
       }
       case 'float': {
-        query[self.id.field] = parseFloat(self.requestDetails.url);
+        query[this.id.field] = parseFloat(recordId);
         break;
       }
       case 'ObjectID': {
         try {
-          query[self.id.field] = new ObjectID(self.requestDetails.url);
+          query[this.id.field] = new ObjectId(recordId);
         } catch (e) {
           return callback(e, null);
         }
         break;
       }
       default: {
-        query[self.id.field] = self.requestDetails.url;
-      }
-    }
-    if (self.id.fields) {
-      for (let name in self.id.fields) {
-        let requestPath = self.id.fields[name].split('.');
-        let tmp = JSON.parse(JSON.stringify(self.requestDetails));
-        for (let item in requestPath) {
-          let pathItem = requestPath[item];
-          if (tmp[pathItem]) {
-            tmp = tmp[pathItem];
-          }
-        }
-        query[name] = tmp;
+        query[this.id.field] = recordId;
       }
     }
   } else {
     try {
-      query._id = new ObjectID(self.requestDetails.url);
+      query._id = new ObjectId(recordId);
     } catch (e) {
-      return callback(e, null);
+      return e;
     }
   }
-  collection.findOneAndDelete(query, function (err, result) {
-    if (err) {
-      self.debug.debug('MongoClient:findOneAndDelete err: %O', err);
-      return callback(err, null);
-    }
-
-    if (!result.value) {
-      self.debug.debug('MongoClient:findOneAndDelete object not found.');
-      return callback(null, {
+  try {
+    let record = await collection.findOneAndDelete(query);
+    if(!record) {
+      return {
         code: 404,
         answer: {
           message: 'Not found',
         },
-      });
+      };
     }
-    if (self.fileDir && self.fileDir != '') {
-      var filePath = self.fileDir + '/' + self.requestDetails.url;
-      if (fs.existsSync(filePath)) {
-        fs.unlink(filePath);
-      }
-    }
-
-    if (self.requestDetails.credentials) {
-      delete result.value.token;
+    if (requestDetails.credentials) {
+      delete record.token;
     }
     let removeId = true;
-    if (self.id && self.id.field) {
-      result.value.url = process.env.SELF_PATH + '/' + result.value[self.id.field];
-      if (self.id.field == '_id') {
+    if (this.id && this.id.field) {
+      result.url = process.env.SELF_PATH + '/' + result[this.id.field];
+      if (this.id.field == '_id') {
         removeId = false;
       }
     } else {
-      result.value.id = result.value._id;
+      result.id = result._id;
     }
     if (removeId) {
-      delete result.value._id;
+      delete result._id;
     }
-
     return callback(null, {
       code: 200,
-      answer: result.value,
+      answer: result,
     });
-  });
-  return;
-};
-
-module.exports = DeleteClass;
+  } catch (err) {
+    this.debug.debug('MongoClient:findOneAndDelete err: %O', err);
+    return {
+      code: 503,
+      answer: err
+    };
+  }
+}

@@ -2,10 +2,8 @@
  * Process Test task.
  */
 'use strict';
+import { ObjectId } from 'mongodb';
 
-const ObjectID = require('mongodb').ObjectID;
-const debugF = require('debug');
-const fs = require('fs');
 const updateAcceptedCmds = [
   '$addToSet',
   '$currentDate',
@@ -22,125 +20,63 @@ const updateAcceptedCmds = [
   '$unset',
 ];
 
-/**
- * Constructor.
- *   Prepare data for test.
- */
-function PutClass(db, options, data, requestDetails) {
-  // Use a closure to preserve `this`
-  var self = this;
-  self.mongoDB = db;
-  self.mongoTable = options.mongoTable;
-
-  // If there is a need to change default table name.
-  if (requestDetails.mongoTable) {
-    self.mongoTable = requestDetails.mongoTable;
+export default async function(recordId, data, requestDetails) {
+  if (!this.mongoDB) {
+    this.debug.debug('MongoClient:db is not ready');
+    return new Error('DB is not ready');
   }
 
-  self.id = options.id;
-  self.fileDir = options.fileDir;
+  let collection = this.mongoDB.collection(this.mongoTable);
 
-  self.data = data;
-  self.requestDetails = requestDetails;
-}
 
-PutClass.prototype.data = {};
-PutClass.prototype.requestDetails = {};
-PutClass.prototype.fileDir = '';
-PutClass.prototype.mongoUrl = '';
-PutClass.prototype.mongoTable = '';
-
-PutClass.prototype.debug = {
-  debug: debugF('microservice:put'),
-};
-
-PutClass.prototype.process = function (callback) {
-  var self = this;
-
-  var fileProperty = false;
-  if (process.env.FILE_PROPERTY) {
-    fileProperty = process.env.FILE_PROPERTY;
-  }
-
-  var fileContent = false;
-  if (fileProperty) {
-    if (self.data[fileProperty]) {
-      if (process.env.FILE_PROPERTY_JSON) {
-        fileContent = JSON.stringify(self.data[fileProperty]);
-      } else {
-        fileContent = self.data[fileProperty];
-      }
-      delete self.data[fileProperty];
-    }
-  }
-
-  if (!self.mongoDB) {
-    self.debug.debug('MongoClient:db is not ready');
-    return callback(new Error('DB is not ready'));
-  }
-
-  var collection = self.mongoDB.collection(self.mongoTable);
-
-  var query = {};
-  if (self.id && self.id.field) {
-    switch (self.id.type) {
+  let query = {};
+  // convert requestDetails.url to number if id is number
+  if (this.id && this.id.field) {
+    switch (this.id.type) {
       case 'number': {
-        query[self.id.field] = parseInt(self.requestDetails.url);
+        query[this.id.field] = parseInt(recordId);
         break;
       }
       case 'float': {
-        query[self.id.field] = parseFloat(self.requestDetails.url);
+        query[this.id.field] = parseFloat(recordId);
         break;
       }
       case 'ObjectID': {
         try {
-          query[self.id.field] = new ObjectID(self.requestDetails.url);
+          query[this.id.field] = new ObjectId(recordId);
         } catch (e) {
           return callback(e, null);
         }
         break;
       }
       default: {
-        query[self.id.field] = self.requestDetails.url;
-      }
-    }
-    if (self.id.fields) {
-      for (let name in self.id.fields) {
-        let requestPath = self.id.fields[name].split('.');
-        let tmp = JSON.parse(JSON.stringify(self.requestDetails));
-        for (let item in requestPath) {
-          let pathItem = requestPath[item];
-          if (tmp[pathItem]) {
-            tmp = tmp[pathItem];
-          }
-        }
-        query[name] = tmp;
+        query[this.id.field] = recordId;
       }
     }
   } else {
     try {
-      query._id = new ObjectID(self.requestDetails.url);
+      query._id = new ObjectId(recordId);
     } catch (e) {
-      return callback(e, null);
+      return e;
     }
   }
 
-  var updateCmd = {};
-  var forceSet = true;
-  for (var key in self.data) {
-    if (updateAcceptedCmds.indexOf(key) > -1) {
+  let updateCmd = {};
+  let forceSet = true;
+  for (let key in data) {
+    if (updateAcceptedCmds.includes(key)) {
       forceSet = false;
-      updateCmd[key] = self.data[key];
+      updateCmd[key] = data[key];
     }
   }
 
   if (forceSet) {
-    updateCmd['$set'] = self.data;
+    updateCmd['$set'] = data;
   }
 
   // Update changed field.
-  var updateChanged = true;
-  if (self.requestDetails.headers && self.requestDetails.headers['skip-changed']) {
+  let updateChanged = true;
+  if (requestDetails.headers && requestDetails.headers['skip-changed']) {
     updateChanged = false;
   }
   if (updateChanged) {
@@ -152,51 +88,41 @@ PutClass.prototype.process = function (callback) {
       };
     }
   }
-  self.debug.debug('updateCmd %O', updateCmd);
-
-  collection.findOneAndUpdate(query, updateCmd, { returnOriginal: false }, function (err, resultUpdate) {
-    if (err) {
-      self.debug.debug('MongoClient:findOneAndUpdate err: %O', err);
-      return callback(err, null);
+  this.debug.debug('updateCmd %O %O', query, updateCmd);
+  try {
+    let record = await collection.findOneAndUpdate(query, updateCmd);
+    if(!record) {
+      return {
+        code: 404,
+        answer: {
+          message: 'Not found',
+        },
+      };
     }
-    if (!resultUpdate) {
-      self.debug.debug('MongoClient:findOneAndUpdate object not found.');
-      return callback(new Error('Not found'), null);
-    }
-
-    if (!resultUpdate.value) {
-      self.debug.debug('MongoClient:findOneAndUpdate failed to save data.');
-      return callback(new Error('Error to save data'), null);
-    }
-    if (fileContent) {
-      var filePath = self.fileDir + '/' + self.requestDetails.url;
-
-      if (fs.existsSync(filePath)) {
-        fs.writeFile(filePath, fileContent);
-      }
-    }
-    if (self.requestDetails.credentials) {
-      delete resultUpdate.value.token;
+    if (requestDetails.credentials) {
+      delete record.token;
     }
     let removeId = true;
-    if (self.id && self.id.field) {
-      resultUpdate.value.url = process.env.SELF_PATH + '/' + resultUpdate.value[self.id.field];
-      if (self.id.field == '_id') {
+    if (this.id && this.id.field) {
+      result.url = process.env.SELF_PATH + '/' + result[this.id.field];
+      if (this.id.field == '_id') {
         removeId = false;
       }
     } else {
-      resultUpdate.value.id = resultUpdate.value._id;
+      result.id = result._id;
     }
     if (removeId) {
-      delete resultUpdate.value._id;
+      delete result._id;
     }
-
     return callback(null, {
       code: 200,
-      answer: resultUpdate.value,
+      answer: result,
     });
-  });
-  return;
-};
-
-module.exports = PutClass;
+  } catch (err) {
+    this.debug.debug('MongoClient:findOneAndUpdate err: %O', err);
+    return {
+      code: 503,
+      answer: err
+    };
+  }
+}

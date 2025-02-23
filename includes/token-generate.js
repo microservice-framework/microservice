@@ -3,8 +3,8 @@
  */
 'use strict';
 
-const crypto = require('crypto');
+import {randomBytes} from 'node:crypto';
 
-module.exports = function tokenGenerate(length) {
-  return crypto.randomBytes(length).toString('hex');
+export default async function(length) {
+  return await randomBytes(length).toString('hex');
 };

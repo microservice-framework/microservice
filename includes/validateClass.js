@@ -3,272 +3,174 @@
  */
 'use strict';
 
-const signature = require('./signature.js');
-const ObjectID = require('mongodb').ObjectID;
-const debugF = require('debug');
-const MicroserviceClient = require('@microservice-framework/microservice-client');
+import signature from './signature.js';
+import { ObjectId } from 'mongodb';
+import microserviceClient from '@microservice-framework/microservice-client';
 
-const bind = function (fn, me) {
-  return function () {
-    return fn.apply(me, arguments);
-  };
-};
-
-/**
- * Constructor.
- *   Prepare data for test.
- */
-function ValidateClass(db, options, data, requestDetails) {
-  // Use a closure to preserve `this`
-  var self = this;
-  self.mongoDB = db;
-  self.mongoTable = options.mongoTable;
-
-  // If there is a need to change default table name.
-  if (requestDetails.mongoTable) {
-    self.mongoTable = requestDetails.mongoTable;
-  }
-
-  self.secureKey = options.secureKey;
-  self.authMethod = options.authMethod || 0;
-  self.data = data;
-  self.id = options.id;
-  self.requestDetails = requestDetails;
-  self.SignatureSystem = bind(self.SignatureSystem, self);
-  self.TokenSystem = bind(self.TokenSystem, self);
-  self.AccessToken = bind(self.AccessToken, self);
-}
-
-ValidateClass.prototype.data = {};
-ValidateClass.prototype.requestDetails = {};
-ValidateClass.prototype.mongoUrl = '';
-ValidateClass.prototype.mongoTable = '';
-ValidateClass.prototype.secureKey = '';
-
-ValidateClass.prototype.debug = {
-  debug: debugF('microservice:validate'),
-};
-
-ValidateClass.prototype.SignatureSystem = function (callback) {
-  var self = this;
-  self.debug.debug('Validate:SignatureSystem');
-  var sign = self.requestDetails.headers.signature.split('=');
-
-  if (sign.length != 2) {
-    self.debug.debug('Validate:SignatureSystem Malformed signature');
-    return callback(new Error('Malformed signature'));
-  }
-
-  if (sign[1] != signature(sign[0], self.data, self.secureKey)) {
-    self.debug.debug('Validate:SignatureSystem Signature mismatch');
-    return callback(new Error('Signature mismatch'));
-  }
-
-  return callback(null);
-};
-
-ValidateClass.prototype.TokenSystem = function (callback) {
-  var self = this;
-
-  self.debug.debug('Validate:TokenSystem');
-
-  if (!self.mongoDB) {
-    self.debug.debug('MongoClient:db is not ready');
-    return callback(new Error('DB is not ready'));
-  }
-
-  var collection = self.mongoDB.collection(self.mongoTable);
-  var query = {};
-  if (self.id && self.id.field) {
-    switch (self.id.type) {
-      case 'number': {
-        query[self.id.field] = parseInt(self.requestDetails.url);
-        break;
-      }
-      case 'float': {
-        query[self.id.field] = parseFloat(self.requestDetails.url);
-        break;
-      }
-      case 'ObjectID': {
-        try {
-          query[self.id.field] = new ObjectID(self.requestDetails.url);
-        } catch (e) {
-          return callback(e, null);
-        }
-        break;
-      }
-      default: {
-        query[self.id.field] = self.requestDetails.url;
-      }
+export default async function(method, data, requestDetails) {
+  let TokenSystem = async () => {
+    this.debug.debug('Validate:TokenSystem');
+  
+    if (!this.mongoDB) {
+      this.debug.debug('MongoClient:db is not ready');
+      return new Error('DB is not ready');
     }
-    if (self.id.fields) {
-      for (let name in self.id.fields) {
-        let requestPath = self.id.fields[name].split('.');
-        let tmp = JSON.parse(JSON.stringify(self.requestDetails));
-        for (let item in requestPath) {
-          let pathItem = requestPath[item];
-          if (tmp[pathItem]) {
-            tmp = tmp[pathItem];
+
+    let collection = this.mongoDB.collection(this.mongoTable);
+  
+    let query = {};
+    if (this.id && this.id.field) {
+      switch (this.id.type) {
+        case 'number': {
+          query[this.id.field] = parseInt(requestDetails.url);
+          break;
+        }
+        case 'float': {
+          query[this.id.field] = parseFloat(requestDetails.url);
+          break;
+        }
+        case 'ObjectID': {
+          try {
+            query[this.id.field] = new ObjectID(requestDetails.url);
+          } catch (e) {
+            return callback(e, null);
           }
+          break;
         }
-        query[name] = tmp;
+        default: {
+          query[this.id.field] = requestDetails.url;
+        }
       }
-    }
-  } else {
-    if (self.requestDetails.url.length != 24) {
-      self.debug.debug('Validate:TokenSystem Token length != 24');
-      return callback(new Error('Wrong request'));
-    }
-
-    try {
-      query._id = new ObjectID(self.requestDetails.url);
-    } catch (e) {
-      return callback(e);
-    }
-  }
-  query.token = self.requestDetails.headers.token;
-
-  collection.findOne(query, function (err, result) {
-    if (err) {
-      self.debug.debug('MongoClient:findOne err: %O', err);
-      return callback(err);
-    }
-    if (!result) {
-      self.debug.debug('MongoClient:findOneAndUpdate object not found.');
-      var error = new Error('Not found');
-      error.code = 404;
-      return callback(error);
-    }
-    return callback(null);
-  });
-};
-
-ValidateClass.prototype.AccessToken = function (method, callback) {
-  var self = this;
-
-  self.debug.debug('Validate:AccessToken');
-  let accessToken = '';
-  let msClientSettings = {
-    URL: process.env.ROUTER_PROXY_URL + '/auth',
-    headers: {
-      scope: process.env.SCOPE,
-    },
-  };
-  // Compatibility with old versions
-  if (self.requestDetails.headers.access_token) {
-    accessToken = self.requestDetails.headers.access_token;
-  }
-  if (self.requestDetails.headers['access-token']) {
-    accessToken = self.requestDetails.headers['access-token'];
-  }
-  msClientSettings.accessToken = accessToken;
-
-  let authServer = new MicroserviceClient(msClientSettings);
-  authServer.get(accessToken, function (err, answer) {
-    if (err) {
-      self.debug.debug('authServer:search err: %O', err);
-      return callback(new Error('Access denied. Token not found or expired.'));
-    }
-    self.debug.debug('authServer:search %O ', answer);
-    if (!answer.methods) {
-      self.debug.debug('authServer:search no methods provided');
-      return callback(new Error('Access denied'));
-    }
-
-    if (!answer.methods[method.toLowerCase()]) {
-      self.debug.debug('Request:%s denied', method);
-      return callback(new Error('Access denied'));
-    }
-
-    self.requestDetails.auth_methods = answer.methods;
-
-    if (answer.credentials) {
-      self.requestDetails.credentials = answer.credentials;
     } else {
-      self.requestDetails.credentials = {};
-    }
-
-    return callback(null);
-  });
-};
-
-/**
- * Wrapper to get secure access to service by path.
- */
-ValidateClass.prototype.clientViaRouter = function (pathPattern, pathURL, callback) {
-  let routerServer = new MicroserviceClient({
-    URL: process.env.ROUTER_URL,
-    secureKey: process.env.ROUTER_SECRET,
-  });
-
-  routerServer.search(
-    {
-      path: {
-        $in: [pathPattern],
-      },
-    },
-    function (err, routes) {
-      if (err) {
-        return callback(err);
+      if (requestDetails.url.length != 24) {
+        this.debug.debug('Validate:TokenSystem Token length != 24');
+        return new Error('Wrong request');
       }
-      let msClient = new MicroserviceClient({
-        URL: process.env.ROUTER_PROXY_URL + '/' + pathURL,
-        secureKey: routes[0].secureKey,
-      });
-      callback(null, msClient);
+  
+      try {
+        query._id = new ObjectId(requestDetails.url);
+      } catch (e) {
+        return e;
+      }
     }
-  );
-};
-
-ValidateClass.prototype.validate = function (method, callback) {
-  var self = this;
-  self.debug.debug('Validate:requestDetails %O ', self.requestDetails);
+    query.token = requestDetails.headers.token;
+    try {
+      let record = await collection.findOne(query);
+      if(!record){
+        return new Error('Not found');
+      }
+      return true;
+    } catch (err) {
+      this.debug.debug('MongoClient:findOne err: %O', err);
+      return err;
+      
+    }
+  };
+  let AccessToken = async (method) => {
+    this.debug.debug('Validate:AccessToken');
+    let accessToken = '';
+    let msClientSettings = {
+      URL: process.env.ROUTER_PROXY_URL + '/auth',
+      headers: {
+        scope: process.env.SCOPE,
+      },
+    };
+    // Compatibility with old versions
+    if (requestDetails.headers.access_token) {
+      accessToken = requestDetails.headers.access_token;
+    }
+    if (requestDetails.headers['access-token']) {
+      accessToken = requestDetails.headers['access-token'];
+    }
+    msClientSettings.accessToken = accessToken;
+  
+    let authServer = new MicroserviceClient(msClientSettings);
+    let response = await authServer.get(accessToken)
+    if (response.error) {
+      this.debug.debug('authServer:search err: %O', err);
+      return new Error('Access denied. Token not found or expired.');
+    }
+    this.debug.debug('authServer:search %O ', response.answer);
+    if (!response.answer.methods) {
+      this.debug.debug('authServer:search no methods provided');
+      return new Error('Access denied');
+    }
+  
+    if (!response.answer.methods[method.toLowerCase()]) {
+      this.debug.debug('Request:%s denied', method);
+      return new Error('Access denied');
+    }
+  
+    this.requestDetails.auth_methods = response.answer.methods;
+  
+    if (response.answer.credentials) {
+      requestDetails.credentials = response.answer.credentials;
+    } else {
+      requestDetails.credentials = {};
+    }
+  
+    return true;
+  };
+  let SignatureSystem = () => {
+    this.debug.debug('Validate:SignatureSystem');
+    var sign = requestDetails.headers.signature.split('=');
+  
+    if (sign.length != 2) {
+      this.debug.debug('Validate:SignatureSystem Malformed signature');
+      return new Error('Malformed signature');
+    }
+  
+    if (sign[1] != signature(sign[0], data, this.secureKey)) {
+      this.debug.debug('Validate:SignatureSystem Signature mismatch');
+      return callback(new Error('Signature mismatch'));
+    }
+    return true;
+  };
+  
+  
+  this.debug.debug('Validate:requestDetails %O ', requestDetails);
 
   let isAccessToken = false;
-  if (self.requestDetails.headers.access_token) {
+  if (requestDetails.headers.access_token) {
     isAccessToken = true;
   }
-  if (self.requestDetails.headers['access-token']) {
+  if (requestDetails.headers['access-token']) {
     isAccessToken = true;
   }
 
   if (isAccessToken) {
-    return self.AccessToken(method, callback);
+    return AccessToken(method);
   }
 
   switch (method) {
     case 'PUT': {
-      if (!self.requestDetails.headers.signature && !self.requestDetails.headers.token) {
-        self.debug.debug('Validate:PUT Signature or Token required');
-        return callback(new Error('Signature or Token required'));
+      if (!requestDetails.headers.signature && !requestDetails.headers.token) {
+        this.debug.debug('Validate:PUT Signature or Token required');
+        return new Error('Signature or Token required');
       }
-      if (self.requestDetails.headers.signature) {
-        return self.SignatureSystem(callback);
+      if (requestDetails.headers.signature) {
+        return SignatureSystem();
       }
-      if (self.requestDetails.headers.token) {
-        return self.TokenSystem(callback);
+      if (requestDetails.headers.token) {
+        return TokenSystem();
       }
       break;
     }
     case 'POST':
     case 'OPTIONS':
     case 'SEARCH': {
-      if (!self.requestDetails.headers.signature) {
-        self.debug.debug('Validate:%s Signature required', method);
-        return callback(new Error('Signature required'));
+      if (!requestDetails.headers.signature) {
+        this.debug.debug('Validate:%s Signature required', method);
+        return new Error('Signature required');
       }
-      return self.SignatureSystem(callback);
-      break;
+      return SignatureSystem();
     }
     default: {
-      if (!self.requestDetails.headers.token) {
-        self.debug.debug('Validate:%s Token required', method);
-        return callback(new Error('Token required'));
+      if (!requestDetails.headers.token) {
+        this.debug.debug('Validate:%s Token required', method);
+        return new Error('Token required');
       }
-      return self.TokenSystem(callback);
-      break;
+      return TokenSystem();
     }
   }
-};
-
-module.exports = ValidateClass;
+}
