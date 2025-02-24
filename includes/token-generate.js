@@ -3,8 +3,8 @@
  */
 'use strict';
 
-import {randomBytes} from 'node:crypto';
+import { randomBytes } from 'node:crypto';
 
-export default async function(length) {
+export default async function (length) {
   return await randomBytes(length).toString('hex');
-};
+}

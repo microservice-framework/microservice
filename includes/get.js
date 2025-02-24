@@ -4,7 +4,7 @@
 'use strict';
 
 import { ObjectId } from 'mongodb';
-export default async function(recordId, requestDetails) {
+export default async function (recordId, requestDetails) {
   if (!this.mongoDB) {
     this.debug.debug('MongoClient:db is not ready');
     return new Error('DB is not ready');
@@ -14,13 +14,12 @@ export default async function(recordId, requestDetails) {
     db = this.mongoDB.db(requestDetails.mongoDatabase);
   }
 
-  let table = this.settings.mongoTable
+  let table = this.settings.mongoTable;
   if (requestDetails.mongoTable) {
     table = requestDetails.mongoTable;
   }
-  
-  let collection = db.collection(table);
 
+  let collection = db.collection(table);
 
   let query = {};
   // convert requestDetails.url to number if id is number
@@ -43,11 +42,11 @@ export default async function(recordId, requestDetails) {
       }
     }
   } else {
-      query._id = new ObjectId(recordId);
+    query._id = new ObjectId(recordId);
   }
   try {
     let record = await collection.findOne(query);
-    if(!record) {
+    if (!record) {
       return {
         code: 404,
         answer: {
@@ -78,7 +77,7 @@ export default async function(recordId, requestDetails) {
     this.debug.debug('MongoClient:findOne err: %O', err);
     return {
       code: 503,
-      answer: err
+      answer: err,
     };
   }
 }

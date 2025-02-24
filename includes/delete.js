@@ -4,8 +4,8 @@
 'use strict';
 
 import { ObjectId } from 'mongodb';
-export default async function(recordId, requestDetails) {
-  console.log('this', this)
+export default async function (recordId, requestDetails) {
+  console.log('this', this);
   if (!this.mongoDB) {
     this.debug.debug('MongoClient:db is not ready');
     return new Error('DB is not ready');
@@ -16,11 +16,11 @@ export default async function(recordId, requestDetails) {
     db = this.mongoDB.db(requestDetails.mongoDatabase);
   }
 
-  let table = this.settings.mongoTable
+  let table = this.settings.mongoTable;
   if (requestDetails.mongoTable) {
     table = requestDetails.mongoTable;
   }
-  
+
   let collection = db.collection(table);
 
   let query = {};
@@ -56,7 +56,7 @@ export default async function(recordId, requestDetails) {
   }
   try {
     let record = await collection.findOneAndDelete(query);
-    if(!record) {
+    if (!record) {
       return {
         code: 404,
         answer: {
@@ -87,7 +87,7 @@ export default async function(recordId, requestDetails) {
     this.debug.debug('MongoClient:findOneAndDelete err: %O', err);
     return {
       code: 503,
-      answer: err
+      answer: err,
     };
   }
 }

@@ -2,7 +2,7 @@
  * Process Test task.
  */
 'use strict';
-export default async function(data, requestDetails, methods) {
+export default async function (data, requestDetails, methods) {
   let answer = {
     id: {
       title: 'ID',

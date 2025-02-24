@@ -7,10 +7,10 @@ import signature from './signature.js';
 import { ObjectId } from 'mongodb';
 import MicroserviceClient from '@microservice-framework/microservice-client';
 
-export default async function(method, data, requestDetails) {
+export default async function (method, data, requestDetails) {
   let TokenSystem = async () => {
     this.debug.debug('Validate:TokenSystem');
-  
+
     if (!this.mongoDB) {
       this.debug.debug('MongoClient:db is not ready');
       return new Error('DB is not ready');
@@ -21,13 +21,13 @@ export default async function(method, data, requestDetails) {
       db = this.mongoDB.db(requestDetails.mongoDatabase);
     }
 
-    let table = this.settings.mongoTable
+    let table = this.settings.mongoTable;
     if (requestDetails.mongoTable) {
       table = requestDetails.mongoTable;
     }
 
     let collection = db.collection(table);
-  
+
     let query = {};
     if (this.id && this.id.field) {
       switch (this.id.type) {
@@ -52,14 +52,13 @@ export default async function(method, data, requestDetails) {
         this.debug.debug('Validate:TokenSystem Token length != 24');
         return new Error('Wrong request');
       }
-  
+
       query._id = new ObjectId(requestDetails.url);
-      
     }
     query.token = requestDetails.headers.token;
     try {
       let record = await collection.findOne(query);
-      if(!record){
+      if (!record) {
         return new Error('Not found');
       }
       return true;
@@ -85,9 +84,9 @@ export default async function(method, data, requestDetails) {
       accessToken = requestDetails.headers['access-token'];
     }
     msClientSettings.accessToken = accessToken;
-  
+
     let authServer = new MicroserviceClient(msClientSettings);
-    let response = await authServer.get(accessToken)
+    let response = await authServer.get(accessToken);
     if (response.error) {
       this.debug.debug('authServer:search err: %O', err);
       return new Error('Access denied. Token not found or expired.');
@@ -97,38 +96,37 @@ export default async function(method, data, requestDetails) {
       this.debug.debug('authServer:search no methods provided');
       return new Error('Access denied');
     }
-  
+
     if (!response.answer.methods[method.toLowerCase()]) {
       this.debug.debug('Request:%s denied', method);
       return new Error('Access denied');
     }
-  
+
     requestDetails.auth_methods = response.answer.methods;
-  
+
     if (response.answer.credentials) {
       requestDetails.credentials = response.answer.credentials;
     } else {
       requestDetails.credentials = {};
     }
-  
+
     return true;
   };
   let SignatureSystem = () => {
     this.debug.debug('Validate:SignatureSystem');
     var sign = requestDetails.headers.signature.split('=');
-  
+
     if (sign.length != 2) {
       this.debug.debug('Validate:SignatureSystem Malformed signature');
       return new Error('Malformed signature');
     }
-  
+
     if (sign[1] != signature(sign[0], data, this.secureKey)) {
       this.debug.debug('Validate:SignatureSystem Signature mismatch');
       return callback(new Error('Signature mismatch'));
     }
     return true;
   };
-  
 
   this.debug.debug('Validate:requestDetails %O ', requestDetails);
 

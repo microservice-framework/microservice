@@ -18,7 +18,7 @@ function Microservice(settings) {
   this.isTerminate = false;
   this.currentRequests = 0;
   this.settings = settings;
-  var self = this
+  var self = this;
   //this.validate = bind(self.validate, self)
   //this.debug.log('Microservice %O', this.settings);
 
@@ -32,7 +32,7 @@ Object.setPrototypeOf(Microservice.prototype, EventEmitter.prototype);
 
 Microservice.prototype.init = function () {
   if (this.settings.mongoUrl) {
-    try{
+    try {
       this.mongoDB = new MongoClient(this.settings.mongoUrl);
       this.emit('ready', this.mongoDB);
       process.on('SIGINT', () => {
@@ -45,29 +45,28 @@ Microservice.prototype.init = function () {
         this.debug.log('SIGTERM received');
         this.mongoDB.close();
       });
-    } catch (err){
+    } catch (err) {
       this.debug.debug('MongoClient:connect err: %O', err);
       this.debug.log('MongoClient:connect failed');
       this.emit('error', err);
     }
   }
-}
+};
 Microservice.prototype.close = function () {
   if (this.isTerminate && this.currentRequests === 0) {
     this.debug.log('Close mongo connection');
     this.mongoDB.close();
   }
-}
+};
 
-Microservice.prototype.validate = validate
-Microservice.prototype.get = get
-Microservice.prototype.delete = del
-Microservice.prototype.put = put
-Microservice.prototype.post = post
-Microservice.prototype.search = search
-Microservice.prototype.options = options
-Microservice.prototype.aggregate = aggregate
-
+Microservice.prototype.validate = validate;
+Microservice.prototype.get = get;
+Microservice.prototype.delete = del;
+Microservice.prototype.put = put;
+Microservice.prototype.post = post;
+Microservice.prototype.search = search;
+Microservice.prototype.options = options;
+Microservice.prototype.aggregate = aggregate;
 
 /**
  * Process Get request.
@@ -90,7 +89,6 @@ Microservice.prototype.validateJson = function (jsonData) {
   }
   return true;
 };
-
 
 Microservice.prototype.debug = {
   debug: debug('microservice:debug'),

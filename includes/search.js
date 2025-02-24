@@ -5,8 +5,7 @@
 
 import { ObjectId } from 'mongodb';
 
-
-export default async function(data, requestDetails) {
+export default async function (data, requestDetails) {
   if (!this.mongoDB) {
     this.debug.debug('MongoClient:db is not ready');
     return new Error('DB is not ready');
@@ -17,16 +16,16 @@ export default async function(data, requestDetails) {
     db = this.mongoDB.db(requestDetails.mongoDatabase);
   }
 
-  let table = this.settings.mongoTable
+  let table = this.settings.mongoTable;
   if (requestDetails.mongoTable) {
     table = requestDetails.mongoTable;
   }
-  
+
   let collection = db.collection(table);
-  
+
   let query = data;
   // Working with two formats, query and data.query
-  if(data.query) {
+  if (data.query) {
     query = data.query;
   }
 
@@ -68,30 +67,29 @@ export default async function(data, requestDetails) {
     }
   }
 
-
-  let limit = 20
-  if(process.env.LIMIT) {
+  let limit = 20;
+  if (process.env.LIMIT) {
     limit = parseInt(process.env.LIMIT);
   }
-  if(data.limit) {
+  if (data.limit) {
     limit = data.limit;
   }
-  
-  let options = {
-    limit: limit
-  }
 
-  if(data.skip) { 
+  let options = {
+    limit: limit,
+  };
+
+  if (data.skip) {
     options.skip = data.skip;
   }
-  
-  if(data.sort) {
+
+  if (data.sort) {
     options.sort = data.sort;
   }
 
-  if(data.fields) {
-    options.projection = {}
-    for(let i in data.fields) {
+  if (data.fields) {
+    options.projection = {};
+    for (let i in data.fields) {
       options.projection[data.fields[i]] = 1;
     }
   }
@@ -108,15 +106,15 @@ export default async function(data, requestDetails) {
   }
   if (executionLimit > 0) {
     options.maxTimeMS = executionLimit;
-  } 
+  }
 
   if (requestDetails.headers['force-index']) {
     options.hint = requestDetails.headers['force-index'];
   }
 
   try {
-    let results = await collection.find(query,options).toArray();
-    console.log('results', results)
+    let results = await collection.find(query, options).toArray();
+    console.log('results', results);
     if (!results || results.length == 0) {
       this.debug.debug('MongoClient:toArray object not found.');
       return {
@@ -128,10 +126,10 @@ export default async function(data, requestDetails) {
       };
     }
     let total = -1;
-    if(data.count) {
+    if (data.count) {
       total = await collection.countDocuments(query);
     }
-    results.forEach( (element) => {
+    results.forEach((element) => {
       let removeId = true;
       if (this.id && this.id.field) {
         element.url = process.env.SELF_PATH + '/' + element[this.id.field];
@@ -157,7 +155,7 @@ export default async function(data, requestDetails) {
     this.debug.debug('MongoClient:find err: %O', err);
     return {
       code: 503,
-      answer: err
+      answer: err,
     };
   }
 }

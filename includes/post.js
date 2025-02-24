@@ -5,8 +5,7 @@
 
 import tokenGenerate from './token-generate.js';
 
-export default async function(data, requestDetails) {
-
+export default async function (data, requestDetails) {
   if (!this.mongoDB) {
     this.debug.debug('MongoClient:db is not ready');
     return new Error('DB is not ready');
@@ -17,20 +16,20 @@ export default async function(data, requestDetails) {
     db = this.mongoDB.db(requestDetails.mongoDatabase);
   }
 
-  let table = this.settings.mongoTable
+  let table = this.settings.mongoTable;
   if (requestDetails.mongoTable) {
     table = requestDetails.mongoTable;
   }
-  
+
   let collection = db.collection(table);
 
   // Add default values to data
   data.created = Date.now();
   data.changed = Date.now();
   data.token = tokenGenerate(24);
-  
+
   try {
-    let record = await collection.insertOne(data, {returnDocument: 'after'});
+    let record = await collection.insertOne(data, { returnDocument: 'after' });
     let removeId = true;
     if (this.id && this.id.field) {
       data.url = process.env.this_PATH + '/' + data[this.id.field];
@@ -51,12 +50,11 @@ export default async function(data, requestDetails) {
       code: 200,
       answer: data,
     };
-  }
-  catch (err) {
+  } catch (err) {
     this.debug.debug('MongoClient:insertOne err: %O', err);
     return {
       code: 503,
-      answer: err
+      answer: err,
     };
   }
 }

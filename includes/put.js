@@ -20,7 +20,7 @@ const updateAcceptedCmds = [
   '$unset',
 ];
 
-export default async function(recordId, data, requestDetails) {
+export default async function (recordId, data, requestDetails) {
   if (!this.mongoDB) {
     this.debug.debug('MongoClient:db is not ready');
     return new Error('DB is not ready');
@@ -31,7 +31,7 @@ export default async function(recordId, data, requestDetails) {
     db = this.mongoDB.db(requestDetails.mongoDatabase);
   }
 
-  let table = this.settings.mongoTable
+  let table = this.settings.mongoTable;
   if (requestDetails.mongoTable) {
     table = requestDetails.mongoTable;
   }
@@ -99,9 +99,9 @@ export default async function(recordId, data, requestDetails) {
   }
   this.debug.debug('updateCmd %O %O', query, updateCmd);
   try {
-    let record = await collection.findOneAndUpdate(query, updateCmd, {returnDocument: 'after'});
+    let record = await collection.findOneAndUpdate(query, updateCmd, { returnDocument: 'after' });
     this.debug.debug('updated %O', record);
-    if(!record) {
+    if (!record) {
       return {
         code: 404,
         answer: {
@@ -132,7 +132,7 @@ export default async function(recordId, data, requestDetails) {
     this.debug.debug('MongoClient:findOneAndUpdate err: %O', err);
     return {
       code: 503,
-      answer: err
+      answer: err,
     };
   }
 }
