@@ -9,7 +9,7 @@ import post from './includes/post.js';
 import put from './includes/put.js';
 import del from './includes/delete.js';
 import search from './includes/search.js';
-//import aggregate from './includes/aggregate';
+import aggregate from './includes/aggregate.js';
 import options from './includes/options.js';
 
 function Microservice(settings) {
@@ -66,6 +66,7 @@ Microservice.prototype.put = put
 Microservice.prototype.post = post
 Microservice.prototype.search = search
 Microservice.prototype.options = options
+Microservice.prototype.aggregate = aggregate
 
 
 /**
