@@ -12,33 +12,44 @@ export default async function(data, requestDetails) {
     return new Error('DB is not ready');
   }
 
+  let db = this.mongoDB.db(this.settings.mongoDB);
+  if (requestDetails.mongoDatabase) {
+    db = this.mongoDB.db(requestDetails.mongoDatabase);
+  }
+
+  let table = this.settings.mongoTable
+  if (requestDetails.mongoTable) {
+    table = requestDetails.mongoTable;
+  }
+  
+  let collection = db.collection(table);
+
   // Add default values to data
   data.created = Date.now();
   data.changed = Date.now();
   data.token = tokenGenerate(24);
-
-  let collection = this.mongoDB.collection(this.mongoTable);
+  
   try {
-    let record = await collection.insertOne(data);
+    let record = await collection.insertOne(data, {returnDocument: 'after'});
     let removeId = true;
     if (this.id && this.id.field) {
-      record.url = process.env.this_PATH + '/' + record[this.id.field];
+      data.url = process.env.this_PATH + '/' + data[this.id.field];
       if (this.id.field == '_id') {
         removeId = false;
       }
     } else {
-      record.id = result.insertedId;
+      data.id = record.insertedId;
     }
-    if (removeId && record._id) {
-      delete record._id;
+    if (removeId && data._id) {
+      delete data._id;
     }
     // return token only if no credentials - no access token
     if (requestDetails.credentials) {
-      delete record.token;
+      delete data.token;
     }
     return {
       code: 200,
-      answer: record,
+      answer: data,
     };
   }
   catch (err) {

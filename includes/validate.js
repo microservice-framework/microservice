@@ -5,7 +5,7 @@
 
 import signature from './signature.js';
 import { ObjectId } from 'mongodb';
-import microserviceClient from '@microservice-framework/microservice-client';
+import MicroserviceClient from '@microservice-framework/microservice-client';
 
 export default async function(method, data, requestDetails) {
   let TokenSystem = async () => {
@@ -16,7 +16,17 @@ export default async function(method, data, requestDetails) {
       return new Error('DB is not ready');
     }
 
-    let collection = this.mongoDB.collection(this.mongoTable);
+    let db = this.mongoDB.db(this.settings.mongoDB);
+    if (requestDetails.mongoDatabase) {
+      db = this.mongoDB.db(requestDetails.mongoDatabase);
+    }
+
+    let table = this.settings.mongoTable
+    if (requestDetails.mongoTable) {
+      table = requestDetails.mongoTable;
+    }
+
+    let collection = db.collection(table);
   
     let query = {};
     if (this.id && this.id.field) {
@@ -30,11 +40,7 @@ export default async function(method, data, requestDetails) {
           break;
         }
         case 'ObjectID': {
-          try {
-            query[this.id.field] = new ObjectID(requestDetails.url);
-          } catch (e) {
-            return callback(e, null);
-          }
+          query[this.id.field] = new ObjectID(requestDetails.url);
           break;
         }
         default: {
@@ -47,11 +53,8 @@ export default async function(method, data, requestDetails) {
         return new Error('Wrong request');
       }
   
-      try {
-        query._id = new ObjectId(requestDetails.url);
-      } catch (e) {
-        return e;
-      }
+      query._id = new ObjectId(requestDetails.url);
+      
     }
     query.token = requestDetails.headers.token;
     try {
@@ -63,7 +66,6 @@ export default async function(method, data, requestDetails) {
     } catch (err) {
       this.debug.debug('MongoClient:findOne err: %O', err);
       return err;
-      
     }
   };
   let AccessToken = async (method) => {
@@ -101,7 +103,7 @@ export default async function(method, data, requestDetails) {
       return new Error('Access denied');
     }
   
-    this.requestDetails.auth_methods = response.answer.methods;
+    requestDetails.auth_methods = response.answer.methods;
   
     if (response.answer.credentials) {
       requestDetails.credentials = response.answer.credentials;
@@ -127,7 +129,7 @@ export default async function(method, data, requestDetails) {
     return true;
   };
   
-  
+
   this.debug.debug('Validate:requestDetails %O ', requestDetails);
 
   let isAccessToken = false;

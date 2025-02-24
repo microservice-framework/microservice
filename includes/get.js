@@ -5,13 +5,21 @@
 
 import { ObjectId } from 'mongodb';
 export default async function(recordId, requestDetails) {
-  
   if (!this.mongoDB) {
     this.debug.debug('MongoClient:db is not ready');
     return new Error('DB is not ready');
   }
+  let db = this.mongoDB.db(this.settings.mongoDB);
+  if (requestDetails.mongoDatabase) {
+    db = this.mongoDB.db(requestDetails.mongoDatabase);
+  }
 
-  let collection = this.mongoDB.collection(this.mongoTable);
+  let table = this.settings.mongoTable
+  if (requestDetails.mongoTable) {
+    table = requestDetails.mongoTable;
+  }
+  
+  let collection = db.collection(table);
 
 
   let query = {};
@@ -27,11 +35,7 @@ export default async function(recordId, requestDetails) {
         break;
       }
       case 'ObjectID': {
-        try {
-          query[this.id.field] = new ObjectId(recordId);
-        } catch (e) {
-          return callback(e, null);
-        }
+        query[this.id.field] = new ObjectId(recordId);
         break;
       }
       default: {
@@ -39,11 +43,7 @@ export default async function(recordId, requestDetails) {
       }
     }
   } else {
-    try {
       query._id = new ObjectId(recordId);
-    } catch (e) {
-      return e;
-    }
   }
   try {
     let record = await collection.findOne(query);
@@ -60,20 +60,20 @@ export default async function(recordId, requestDetails) {
     }
     let removeId = true;
     if (this.id && this.id.field) {
-      result.url = process.env.SELF_PATH + '/' + result[this.id.field];
+      record.url = process.env.SELF_PATH + '/' + record[this.id.field];
       if (this.id.field == '_id') {
         removeId = false;
       }
     } else {
-      result.id = result._id;
+      record.id = record._id;
     }
     if (removeId) {
-      delete result._id;
+      delete record._id;
     }
-    return callback(null, {
+    return {
       code: 200,
-      answer: result,
-    });
+      answer: record,
+    };
   } catch (err) {
     this.debug.debug('MongoClient:findOne err: %O', err);
     return {

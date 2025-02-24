@@ -12,7 +12,17 @@ export default async function(data, requestDetails) {
     return new Error('DB is not ready');
   }
 
-  let collection = this.mongoDB.collection(this.mongoTable);
+  let db = this.mongoDB.db(this.settings.mongoDB);
+  if (requestDetails.mongoDatabase) {
+    db = this.mongoDB.db(requestDetails.mongoDatabase);
+  }
+
+  let table = this.settings.mongoTable
+  if (requestDetails.mongoTable) {
+    table = requestDetails.mongoTable;
+  }
+  
+  let collection = db.collection(table);
   
   let query = data;
   // Working with two formats, query and data.query
@@ -97,7 +107,7 @@ export default async function(data, requestDetails) {
     executionLimit = parseInt(requestDetails.headers['execution-limit']);
   }
   if (executionLimit > 0) {
-    options.maxTimeMS(executionLimit);
+    options.maxTimeMS = executionLimit;
   } 
 
   if (requestDetails.headers['force-index']) {
@@ -105,7 +115,8 @@ export default async function(data, requestDetails) {
   }
 
   try {
-    let results = collection.find(query,options).toArray();
+    let results = await collection.find(query,options).toArray();
+    console.log('results', results)
     if (!results || results.length == 0) {
       this.debug.debug('MongoClient:toArray object not found.');
       return {
@@ -120,7 +131,7 @@ export default async function(data, requestDetails) {
     if(data.count) {
       total = await collection.countDocuments(query);
     }
-    results.forEach(function (element) {
+    results.forEach( (element) => {
       let removeId = true;
       if (this.id && this.id.field) {
         element.url = process.env.SELF_PATH + '/' + element[this.id.field];
@@ -137,11 +148,11 @@ export default async function(data, requestDetails) {
         delete element.token;
       }
     });
-    return callback(null, {
+    return {
       code: 200,
       answer: results,
       headers: { 'x-total-count': total },
-    });
+    };
   } catch (err) {
     this.debug.debug('MongoClient:find err: %O', err);
     return {

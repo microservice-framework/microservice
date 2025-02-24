@@ -5,11 +5,25 @@
 
 import { ObjectId } from 'mongodb';
 export default async function(recordId, requestDetails) {
+  console.log('this', this)
   if (!this.mongoDB) {
     this.debug.debug('MongoClient:db is not ready');
     return new Error('DB is not ready');
   }
-  let collection = this.mongoDB.collection(this.mongoTable);
+
+  let db = this.mongoDB.db(this.settings.mongoDB);
+  if (requestDetails.mongoDatabase) {
+    db = this.mongoDB.db(requestDetails.mongoDatabase);
+  }
+
+  let table = this.settings.mongoTable
+  if (requestDetails.mongoTable) {
+    table = requestDetails.mongoTable;
+  }
+  
+  let collection = db.collection(table);
+
+  let query = {};
   // convert requestDetails.url to number if id is number
   if (this.id && this.id.field) {
     switch (this.id.type) {
@@ -55,20 +69,20 @@ export default async function(recordId, requestDetails) {
     }
     let removeId = true;
     if (this.id && this.id.field) {
-      result.url = process.env.SELF_PATH + '/' + result[this.id.field];
+      record.url = process.env.SELF_PATH + '/' + record[this.id.field];
       if (this.id.field == '_id') {
         removeId = false;
       }
     } else {
-      result.id = result._id;
+      record.id = record._id;
     }
     if (removeId) {
-      delete result._id;
+      delete record._id;
     }
-    return callback(null, {
+    return {
       code: 200,
-      answer: result,
-    });
+      answer: record,
+    };
   } catch (err) {
     this.debug.debug('MongoClient:findOneAndDelete err: %O', err);
     return {
