@@ -1,6 +1,5 @@
 # microservice
 
-[![Gitter](https://img.shields.io/gitter/room/microservice-framework/chat.svg?style=flat-square)](https://gitter.im/microservice-framework/chat)
 [![npm](https://img.shields.io/npm/dt/@microservice-framework/microservice.svg?style=flat-square)](https://www.npmjs.com/~microservice-framework)
 [![microservice-frame.work](https://img.shields.io/badge/online%20docs-200-green.svg?style=flat-square)](http://microservice-frame.work)
 
@@ -14,28 +13,29 @@ Simple example:
 const Cluster = require('@microservice-framework/microservice-cluster');
 const Microservice = require('@microservice-framework/microservice');
 
-require('dotenv').config();
+import dotenv from 'dotenv';
+dotenv.config();
+
 
 var mservice = new Microservice({
-  mongoUrl: process.env.MONGO_URL + process.env.MONGO_PREFIX + process.env.MONGO_OPTIONS,
+  mongoUrl: process.env.MONGO_URL,
+  mongoDB: process.env.MONGO_DB,
+  schema: process.env.SCHEMA,
   mongoTable: process.env.MONGO_TABLE,
   secureKey: process.env.SECURE_KEY,
-  schema: process.env.SCHEMA
 });
 
-var mControlCluster = new Cluster({
-  pid: process.env.PIDFILE,
-  port: process.env.PORT,
-  hostname: process.env.HOSTNAME,
-  count: process.env.WORKERS,
-  callbacks: {
-    validate: mservice.validate,
-    POST: mservice.post,
-    GET: mservice.get,
-    PUT: mservice.put,
-    DELETE: mservice.delete,
-    SEARCH: mservice.search
-  }
+const cluster = new Cluster({
+  validate: ms.validate.bind(ms),
+  methods: {
+    POST: ms.post.bind(ms),
+    GET: ms.get.bind(ms),
+    PUT: ms.put.bind(ms),
+    DELETE: ms.delete.bind(ms),
+    SEARCH: ms.aggregate.bind(ms),
+    OPTIONS: ms.options.bind(ms),
+    PATCH: ms.aggregate.bind(ms),
+  },
 });
 
 ```
@@ -58,3 +58,9 @@ For more details please check our [website](http://microservice-frame.work)
           - support for env MAX_TIME_MS to set max exection time for search
           - support noCount request params to avoid countin total-count on search
           - properly close mongo connection on SIGINT (mfw stop serviceName)
+
+- `3.0.0` - switching from callback to async and usage new cluster.
+          - moved validate and loader out of the callbacs
+          - renamed callbacks to method
+          - added singleton as a separated worker to run function
+          - added init, shutdown to run on init and shutdown in each worker

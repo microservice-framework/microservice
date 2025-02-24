@@ -15,10 +15,10 @@ let ms = new Microservice({
 });
 
 const cluster = new Cluster({
-  loader: function (request, callback) {
+  loader: async function (request) {
     console.log('loader', request.url);
     request.test = true;
-    callback(null);
+    return false;
   },
   singleton: function (isStart, variables) {
     console.log('singleton', isStart, variables);
