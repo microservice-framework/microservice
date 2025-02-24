@@ -5,7 +5,6 @@
 
 import { ObjectId } from 'mongodb';
 export default async function (recordId, requestDetails) {
-  console.log('this', this);
   if (!this.mongoDB) {
     this.debug.debug('MongoClient:db is not ready');
     return new Error('DB is not ready');

@@ -13,14 +13,10 @@ import aggregate from './includes/aggregate.js';
 import options from './includes/options.js';
 
 function Microservice(settings) {
-  console.log('Micro');
   this.mongoDB = false;
   this.isTerminate = false;
   this.currentRequests = 0;
   this.settings = settings;
-  var self = this;
-  //this.validate = bind(self.validate, self)
-  //this.debug.log('Microservice %O', this.settings);
 
   EventEmitter.call(this); // Call EventEmitter constructor
   this.init();

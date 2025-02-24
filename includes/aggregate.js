@@ -90,7 +90,6 @@ export default async function (data, requestDetails) {
 
   try {
     let results = await collection.aggregate(pipeline, options).toArray();
-    console.log('results', results);
     if (!results || results.length == 0) {
       this.debug.debug('MongoClient:toArray object not found.');
       return {

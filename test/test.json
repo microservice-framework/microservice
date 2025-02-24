@@ -1,0 +1,13 @@
+{
+  "id": "/TestObject",
+  "type": "object",
+  "properties": {
+    "reaction": {
+      "type": "string",
+      "description": "Reaction type",
+      "enum": [ "heart", "fire", "sad", "grin", "feather", "heart-crack", "meteor", "angry", "ghost", "smile", "radiation", "sweat", "cake", "bolt", "dumpster-fire" ],
+      "default": "heart",
+      "required": true
+    }
+  }
+}
