@@ -31,9 +31,9 @@ export default async function (data, requestDetails) {
   try {
     let record = await collection.insertOne(data, { returnDocument: 'after' });
     let removeId = true;
-    if (this.id && this.id.field) {
-      data.url = process.env.this_PATH + '/' + data[this.id.field];
-      if (this.id.field == '_id') {
+    if (this.settings.id && this.settings.id.field) {
+      data.url = process.env.this_PATH + '/' + data[this.settings.id.field];
+      if (this.settings.id.field == '_id') {
         removeId = false;
       }
     } else {

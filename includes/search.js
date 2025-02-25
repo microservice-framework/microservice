@@ -130,9 +130,9 @@ export default async function (data, requestDetails) {
     }
     results.forEach((element) => {
       let removeId = true;
-      if (this.id && this.id.field) {
-        element.url = process.env.SELF_PATH + '/' + element[this.id.field];
-        if (this.id.field == '_id') {
+      if (this.settings.id && this.settings.id.field) {
+        element.url = process.env.SELF_PATH + '/' + element[this.settings.id.field];
+        if (this.settings.id.field == '_id') {
           removeId = false;
         }
       } else {

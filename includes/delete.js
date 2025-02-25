@@ -24,26 +24,26 @@ export default async function (recordId, requestDetails) {
 
   let query = {};
   // convert requestDetails.url to number if id is number
-  if (this.id && this.id.field) {
-    switch (this.id.type) {
+  if (this.settings.id && this.settings.id.field) {
+    switch (this.settings.id.type) {
       case 'number': {
-        query[this.id.field] = parseInt(recordId);
+        query[this.settings.id.field] = parseInt(recordId);
         break;
       }
       case 'float': {
-        query[this.id.field] = parseFloat(recordId);
+        query[this.settings.id.field] = parseFloat(recordId);
         break;
       }
       case 'ObjectID': {
         try {
-          query[this.id.field] = new ObjectId(recordId);
+          query[this.settings.id.field] = new ObjectId(recordId);
         } catch (e) {
           return callback(e, null);
         }
         break;
       }
       default: {
-        query[this.id.field] = recordId;
+        query[this.settings.id.field] = recordId;
       }
     }
   } else {
@@ -67,9 +67,9 @@ export default async function (recordId, requestDetails) {
       delete record.token;
     }
     let removeId = true;
-    if (this.id && this.id.field) {
-      record.url = process.env.SELF_PATH + '/' + record[this.id.field];
-      if (this.id.field == '_id') {
+    if (this.settings.id && this.settings.id.field) {
+      record.url = process.env.SELF_PATH + '/' + record[this.settings.id.field];
+      if (this.settings.id.field == '_id') {
         removeId = false;
       }
     } else {

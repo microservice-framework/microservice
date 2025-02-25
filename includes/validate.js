@@ -29,22 +29,22 @@ export default async function (method, data, requestDetails) {
     let collection = db.collection(table);
 
     let query = {};
-    if (this.id && this.id.field) {
-      switch (this.id.type) {
+    if (this.settings.id && this.settings.id.field) {
+      switch (this.settings.id.type) {
         case 'number': {
-          query[this.id.field] = parseInt(requestDetails.url);
+          query[this.settings.id.field] = parseInt(requestDetails.url);
           break;
         }
         case 'float': {
-          query[this.id.field] = parseFloat(requestDetails.url);
+          query[this.settings.id.field] = parseFloat(requestDetails.url);
           break;
         }
         case 'ObjectID': {
-          query[this.id.field] = new ObjectID(requestDetails.url);
+          query[this.settings.id.field] = new ObjectID(requestDetails.url);
           break;
         }
         default: {
-          query[this.id.field] = requestDetails.url;
+          query[this.settings.id.field] = requestDetails.url;
         }
       }
     } else {

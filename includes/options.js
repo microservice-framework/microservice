@@ -26,8 +26,8 @@ export default async function (data, requestDetails, methods) {
       };
     }
   }
-  if (this.id) {
-    answer.id = this.id;
+  if (this.settings.id) {
+    answer.id = this.settings.id;
   }
   // Add required fields to schema based on activated or disabled mongo
   if (this.mongoTable && this.mongoTable != '') {
