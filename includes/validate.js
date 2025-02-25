@@ -121,9 +121,9 @@ export default async function (method, data, requestDetails) {
       return new Error('Malformed signature');
     }
 
-    if (sign[1] != signature(sign[0], data, this.secureKey)) {
+    if (sign[1] != signature(sign[0], data, this.settings.secureKey)) {
       this.debug.debug('Validate:SignatureSystem Signature mismatch');
-      return callback(new Error('Signature mismatch'));
+      return new Error('Signature mismatch');
     }
     return true;
   };

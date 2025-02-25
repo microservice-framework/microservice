@@ -85,8 +85,8 @@ export default async function (data, requestDetails, methods) {
       }
     }
   }
-  return callback(null, {
+  return {
     code: 200,
     answer: answer,
-  });
+  };
 }
