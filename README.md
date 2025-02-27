@@ -64,3 +64,6 @@ For more details please check our [website](http://microservice-frame.work)
           - renamed callbacks to method
           - added singleton as a separated worker to run function
           - added init, shutdown to run on init and shutdown in each worker
+- `3.0.1` - bugfix signature
+- `3.0.2` - bugfix with :id param
+- `3.0.3` - bugfix with token generation

@@ -26,7 +26,7 @@ export default async function (data, requestDetails) {
   // Add default values to data
   data.created = Date.now();
   data.changed = Date.now();
-  data.token = tokenGenerate(24);
+  data.token = await tokenGenerate(24);
 
   try {
     let record = await collection.insertOne(data, { returnDocument: 'after' });
