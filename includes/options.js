@@ -19,7 +19,7 @@ export default async function (data, requestDetails, methods) {
       var schemaTask = JSON.parse(fs.readFileSync('schema/' + this.schema));
       answer.properties = schemaTask.properties;
     } catch (e) {
-      this.debug.options('Failed to read schema file: %O', e);
+      this.debug.debug('Failed to read schema file: %O', e);
       return {
         code: 500,
         answer: new Error('Failed to read schema file.'),
@@ -48,7 +48,7 @@ export default async function (data, requestDetails, methods) {
   for (let method in methods) {
     if (requestDetails.auth_methods) {
       if (!requestDetails.auth_methods[method.toLowerCase()]) {
-        this.debug.options('Access Token has no access to method: %s', method);
+        this.debug.debug('Access Token has no access to method: %s', method);
         continue;
       }
     }
