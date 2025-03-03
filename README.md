@@ -68,3 +68,4 @@ For more details please check our [website](http://microservice-frame.work)
 - `3.0.2` - bugfix with :id param
 - `3.0.3` - bugfix with token generation
 - `3.0.4` - bugfix with options method
+- `3.0.5` - bugfix with options schema and description pre read

@@ -1,6 +1,8 @@
 /**
  * Process Test task.
  */
+import fs from 'fs';
+
 'use strict';
 export default async function (data, requestDetails, methods) {
   let answer = {
@@ -14,9 +16,18 @@ export default async function (data, requestDetails, methods) {
     version: process.env.npm_package_version,
     description: process.env.npm_package_description,
   };
-  if (this.schema) {
+  // Since nmp 7.x npm_package_description is not available anymore
+  // https://github.com/npm/rfcs/blob/main/implemented/0021-reduce-lifecycle-script-environment.md
+  try {
+    const packageJson = JSON.parse(fs.readFileSync(process.env.npm_package_json, 'utf8'));
+    answer.description = packageJson.description;
+  } catch (error) {
+      console.error('Failed to load package.json:', error);
+  }
+
+  if (this.settings.schema) {
     try {
-      var schemaTask = JSON.parse(fs.readFileSync('schema/' + this.schema));
+      var schemaTask = JSON.parse(fs.readFileSync('schema/' + this.settings.schema));
       answer.properties = schemaTask.properties;
     } catch (e) {
       this.debug.debug('Failed to read schema file: %O', e);
