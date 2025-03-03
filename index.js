@@ -1,3 +1,4 @@
+import fs from 'fs';
 import debug from 'debug';
 import { MongoClient } from 'mongodb';
 import { EventEmitter } from 'node:events';
