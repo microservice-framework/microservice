@@ -221,9 +221,8 @@ SearchClass.prototype.process = function(callback) {
   } else {
     cursor = collection.find(query);
   }
-  // Flip default behaviour
-  // NON COMPATIBLE
-  if(!self.data.count) {
+  // roll back non compatible
+  if(self.data.noCount) {
     return self.processFind(cursor, self.data, -1, callback);
   }
   let requestHash = '';
