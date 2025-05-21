@@ -225,7 +225,7 @@ SearchClass.prototype.process = function(callback) {
       delete countCache[requestHash];
     }
   }
-  if (self.requestDetails.headers['force-index']) {
+  if (self.requestDetails.headers && self.requestDetails.headers['force-index']) {
     cursor = cursor.hint(self.requestDetails.headers['force-index']);
   }
   
