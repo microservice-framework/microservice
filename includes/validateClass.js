@@ -169,7 +169,7 @@ ValidateClass.prototype.AccessToken = function(method, callback) {
       return callback(new Error('Access denied. Token not found or expired.'));
     }
     self.debug.debug('authServer:search %O ', answer);
-    if (!answer.methods) {
+    if (!answer || !answer.methods) {
       self.debug.debug('authServer:search no methods provided');
       return callback(new Error('Access denied'));
     }
